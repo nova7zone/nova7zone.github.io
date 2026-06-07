@@ -10,7 +10,10 @@ set -eu
 
 # Run-time progress check
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$SCRIPT_DIR/check_progress.sh" || { echo "Progress check failed. Aborting."; exit 1; }
+"$SCRIPT_DIR/check_progress.sh" || {
+  echo "Progress check failed. Aborting."
+  exit 1
+}
 
 SITE_DIR="_site"
 
