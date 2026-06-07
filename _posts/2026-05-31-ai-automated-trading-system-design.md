@@ -452,16 +452,80 @@ ChatGPT의 깔끔한 아키텍처와 Gemini의 실명세 구현 가이드를 결
 
 ---
 
+## 📥 프롬프트 다운로드
+
+이 포스트에서 사용된 원본 AI 프롬프트 파일들입니다.
+
+| 파일명 | 생성 도구 | 용도 |
+|--------|---------|------|
+| **ultimate_p-1.txt** | ChatGPT | 영문 아키텍처 프롬프트 |
+| **KIWOOM_AUTO_TRADING_PROMPT_ADVANCED-1-1.txt** | Gemini | 한글 구현 가이드 프롬프트 |
+
+**저장 위치**: `repository/downloads/prompts/` 폴더
+
+**다운로드 방법** (모바일):
+1. GitHub 저장소 접속 → nova7zone/nova7zone.github.io
+2. Code 탭 → downloads → prompts 폴더 이동
+3. 각 `.txt` 파일 클릭 → 우상단 **Raw** 버튼 클릭
+4. 길게 누르기 → 저장 또는 복사
+
+**사용 방법**:
+- 각 프롬프트를 해당 AI 도구(ChatGPT, Gemini)에 입력
+- 실제 프로젝트 구현 시 설계 기준으로 활용
+- 조건 추가, 프리셋 수정 등에 참고
+
+---
+
 ## 참고자료
 
 ### 공식 문서
 - [Kiwoom REST API 문서](https://openapidocs.kiwoom.com/)
 - [Python unittest](https://docs.python.org/3/library/unittest.html)
 - [YAML 문법](https://yaml.org/spec/1.2/spec.html)
+- [OAuth 2.0](https://oauth.net/2/)
 
 ### 이전 포스트
 - [Oracle Cloud 무료 티어 인스턴스 운영하기](https://nova7zone.github.io/2026/05/29/oracle-cloud-server-setup.html)
-- [Oracle Cloud 서버 설정 & GitHub Pages 포스트 인수인계 문서](https://nova7zone.github.io)
 
-### 다음 포스트
-- AI 를 이용한 자동매매 프로그램 작성(2) - Python 환경 구성 및 dependencies 관리
+```
+🔵 (1) 시스템 설계 & 프롬프트 전략
+   ├─ 요구사항 분석
+   ├─ 아키텍처 설계
+   ├─ 두 프롬프트의 역할
+   └─ [현재 글]
+
+🔲 (2) Python 환경 구성
+   ├─ venv 가상환경
+   ├─ requirements.txt
+   └─ Ubuntu 22.04 설정
+
+🔲 (3) 프로젝트 구조 & 설정
+   ├─ 폴더 구조 생성
+   ├─ settings.yaml 상세 해석
+   └─ secrets.yaml 보안 관리
+
+🔲 (4) 1차/2차 스크리닝 구현
+   ├─ 유동성 필터
+   ├─ MA 교차, 거래량 급증
+   └─ 볼린저 밴드, 스톡캐스틱
+
+🔲 (5) 실제 매매 로직
+   ├─ buy.py 구현
+   ├─ sell.py 구현
+   └─ Stop-loss / Take-profit
+
+🔲 (6) API 통합 & OAuth2
+   ├─ Kiwoom REST API 인증
+   ├─ 토큰 관리
+   └─ 주문 실행
+
+🔲 (7) 테스트 & 백테스트
+   ├─ unittest/pytest
+   ├─ CSV 백테스트
+   └─ 성과 분석
+
+🔲 (8) 배포 & 운영
+   ├─ Crontab 설정
+   ├─ 로그 관리
+   └─ 모니터링
+```
