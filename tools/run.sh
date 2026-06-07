@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+set -euo pipefail
+
+# Run-time progress check
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"$SCRIPT_DIR/check_progress.sh" || { echo "Progress check failed. Aborting."; exit 1; }
 #
 # Run jekyll serve and then launch the site
 
