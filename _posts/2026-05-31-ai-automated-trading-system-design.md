@@ -479,13 +479,14 @@ ChatGPT의 깔끔한 아키텍처와 Gemini의 실명세 구현 가이드를 결
 ## 참고자료
 
 ### 공식 문서
-- [Kiwoom REST API 문서](https://openapidocs.kiwoom.com/)
+- [Kiwoom REST API 가이드](https://openapi.kiwoom.com/m/guide/apiguide?dummyVal=0)
 - [Python unittest](https://docs.python.org/3/library/unittest.html)
 - [YAML 문법](https://yaml.org/spec/1.2/spec.html)
 - [OAuth 2.0](https://oauth.net/2/)
 
-### 이전 포스트
-- [Oracle Cloud 무료 티어 인스턴스 운영하기](https://nova7zone.github.io/2026/05/29/oracle-cloud-server-setup.html)
+### 시리즈 글
+- [이전 포스트: Oracle Cloud 무료 티어 인스턴스 운영하기](https://nova7zone.github.io/posts/oracle-cloud-server-setup/)
+- 다음 포스트: Python 환경 구성 (예정)
 
 ```
 🔵 (1) 시스템 설계 & 프롬프트 전략
