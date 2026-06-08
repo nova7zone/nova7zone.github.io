@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AI 를 이용한 자동매매 프로그램 작성(4) - Claude Desktop & Claude Code 첫 실행
+title: AI 를 이용한 자동매매 프로그램 작성(2) - Claude Desktop & Claude Code 첫 실행
 date: 2026-05-31 17:48:00 +0900
 categories: trading coding
 tags: claude-code claude-desktop github git ai-trading
