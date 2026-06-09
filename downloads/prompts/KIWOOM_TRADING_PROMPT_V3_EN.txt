@@ -1,0 +1,1090 @@
+================================================================
+KIWOOM SECURITIES REST API AUTOMATED TRADING SYSTEM
+ULTIMATE INTEGRATED PROMPT V3 (ENGLISH)
+================================================================
+Based on: Two original prompts merged + 7 improvement areas
+          + Additional improvements + All new requirements
+Environment: Oracle Cloud Infrastructure / Ubuntu 22.04 LTS
+Final Output: A fully operational Python automated trading framework
+================================================================
+
+[ROLE INSTRUCTION]
+You are a senior quantitative trading architect, Python engineer,
+and DevOps specialist who designs real-money automated trading
+systems. Produce a PRODUCTION-READY automated trading framework —
+NOT a toy example, NOT sample code.
+
+[CRITICAL RULES]
+- NEVER provide "example code only" — generate complete, runnable code
+- All code must be production-grade and immediately deployable
+- When in doubt, design conservatively (safety first)
+- All files must include detailed comments
+- All markdown files and code comments in all files must be written in Korean.
+- NO hardcoding — all configuration lives in settings/*.yaml or .env
+
+
+════════════════════════════════════════════════════════════════
+SECTION 1. CORE OBJECTIVE
+════════════════════════════════════════════════════════════════
+
+- Kiwoom Securities KIS Developers REST API based Korean stock
+  automated trading system
+- Cron-based execution every 5 minutes, exit immediately after
+  each run (stateless)
+- Fully separated modes: live / paper / backtest
+- Condition-based scoring + preset strategy system
+- Designed for long-term unattended operation on Oracle Cloud
+  Ubuntu 22.04 server
+- Telegram real-time alerts + automatic investment journal updates
+- NO daemon. NO infinite loops. Pure cron-based single-shot
+  execution model.
+
+
+════════════════════════════════════════════════════════════════
+SECTION 2. EXECUTION ENVIRONMENT (Oracle Cloud Ubuntu 22.04)
+════════════════════════════════════════════════════════════════
+
+2-1. Server Specifications
+  - Cloud      : Oracle Cloud Infrastructure (OCI) Always Free Tier
+  - OS         : Ubuntu 22.04 LTS (64-bit)
+  - Specs      : 1 OCPU (AMD), 1 GB RAM, 47 GB Block Volume
+  - Python     : 3.11 (not yet installed → setup in INSTALL.md)
+  - Access     : SSH key-based (ubuntu account)
+  - Run user   : ubuntu (with sudo privileges)
+
+2-2. System Timezone (KST mandatory)
+  - Korean market hours are KST-based — server MUST be set to
+    Asia/Seoul:
+      sudo timedatectl set-timezone Asia/Seoul
+      timedatectl   # verify: Time zone: Asia/Seoul (KST, +0900)
+
+2-3. Firewall (UFW — NOT firewalld)
+  - Ubuntu 22.04 uses UFW:
+      sudo ufw allow out 443/tcp
+      sudo ufw allow out 9443/tcp
+      sudo ufw allow out 29443/tcp
+  - Also check OCI Console Security List Egress rules
+
+2-4. Python Installation Procedure (Ubuntu 22.04, in INSTALL.md)
+  Step 1: sudo apt update && sudo apt upgrade -y
+  Step 2: sudo apt install -y python3.11 python3.11-venv
+          python3.11-dev python3-pip git curl wget nano
+          build-essential
+  Step 3: sudo update-alternatives --install /usr/bin/python3
+          python3 /usr/bin/python3.11 1
+  Step 4: mkdir -p ~/trader && cd ~/trader
+          python3 -m venv venv
+          source venv/bin/activate
+  Step 5: pip install -r requirements.txt
+
+2-5. Crontab Setup (Ubuntu 22.04, path: /home/ubuntu/trader)
+  - Enable cron:
+      sudo systemctl enable cron && sudo systemctl start cron
+  - Add to crontab -e:
+
+    # Every 15 minutes during market hours (Mon-Fri 09:00-15:30 KST)
+    */15 9-15 * * 1-5 /home/ubuntu/trader/venv/bin/python3
+    /home/ubuntu/trader/runner.py >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+    # 16:00 Daily report
+    0 16 * * 1-5 /home/ubuntu/trader/venv/bin/python3
+    /home/ubuntu/trader/runner.py >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+    # 17:00 Monthly report check (runner.py determines if last biz day)
+    0 17 * * 1-5 /home/ubuntu/trader/venv/bin/python3
+    /home/ubuntu/trader/runner.py --check-monthly
+    >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+    # 15:35 Investment journal update (post-market closing price)
+    35 15 * * 1-5 /home/ubuntu/trader/venv/bin/python3
+    /home/ubuntu/trader/runner.py --update-journal
+    >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+  NOTE: --check-monthly uses calendar module inside runner.py to
+        accurately determine last business day of the month.
+  NOTE: --update-journal refreshes journal with closing prices.
+
+
+════════════════════════════════════════════════════════════════
+SECTION 3. PROJECT STRUCTURE (Feature-based subfolder layout)
+════════════════════════════════════════════════════════════════
+
+kiwoom-auto-trading-bot/
+│
+├── runner.py                        # Single entry point (cron target)
+├── requirements.txt
+├── .env                             # Secrets (MUST be git-excluded)
+├── .env.example                     # Key names only, no values
+├── .gitignore
+├── README.md
+│
+├── api/                             # API layer (isolated from strategy)
+│   ├── __init__.py
+│   ├── kiwoom_api.py                # Kiwoom REST API client
+│   ├── api_constants.py             # TR IDs and API constants
+│   └── token_manager.py             # OAuth2 token lifecycle
+│
+├── trading/                         # Trade execution logic
+│   ├── __init__.py
+│   ├── buy.py                       # Buy logic (balance→lock→order→confirm)
+│   ├── sell.py                      # Sell logic (5-level priority)
+│   └── order_manager.py             # Fill confirmation + cancellation
+│
+├── screening/                       # Stock screening engine
+│   ├── __init__.py
+│   ├── first_stage.py               # Stage 1: Basic filters
+│   ├── second_stage.py              # Stage 2: Score calculation engine
+│   ├── market_filter.py             # Market regime filter (KOSPI index)
+│   └── conditions/                  # Stage 2 condition modules
+│       ├── __init__.py
+│       ├── cond_volume_surge.py
+│       ├── cond_moving_average.py
+│       ├── cond_rsi.py
+│       ├── cond_price_momentum.py
+│       ├── cond_new_high.py
+│       ├── cond_bollinger_bands.py  # NEW
+│       ├── cond_stochastic.py       # NEW
+│       ├── cond_macd.py             # NEW
+│       ├── cond_obv.py              # NEW
+│       └── cond_cci.py              # NEW
+│
+├── backtest/
+│   ├── __init__.py
+│   ├── backtest_runner.py           # Full tax/fee + survivorship warning
+│   └── data_loader.py
+│
+├── report/
+│   ├── __init__.py
+│   ├── telegram_sender.py           # With cooldown deduplication
+│   ├── daily_report.py
+│   └── monthly_report.py            # Accurate last-business-day check
+│
+├── journal/                         # Investment Journal (NEW)
+│   ├── __init__.py
+│   ├── journal_writer.py
+│   └── journal_template.py
+│
+├── settings/
+│   ├── app.yaml
+│   ├── presets/
+│   │   ├── conservative.yaml
+│   │   ├── neutral.yaml
+│   │   └── aggressive.yaml
+│   └── secrets.yaml.example
+│
+├── utils/
+│   ├── __init__.py
+│   ├── time_utils.py
+│   ├── file_utils.py                # Thread-safe JSON I/O with filelock
+│   └── logger.py
+│
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_conditions.py
+│   ├── test_trading.py
+│   └── test_backtest.py
+│
+├── data/                            # Runtime data (auto-created)
+│   ├── trade_log.json
+│   ├── holdings.json
+│   ├── token_cache.json             # chmod 600
+│   ├── alert_history.json
+│   └── backtest/                    # CSV files: {stock_code}.csv
+│
+├── logs/
+│
+├── investment_journal/              # Investment journal files (NEW)
+│   ├── journal_YYYYMM.xlsx
+│   └── positions_YYYYMMDD.json
+│
+└── docs/
+    ├── INSTALL.md
+    ├── USAGE.md
+    ├── SETTINGS_GUIDE.md            # NEW
+    ├── CONDITIONS_GUIDE.md          # NEW
+    ├── HOW_TO_ADD_CONDITION.md      # NEW
+    ├── BACKTEST_GUIDE.md            # NEW
+    ├── POST_RUN_CHECKLIST.md        # NEW
+    ├── AI_CODE_SAFETY_CHECKLIST.md  # NEW
+    └── PROMPT.md
+
+
+════════════════════════════════════════════════════════════════
+SECTION 4. CODE QUALITY & TESTING REQUIREMENTS (STRICT)
+════════════════════════════════════════════════════════════════
+
+4-1. Every Python File Must Include
+  - Module-level docstring (purpose, main classes/functions)
+  - Per-function docstring (Parameters / Returns / Raises)
+  - Complete type hints (Python 3.11,
+    from __future__ import annotations)
+  - Inline comments explaining WHY, not just WHAT
+  - File header: filename, role, key dependencies
+
+4-2. General Code Rules
+  - NO global variables (pass all state via function arguments)
+  - All config values from settings/app.yaml or .env only
+  - All numeric/string constants in api_constants.py or settings
+  - NO hardcoding whatsoever
+  - API logic EXISTS ONLY in api/ folder
+    (trading/ and screening/ must not know API internals)
+
+4-3. Error Handling Principles
+  - All external calls (API, file I/O, JSON): try-except mandatory
+  - On exception: log → return safe default (do NOT kill process)
+  - sys.exit(1) only for fatal errors: token failure,
+    missing required config
+  - Fail-fast: detect config errors at startup before any trading
+
+4-4. Testing Requirements
+  - pytest-based, shared fixtures in tests/conftest.py
+  - All order API calls: unittest.mock.MagicMock
+  - Condition score tests: boundary / normal / edge cases
+  - Backtest tests: stop-loss, take-profit, max-holding scenarios
+
+
+════════════════════════════════════════════════════════════════
+SECTION 5. SECURITY HARDENING (Improvements #5, #6)
+════════════════════════════════════════════════════════════════
+
+5-1. Secret Management (.env + python-dotenv)
+  - settings/secrets.yaml is DEPRECATED — use .env only
+  - .env file format:
+      KIWOOM_APP_KEY=your_app_key_here
+      KIWOOM_APP_SECRET=your_app_secret_here
+      TELEGRAM_BOT_TOKEN=your_bot_token_here
+      TELEGRAM_CHAT_ID=your_chat_id_here
+  - .env MUST be in .gitignore
+
+5-2. utils/config_loader.py Load Priority
+  1. OS environment variables (os.environ)
+  2. .env file (python-dotenv)
+  3. settings/secrets.yaml (fallback for backward compatibility)
+  4. If still not found: raise ValueError with clear message
+
+5-3. File Permission Management
+  - data/token_cache.json: chmod 600 applied automatically
+    after token file creation
+  - .env file: chmod 600 (documented in INSTALL.md)
+
+5-4. OCI Vault (Optional Advanced)
+  - If OCI_USE_VAULT=true env var is set, load secrets via OCI SDK
+  - Falls back to .env if oci SDK not installed or vault disabled
+  - Setup instructions in USAGE.md under "OCI Vault" section
+
+
+════════════════════════════════════════════════════════════════
+SECTION 6. KIWOOM REST API SPECIFICATION
+════════════════════════════════════════════════════════════════
+
+6-1. api/token_manager.py
+  - OAuth2 POST /oauth2/tokenP
+  - Auto-refresh 10 minutes before expiry
+  - Cache to data/token_cache.json (chmod 600)
+  - Race condition prevention via filelock:
+      with FileLock("data/token_cache.lock"):
+          [read/write token]
+
+6-2. api/api_constants.py – TR ID Constants
+  class TrId:
+    PRICE_INFO          = "FHKST01010100"
+    DAILY_CHART         = "FHKST03010100"
+    FLUCTUATION_RANK    = "FHPST01700000"
+    BALANCE_MOCK        = "VTTC8434R"
+    BALANCE_LIVE        = "TTTC8434R"
+    DAILY_CCLD_MOCK     = "VTTC8001R"
+    DAILY_CCLD_LIVE     = "TTTC8001R"
+    ORDER_INQUIRY_MOCK  = "VTTC8036R"
+    ORDER_INQUIRY_LIVE  = "TTTC8036R"
+    BUY_MOCK            = "VTTC0802U"
+    BUY_LIVE            = "TTTC0802U"
+    SELL_MOCK           = "VTTC0801U"
+    SELL_LIVE           = "TTTC0801U"
+    CANCEL_MOCK         = "VTTC0803U"
+    CANCEL_LIVE         = "TTTC0803U"
+
+  class TaxRate:
+    COMMISSION_BUY  = 0.00015   # 0.015% buy commission
+    COMMISSION_SELL = 0.00015   # 0.015% sell commission
+    SECURITIES_TAX  = 0.00200   # 0.20% securities transaction tax
+    RURAL_TAX       = 0.00015   # 0.015% rural development tax
+    TOTAL_SELL_COST = 0.00230   # Total sell cost: 0.23%
+
+6-3. api/kiwoom_api.py – Client
+  - Contains ONLY API communication logic
+  - Strategy / trading logic is FORBIDDEN here
+  - Keyommunication logic
+  - Strategy / trading logic is FORBIDDEN here
+  - Key logic
+  - Strategy / trading logic is FORBIDDEN here
+  - Key Strategy / trading logic is FORBIDDEN here
+  - Key Strategy / trading logic is FORBIDDEN here
+  - Key methods:
+      get_price_info(code) → dict
+      get_daily_candles(code, count) → list
+      get_stock_list(market, sort, count) → list
+      get_balance() → dict
+      get_today_trades() → list
+      send_buy_order(code, qty, price, order_type) → dict
+      send_sell_order(code, qty, price, order_type) → dict
+      cancel_order(order_no, code, qty) → bool
+      log_api_stats() → None
+  - API call counter: log total calls per run
+  - Retry logic: max 3 attempts, 1-second interval
+  - Rate limiting: time.sleep(0.06) → ~16 calls/sec
+
+6-4. API Call Optimization (Improvement #4)
+  - Flow: get_price_info(1 call) → Stage 1 filter →
+          ONLY IF PASSED: get_daily_candles(1 call)
+  - Rejected stocks: NO daily candle call → 50% API reduction
+  - Stock universe: top 200 by rise + top 50 by fall (~500 total)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 7. DUPLICATE ORDER PREVENTION + BALANCE CHECK +
+           FILL CONFIRMATION (Improvements #1, #2, #3)
+════════════════════════════════════════════════════════════════
+
+7-1. Process Lock (Improvement #1)
+  - runner.py acquires data/runner.lock via filelock at startup
+  - Timeout: 1 second — if already locked, sys.exit(0) immediately
+  - Log: "[SKIP] Previous process still running → skipping this run"
+
+7-2. Thread-Safe JSON I/O (utils/file_utils.py)
+  - All JSON file reads/writes protected by filelock
+  - Functions: load_json_locked(path), save_json_locked(path, data)
+
+7-3. Pre-Order Balance Check (Improvement #2, trading/buy.py)
+  - Re-query balance before EACH stock order (reflects prior buys)
+  - Condition: available >= qty × price + min_available_buffer
+  - If insufficient: skip stock + telegram warning + log
+
+7-4. Fill Confirmation (Improvement #3, trading/order_manager.py)
+  - After order success (rt_cd=0): poll for fill up to 60 sec,
+    every 5 seconds
+  - On fill: record actual fill price in trade_log
+  - On timeout: cancel order + telegram warning
+  - On fill: immediately update holdings.json
+
+
+════════════════════════════════════════════════════════════════
+SECTION 8. SCREENING SYSTEM
+════════════════════════════════════════════════════════════════
+
+8-1. Full Flow
+  Market Regime Filter → Stage 1 → Stage 2 (Scoring) →
+  min_score threshold → Buy candidates
+
+8-2. Market Regime Filter (screening/market_filter.py)
+  - Block new buys when KOSPI drops beyond threshold
+  - Settings: market_filter.kospi_drop_threshold: -1.5
+  - Alert via telegram once per day (cooldown applied)
+
+8-3. Stage 1 Screening (screening/first_stage.py)
+  Returns: bool (True = pass)
+  Filters:
+    (a) Manual exclusion code list
+    (b) Exclude ETF / ETN / SPAC
+    (c) Exclude management issues / investment warnings / halted
+    (d) Price range: price_min ~ price_max
+    (e) Minimum volume
+    (f) Minimum trade value: price × volume >= min_trade_value
+    (g) Market cap range
+    (h) Change rate range
+
+8-4. Stage 2 Condition Modules — Common Interface
+
+  Every condition file MUST implement:
+
+    CONDITION_NAME: str   # Condition name
+    CONDITION_DESC: str   # Description
+    MAX_SCORE: int = 100
+
+    def score(
+        stock: dict[str, Any],
+        candles: list[dict],
+        cfg: dict[str, Any],
+    ) -> float:
+        """Returns 0.0 ~ 100.0"""
+
+  ─────────────────────────────────────────
+  [Cond 1] cond_volume_surge.py – Volume Surge
+  ─────────────────────────────────────────
+    - Ratio = current volume / N-day avg volume
+    - Ratio < min_ratio(2.0) → 0 pts
+    - Linear mapping: min_ratio(40pts) ~ bonus_ratio(100pts)
+    - +10 bonus if price rising simultaneously
+    - cfg: avg_days, min_ratio, bonus_ratio, min_volume,
+           price_rise_min
+
+  ─────────────────────────────────────────
+  [Cond 2] cond_moving_average.py – Moving Average
+  ─────────────────────────────────────────
+    - Calculate MA5, MA20, MA60 (simple moving average)
+    - price > MA5: +15pts, price > MA20: +15pts
+    - MA5 > MA20: +15pts (aligned), MA20 > MA60: +15pts
+    - Golden cross (MA5 crossed MA20 within N days): +30pts
+    - Separate _detect_golden_cross(closes, within_days) function
+
+  ─────────────────────────────────────────
+  [Cond 3] cond_rsi.py – RSI
+  ─────────────────────────────────────────
+    - Wilder's RSI, default period=14
+    - Outside hard_min~hard_max range → 0 pts
+    - Momentum mode (favor_reversal=false): RSI 50~65 = max score
+    - Reversal mode (favor_reversal=true): RSI 30~45 = max score
+    - +20 bonus if RSI rising >= min_rise_bonus vs yesterday
+
+  ─────────────────────────────────────────
+  [Cond 4] cond_price_momentum.py – Price Momentum
+  ─────────────────────────────────────────
+    - Daily change rate score (max 40pts)
+    - Day-high proximity score (max 30pts): price / day_high
+    - Consecutive up days count (max 30pts)
+
+  ─────────────────────────────────────────
+  [Cond 5] cond_new_high.py – 52-Week High
+  ─────────────────────────────────────────
+    - 52W high = max of last 250 days high
+    - Breakout (0~5% above 52W high): 100~80pts
+    - Near (within 3%): 50~80pts
+    - Far: 0~30pts
+
+  ─────────────────────────────────────────
+  [Cond 6] cond_bollinger_bands.py – Bollinger Bands [NEW]
+  ─────────────────────────────────────────
+    Calculation:
+      MA(N)     = N-period simple moving average (default 20)
+      σ         = N-period standard deviation of closes
+      Upper     = MA + K × σ  (K=2.0 default)
+      Lower     = MA - K × σ
+      %b        = (price - Lower) / (Upper - Lower)
+                  [0 = lower band, 1 = upper band]
+      BW(%)     = (Upper - Lower) / MA × 100  [bandwidth]
+
+    Scoring:
+      Momentum mode (favor_reversal=false):
+        %b >= 1.0:        100pts (squeeze state: additional bonus)
+        0.8 <= %b < 1.0:   70pts
+        0.5 <= %b < 0.8:   50pts
+        0.2 <= %b < 0.5:   25pts
+        %b < 0.2:          10pts
+      Reversal mode (favor_reversal=true):
+        %b < 0.0:          80pts (oversold breakout)
+        0.0 <= %b < 0.2:   70pts
+        reverse scoring for higher %b values
+
+      Squeeze (BW < squeeze_threshold=4.0%): +10pts
+      %b rising vs yesterday: +10pts
+      Both bands trending up: +10pts
+
+    Save to stock dict: bollinger_pb, bollinger_bw,
+                        bollinger_squeeze (also persisted to
+                        holdings.json for sell-side comparison)
+    cfg: period, std_dev, squeeze_threshold, favor_reversal
+
+  ─────────────────────────────────────────
+  [Cond 7] cond_stochastic.py – Stochastic [NEW]
+  ─────────────────────────────────────────
+    Calculation:
+      %K = (price - N-period low) /
+           (N-period high - N-period low) × 100
+      %D = M-period SMA of %K (signal line)
+      Default: N=14, M=3, smooth=3 (Slow Stochastic)
+
+    Scoring:
+      %K < oversold(20): oversold zone
+        → Reversal: 80pts / Momentum: 10pts
+      %K > overbought(80): overbought zone
+        → Reversal: 10pts / Momentum: 40pts
+      20 <= %K <= 80: neutral zone
+        → %K > %D (upward cross): 70pts
+        → %K < %D: 20pts
+        → Equal: 40pts
+      %K crosses %D upward (golden cross, within 3 days): +20 bonus
+
+    cfg: k_period, d_period, smooth, oversold, overbought,
+         favor_reversal
+
+  ─────────────────────────────────────────
+  [Cond 8] cond_macd.py – MACD [NEW]
+  ─────────────────────────────────────────
+    Calculation:
+      EMA(N) = N-period exponential moving average
+      MACD Line   = EMA(12) - EMA(26)
+      Signal Line = EMA(9) of MACD Line
+      Histogram   = MACD Line - Signal Line
+
+    Scoring:
+      Histogram > 0 AND increasing vs yesterday: 80pts
+      Histogram > 0 AND decreasing:              40pts
+      Histogram < 0 AND increasing (recovery):   60pts
+      Histogram < 0 AND decreasing:              10pts
+      MACD crosses Signal upward (within 3 days): +20 bonus
+      MACD Line > 0 (above zero line):            +10 additional
+
+    cfg: fast_period, slow_period, signal_period
+
+  ─────────────────────────────────────────
+  [Cond 9] cond_obv.py – OBV [NEW]
+  ─────────────────────────────────────────
+    Calculation:
+      OBV = cumulative sum (+volume on up days, -volume on down)
+      OBV_MA = N-period moving average of OBV
+
+    Scoring:
+      OBV > OBV_MA AND OBV trending up: 80pts (accumulation)
+      OBV < OBV_MA AND OBV trending down: 10pts (distribution)
+      OBV crosses OBV_MA upward (within 3 days): +20pts
+      Price rising + OBV rising (confirmation): +15pts additional
+
+    cfg: ma_period
+
+  ─────────────────────────────────────────
+  [Cond 10] cond_cci.py – CCI [NEW]
+  ─────────────────────────────────────────
+    Calculation:
+      TP (Typical Price) = (high + low + close) / 3
+      CCI = (TP - MA(TP)) / (0.015 × Mean Deviation)
+      Default: N=20
+
+    Scoring:
+      CCI > 100: strong uptrend → 70pts
+      0 < CCI <= 100: upward zone → 55pts
+      -100 <= CCI <= 0: neutral/bearish → 30pts
+      CCI < -100: oversold
+        → Reversal: 80pts / Momentum: 10pts
+      CCI crosses above -100 (reversal signal): +20 bonus
+
+    cfg: period, favor_reversal
+
+8-5. Score Aggregation (screening/second_stage.py)
+  - Dynamic condition loading via importlib.import_module
+  - Total score = Σ(score × weight) / active_weight_sum × 100
+  - Sort results by total_score descending
+  - Record per-condition scores in score_detail dict
+
+
+════════════════════════════════════════════════════════════════
+SECTION 9. BUY LOGIC (trading/buy.py)
+════════════════════════════════════════════════════════════════
+
+9-1. Execution Steps
+  1) Check market regime filter → return if blocked
+  2) Run screening → sorted candidate list (highest score first)
+  3) Query account balance
+  4) Check current holding count → return if at max_holding_count
+  5) Exclude stocks already bought today (trade_log check)
+  6) Exclude currently held stocks (holdings.json check)
+  7) For each candidate stock:
+     (a) Re-query balance → check available funds
+     (b) Calculate qty: qty = buy_amount_per_stock // price
+     (c) Execute order (send_buy_order)
+     (d) Confirm fill (order_manager.confirm_order, timeout=60s)
+     (e) On fill: record trade_log + update holdings.json + telegram
+     (f) On no fill: cancel order + warning telegram
+  8) Trigger investment journal update
+
+9-2. Buy Prevention Conditions
+  - Outside market hours
+  - Same stock already bought today
+  - Insufficient balance (available < required + buffer)
+  - Maximum holding count reached
+  - Market regime filter triggered
+
+9-3. Buy Trade Log Entry Format
+  {
+    "date": "20240115",
+    "time": "09:35:12",
+    "side": "BUY",
+    "code": "005930",
+    "name": "Samsung Electronics",
+    "qty": 7,
+    "order_price": 70000,
+    "filled_price": 70050,
+    "amount": 490350,
+    "total_score": 78.5,
+    "score_detail": {
+      "cond_volume_surge": 85.0,
+      "cond_moving_average": 70.0,
+      "cond_bollinger_bands": 80.0
+    },
+    "preset": "neutral",
+    "order_no": "001234",
+    "bollinger_pb": 0.87,
+    "entry_conditions": [
+      "Volume surge 3.2x",
+      "MA5 golden cross",
+      "BB upper breakout (%b=0.87)"
+    ]
+  }
+
+
+════════════════════════════════════════════════════════════════
+SECTION 10. SELL LOGIC (trading/sell.py)
+════════════════════════════════════════════════════════════════
+
+10-1. Sell Priority (evaluated in order)
+  Priority 1: Stop-loss  (profit_pct <= stop_loss_pct)
+  Priority 2: Take-profit (profit_pct >= take_profit_pct)
+  Priority 3: Force close before market end (15:00+, intraday) [NEW]
+  Priority 4: Consecutive down days (early stop-loss) [NEW]
+  Priority 5: Bollinger Band sell signal [NEW]
+  Priority 6: Other technical signals (MA break, RSI overbought,
+              sharp drop, Stochastic overbought)
+
+10-2. Force Close Before Market End [NEW]
+  - trade.force_close_before_market_end: true
+  - trade.force_close_minutes: 30  (triggers at 15:00)
+  - trade.force_close_intraday_only: true (today's buys only)
+
+10-3. Consecutive Down Days [NEW]
+  - sell_condition.consecutive_drop_enabled: true
+  - sell_condition.consecutive_drop_days: 3
+  - Check N consecutive down candles from daily data
+
+10-4. Bollinger Band Sell Signal [NEW]
+  - sell_condition.bollinger_sell: true
+  - Trigger when BOTH:
+    (a) Entry bollinger_pb >= 0.8 (entered near upper band)
+    (b) Current bollinger_pb <= 0.5 (fallen below midline)
+
+10-5. Maximum Holding Period [NEW]
+  - preset.max_holding_days: 5 (default 5 business days)
+  - Forced sell regardless of P&L when exceeded
+
+10-6. Sell Trade Log Entry Format
+  {
+    "date": "20240118",
+    "time": "10:15:33",
+    "side": "SELL",
+    "code": "005930",
+    "name": "Samsung Electronics",
+    "qty": 7,
+    "filled_price": 72500,
+    "amount": 507500,
+    "buy_price": 70050,
+    "profit_amt": 17150,
+    "profit_pct": 3.49,
+    "holding_days": 3,
+    "reason": "TakeProfit(+3.49%)",
+    "reason_detail": "take_profit 5.0% threshold reached",
+    "order_no": "005678"
+  }
+
+
+════════════════════════════════════════════════════════════════
+SECTION 11. INVESTMENT JOURNAL (journal/) [NEW — FULL SPEC]
+════════════════════════════════════════════════════════════════
+
+11-1. Purpose
+  - Auto-update on every buy/sell event
+  - Refresh holdings with closing prices post-market
+  - Single-view of buy reasons, sell reasons, P&L history
+
+11-2. File Structure
+  - investment_journal/journal_YYYYMM.xlsx : Monthly journal (Excel)
+  - investment_journal/positions_YYYYMMDD.json : Daily snapshot
+  - New monthly file created automatically on month change
+  - openpyxl package for Excel generation
+
+11-3. journal_YYYYMM.xlsx Sheet Layout
+
+  [Sheet 1: Buy Journal]
+  Columns: BuyDate | StockCode | StockName | BuyPrice | Qty |
+           BuyAmount | PresetName | TotalScore | BuyCriteriaSummary |
+           Bollinger%b | RSI | MACDHistogram | Stochastic%K | Notes
+
+  BuyCriteriaSummary example:
+    "Volume 3.2x surge, MA5 breakout, BB upper touch (%b=0.87),
+     MACD golden cross"
+
+  [Sheet 2: Sell Journal]
+  Columns: SellDate | StockCode | StockName | BuyDate | HoldDays |
+           BuyPrice | SellPrice | Qty | BuyAmount | SellAmount |
+           ProfitAmt | ProfitPct(%) | SellReason | PresetName | Notes
+
+  [Sheet 3: Holdings (updated daily post-market)]
+  Columns: AsOfDate | StockCode | StockName | BuyDate | HoldDays |
+           BuyPrice | CurrentPrice(Close) | Qty | BuyAmount |
+           CurrentValue | UnrealizedPnL | UnrealizedPct(%) |
+           VsInitialCapitalPct(%)
+
+  [Sheet 4: Monthly Performance Summary]
+  Columns: YearMonth | TotalBuyAmt | TotalSellAmt | RealizedPnL |
+           UnrealizedPnL | WinRate(%) | AvgProfitPct | MDD |
+           TradeCount | StrategyBreakdown
+
+11-4. journal/journal_writer.py Key Functions
+
+  def write_buy_entry(trade: dict, cfg: dict) -> None:
+      """Append new row to Buy Journal sheet immediately after fill."""
+
+  def write_sell_entry(
+      trade: dict, buy_trade: dict, cfg: dict
+  ) -> None:
+      """Append to Sell Journal, including matching buy record."""
+
+  def update_holdings_sheet(client, cfg: dict) -> None:
+      """Refresh Holdings sheet with closing prices.
+      Called by runner.py --update-journal at 15:35."""
+
+  def update_monthly_summary(cfg: dict) -> None:
+      """Update Monthly Summary sheet."""
+
+11-5. Initial Capital Return Calculation
+  - initial_capital: from settings/app.yaml journal.initial_capital
+  - Return(%) = (total_current_value - initial_capital) /
+                initial_capital × 100
+  - Displayed in "VsInitialCapitalPct" column of Holdings sheet
+
+11-6. Journal Update Flow
+  On buy fill   → write_buy_entry() called immediately
+  On sell fill  → write_sell_entry() called immediately
+  At 15:35 cron → update_holdings_sheet() (closing price refresh)
+  At month end  → update_monthly_summary() (auto-called)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 12. PRESET SYSTEM
+════════════════════════════════════════════════════════════════
+
+12-1. Three Default Presets (settings/presets/)
+
+  [conservative.yaml]
+  preset_name: "Conservative"
+  min_score: 75.0
+  max_holding_count: 3
+  buy_amount_per_stock: 300000
+  stop_loss_pct: -2.0
+  take_profit_pct: 3.0
+  max_holding_days: 3
+  conditions:
+    - cond_moving_average: weight=30
+    - cond_rsi: weight=25, params.favor_reversal=false, hard_max=65
+    - cond_volume_surge: weight=20
+    - cond_bollinger_bands: weight=15, params.favor_reversal=false
+    - cond_macd: weight=10
+
+  [neutral.yaml]
+  preset_name: "Neutral"
+  min_score: 60.0
+  max_holding_count: 5
+  buy_amount_per_stock: 500000
+  stop_loss_pct: -3.0
+  take_profit_pct: 5.0
+  max_holding_days: 5
+  conditions:
+    - cond_volume_surge: weight=20
+    - cond_moving_average: weight=20
+    - cond_bollinger_bands: weight=15
+    - cond_stochastic: weight=15
+    - cond_rsi: weight=15
+    - cond_macd: weight=10
+    - cond_price_momentum: weight=5
+
+  [aggressive.yaml]
+  preset_name: "Aggressive"
+  min_score: 50.0
+  max_holding_count: 8
+  buy_amount_per_stock: 700000
+  stop_loss_pct: -5.0
+  take_profit_pct: 10.0
+  max_holding_days: 10
+  conditions:
+    - cond_new_high: weight=25
+    - cond_volume_surge: weight=25
+    - cond_bollinger_bands: weight=20
+    - cond_macd: weight=15
+    - cond_obv: weight=15
+
+
+════════════════════════════════════════════════════════════════
+SECTION 13. BACKTEST ENGINE (backtest/)
+════════════════════════════════════════════════════════════════
+
+13-1. Full Cost Calculation (Improvement #7)
+  - Buy cost  : amount × commission_pct_buy (0.015%)
+  - Sell cost : amount × (commission_pct_sell + securities_tax
+                          + rural_tax) = 0.23%
+  - Slippage  : buy +slippage_pct, sell -slippage_pct
+
+13-2. Survivorship Bias Warning (Improvement #7)
+  - Print warning to log AND console at EVERY backtest start
+  - Include survivorship_bias_warning: true in result JSON
+
+13-3. Backtest Result Structure
+  {
+    "survivorship_bias_warning": true,
+    "period": {"start": "...", "end": "..."},
+    "total_return_pct": ...,
+    "mdd_pct": ...,
+    "win_rate_pct": ...,
+    "avg_profit_pct": ...,
+    "avg_loss_pct": ...,
+    "profit_factor": ...,
+    "trade_count": ...,
+    "monthly_returns": {...},
+    "trade_log": [...]
+  }
+
+13-4. CSV Data Format (data/backtest/{stock_code}.csv)
+  date,open,high,low,close,volume
+  20240101,10000,10500,9800,10200,500000
+
+
+════════════════════════════════════════════════════════════════
+SECTION 14. DOCUMENTATION SPECIFICATION (docs/) — ALL REQUIRED
+════════════════════════════════════════════════════════════════
+
+14-1. docs/INSTALL.md – Ubuntu 22.04 OCI Installation Guide
+  - OCI instance creation guide
+  - Ubuntu 22.04 initial setup (timezone, UFW, apt update)
+  - Python 3.11 installation
+  - Virtual environment + package installation
+  - .env setup (chmod 600)
+  - Complete crontab commands
+  - KIS Developers app key registration
+  - Telegram bot creation + Chat ID retrieval
+  - Paper trading test → live account transition procedure
+
+14-2. docs/USAGE.md – Usage Guide
+  - All runner.py command variations
+  - Strategy (preset) switching procedure
+  - Log monitoring commands
+  - File structure explanation
+  - Trade flow diagram
+  - OCI Vault setup (optional)
+
+14-3. docs/SETTINGS_GUIDE.md – Settings Reference [NEW]
+  - Every key in app.yaml: description, type, default, valid range
+  - All preset yaml parameters explained
+  - Change guidelines with safety warnings
+  - Pre-live-trading configuration checklist
+
+14-4. docs/CONDITIONS_GUIDE.md – Condition Reference [NEW]
+  - All 10 condition modules explained:
+    * Background and concept
+    * Full calculation formula
+    * Score logic explanation
+    * cfg parameter list + defaults
+    * Recommended strategy type (momentum/reversal/breakout)
+    * Limitations and caveats
+
+14-5. docs/HOW_TO_ADD_CONDITION.md – Adding New Conditions [NEW]
+  - Step-by-step guide to create a new condition file
+  - Implementing the common interface (CONDITION_NAME, score())
+  - Registering in preset yaml
+  - Writing unit tests
+  - Full worked example: cond_williams_r.py implementation
+
+14-6. docs/BACKTEST_GUIDE.md – Backtesting Guide [NEW]
+  - CSV data format and preparation instructions
+  - How to download historical daily candle data from Kiwoom API
+  - Backtest execution commands
+  - Result interpretation (return, MDD, win rate, profit factor)
+  - Survivorship bias warning explanation
+  - Overfitting prevention tips
+
+14-7. docs/POST_RUN_CHECKLIST.md – Post-Run Verification [NEW]
+  - Daily pre-market checks (cron status, log review)
+  - Daily post-market checks (fills, journal review)
+  - Weekly checks (return trend, strategy performance)
+  - Monthly checks (strategy review, parameter adjustment)
+  - Anomaly detection thresholds
+  - Incident response procedures
+
+14-8. docs/AI_CODE_SAFETY_CHECKLIST.md – AI Code Safety [NEW]
+  - Pre-deployment checklist for AI-generated code:
+    * [ ] No infinite loops (no while True, no sleep-based wait)
+    * [ ] No hardcoded API keys (grep check)
+    * [ ] Live mode actually sends real orders (verify)
+    * [ ] Duplicate buy prevention works
+    * [ ] Stop-loss actually triggers (paper test)
+    * [ ] Zero balance → no orders placed
+    * [ ] Outside market hours → blocked
+    * [ ] Telegram failure → trading NOT interrupted
+    * [ ] File permissions: token_cache.json, .env = 600
+    * [ ] Log files created correctly
+    * [ ] All unit tests pass
+    * [ ] 2-week paper trading pattern review
+  - Danger signal list: "If you see this code, DO NOT deploy"
+
+
+════════════════════════════════════════════════════════════════
+SECTION 15. REQUIREMENTS.TXT FULL SPEC
+════════════════════════════════════════════════════════════════
+
+  requests==2.31.0        # HTTP (Kiwoom REST API, Telegram)
+  PyYAML==6.0.1           # YAML config parsing
+  python-dotenv==1.0.0    # .env file loading
+  filelock==3.13.1        # Process/file lock (critical)
+  openpyxl==3.1.2         # Excel investment journal
+  pytest==7.4.3           # Unit testing
+  pytest-cov==4.1.0       # Coverage reporting
+  # oci==2.119.1          # Uncomment for OCI Vault support
+
+
+════════════════════════════════════════════════════════════════
+SECTION 16. ADDITIONAL IMPROVEMENTS (Beyond original 7)
+════════════════════════════════════════════════════════════════
+
+[Improvement A] Maximum Holding Period Forced Sell
+  - Not in original code. Controlled by preset.max_holding_days.
+  - Compare buy_date from holdings.json with today
+  - Sell reason logged as: "HoldingExpired(Ndays)"
+
+[Improvement B] Sector Diversification Limit
+  - Prevent holding more than N stocks from same sector
+  - settings: trade.max_per_sector: 2 (optional feature)
+
+[Improvement C] Pre-Order Spread Check
+  - Reject stocks with excessively wide bid-ask spread
+  - Prevents high slippage on illiquid stocks
+
+[Improvement D] Daily Loss Limit — Pause Trading
+  - Stop new buys if consecutive stop-losses exceed N today
+  - settings: trade.daily_stop_loss_count: 3
+  - Telegram: "3 consecutive stop-losses → buying paused today"
+
+[Improvement E] Profit Reinvestment Option
+  - trade.reinvest_profits: true
+  - Automatically increases buy_amount_per_stock from realized gains
+  - trade.max_buy_amount: 1000000 (upper cap)
+
+[Improvement F] Runtime Log Level Override
+  - runner.py --log-level DEBUG for one-time debug without redeploy
+
+[Improvement G] Backtest Results via Telegram
+  - After --backtest run, auto-send result summary to Telegram
+  - Useful for remote server operation
+
+
+════════════════════════════════════════════════════════════════
+SECTION 17. RUNNER.PY EXECUTION FLOW
+════════════════════════════════════════════════════════════════
+
+  [START]
+  → Parse argparse args
+    (--backtest, --check-monthly, --update-journal, --mode,
+     --log-level)
+  → Acquire process lock via filelock (1-second timeout)
+  → load_config() — load settings
+  → Mode branching:
+      --backtest:
+        backtest_runner.run_backtest() → print results → telegram
+      --check-monthly:
+        is_last_business_day() → if True: monthly_report()
+      --update-journal:
+        journal_writer.update_holdings_sheet()
+      live/paper (default):
+        1. market_filter.is_market_buyable()
+        2. is_market_open():
+           sell.run_sell() → buy.run_buy()
+        3. is_report_time():
+           daily_report.send_daily_report()
+        4. Otherwise: log only
+  → api_client.log_api_stats()
+  → Normal exit (sys.exit(0))
+
+  Execution Principles:
+  - NO while True
+  - NO sleep-based waiting
+  - NO long-running process
+  - Maximum runtime: under 4 minutes (within 5-minute cron window)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 18. FINAL OUTPUT CHECKLIST
+════════════════════════════════════════════════════════════════
+
+All files to generate:
+
+[Entry point]
+  runner.py
+
+[api/]
+  api/__init__.py, api/kiwoom_api.py,
+  api/api_constants.py, api/token_manager.py
+
+[trading/]
+  trading/__init__.py, trading/buy.py,
+  trading/sell.py, trading/order_manager.py
+
+[screening/]
+  screening/__init__.py, screening/first_stage.py,
+  screening/second_stage.py, screening/market_filter.py,
+  screening/conditions/__init__.py,
+  screening/conditions/cond_volume_surge.py,
+  screening/conditions/cond_moving_average.py,
+  screening/conditions/cond_rsi.py,
+  screening/conditions/cond_price_momentum.py,
+  screening/conditions/cond_new_high.py,
+  screening/conditions/cond_bollinger_bands.py,
+  screening/conditions/cond_stochastic.py,
+  screening/conditions/cond_macd.py,
+  screening/conditions/cond_obv.py,
+  screening/conditions/cond_cci.py
+
+[backtest/]
+  backtest/__init__.py, backtest/backtest_runner.py,
+  backtest/data_loader.py
+
+[report/]
+  report/__init__.py, report/telegram_sender.py,
+  report/daily_report.py, report/monthly_report.py
+
+[journal/]
+  journal/__init__.py, journal/journal_writer.py,
+  journal/journal_template.py
+
+[settings/]
+  settings/app.yaml,
+  settings/presets/conservative.yaml,
+  settings/presets/neutral.yaml,
+  settings/presets/aggressive.yaml
+
+[utils/]
+  utils/__init__.py, utils/time_utils.py,
+  utils/file_utils.py, utils/logger.py
+
+[tests/]
+  tests/__init__.py, tests/conftest.py,
+  tests/test_conditions.py, tests/test_trading.py,
+  tests/test_backtest.py
+
+[Root]
+  requirements.txt, .env.example, .gitignore, README.md
+
+[docs/]
+  docs/INSTALL.md, docs/USAGE.md,
+  docs/SETTINGS_GUIDE.md, docs/CONDITIONS_GUIDE.md,
+  docs/HOW_TO_ADD_CONDITION.md, docs/BACKTEST_GUIDE.md,
+  docs/POST_RUN_CHECKLIST.md, docs/AI_CODE_SAFETY_CHECKLIST.md,
+  docs/PROMPT.md
+
+After all files are complete, package into a single ZIP:
+  kiwoom-auto-trading-bot.zip
+
+
+════════════════════════════════════════════════════════════════
+SECTION 19. FINAL CONSTRAINTS
+════════════════════════════════════════════════════════════════
+
+- NEVER provide example code only — generate complete runnable code
+- Every Python file must include detailed comments
+- NO global variables
+- API logic ONLY in api/ folder
+- NO hardcoding
+- NO infinite loops (NO while True, NO sleep-based waiting)
+- All order functions MUST branch on live/paper mode
+- Backtest MUST always print survivorship bias warning
+- .env MUST NOT contain actual API keys/tokens in committed code
+- runner.py loads config only — no condition logic allowed here
+- Comments must be understandable by beginners
+
+Generate the entire project from scratch following this prompt.
+================================================================
+END OF PROMPT V3 (ENGLISH)
+================================================================

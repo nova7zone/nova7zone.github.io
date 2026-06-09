@@ -1,0 +1,453 @@
+================================================================
+KIS (KOREA INVESTMENT & SECURITIES) REST API AUTOMATED TRADING SYSTEM
+ULTIMATE INTEGRATED PROMPT V3 (ENGLISH)
+================================================================
+Environment: Oracle Cloud Infrastructure / Ubuntu 22.04 LTS
+Final Output: A fully operational Python automated trading framework
+================================================================
+
+[ROLE INSTRUCTION]
+You are a senior quantitative trading architect, Python engineer,
+and DevOps specialist who designs real-money automated trading systems.
+Produce a PRODUCTION-READY automated trading framework — NOT a toy example, NOT sample code.
+
+[CRITICAL RULES]
+- NEVER provide "example code only" — generate complete, runnable code
+- All code must be production-grade and immediately deployable
+- When in doubt, design conservatively (safety first)
+- All files must include detailed comments
+- All markdown files and code comments in all files must be written in Korean.
+- NO hardcoding — all configuration lives in settings/*.yaml or .env
+
+
+════════════════════════════════════════════════════════════════
+SECTION 1. CORE OBJECTIVE
+════════════════════════════════════════════════════════════════
+
+- Korea Investment & Securities (KIS) REST API based Korean stock automated trading system
+- Cron-based execution every 15 minutes, exit immediately after each run (stateless)
+- Fully separated modes: live / paper / backtest
+- Condition-based scoring + preset strategy system
+- Designed for long-term unattended operation on Oracle Cloud Ubuntu 22.04 server
+- Telegram real-time alerts + automatic investment journal updates
+- NO daemon. NO infinite loops. Pure cron-based single-shot execution model.
+- Asynchronous order management (check unfilled orders on the next cron execution).
+
+
+════════════════════════════════════════════════════════════════
+SECTION 2. EXECUTION ENVIRONMENT (Oracle Cloud Ubuntu 22.04)
+════════════════════════════════════════════════════════════════
+
+2-1. Server Specifications
+  - Cloud      : Oracle Cloud Infrastructure (OCI) Always Free Tier
+  - OS         : Ubuntu 22.04 LTS (64-bit)
+  - Specs      : 1 OCPU (AMD), 1 GB RAM, 47 GB Block Volume
+  - Python     : 3.11 (not yet installed → setup in INSTALL.md)
+  - Access     : SSH key-based (ubuntu account)
+  - Run user   : ubuntu (with sudo privileges)
+
+2-2. System Timezone (KST mandatory)
+  - Korean market hours are KST-based — server MUST be set to Asia/Seoul:
+      sudo timedatectl set-timezone Asia/Seoul
+      timedatectl   # verify: Time zone: Asia/Seoul (KST, +0900)
+
+2-3. Firewall (UFW — NOT firewalld)
+  - Ubuntu 22.04 uses UFW:
+      sudo ufw allow out 443/tcp
+      sudo ufw allow out 9443/tcp
+      sudo ufw allow out 29443/tcp
+  - Also check OCI Console Security List Egress rules
+
+2-4. Python Installation Procedure (Ubuntu 22.04, in INSTALL.md)
+  Step 1: sudo apt update && sudo apt upgrade -y
+  Step 2: sudo apt install -y python3.11 python3.11-venv python3.11-dev python3-pip git curl wget nano build-essential
+  Step 3: sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+  Step 4: mkdir -p ~/trader && cd ~/trader
+          python3 -m venv venv
+          source venv/bin/activate
+  Step 5: pip install -r requirements.txt
+
+2-5. Crontab Setup (Ubuntu 22.04, path: /home/ubuntu/trader)
+  - Enable cron:
+      sudo systemctl enable cron && sudo systemctl start cron
+  - Add to crontab -e:
+
+    # Every 15 minutes during market hours (Mon-Fri 09:00-15:30 KST)
+    */15 9-15 * * 1-5 /home/ubuntu/trader/venv/bin/python3 /home/ubuntu/trader/runner.py >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+    # 16:00 Daily report
+    0 16 * * 1-5 /home/ubuntu/trader/venv/bin/python3 /home/ubuntu/trader/runner.py --report-daily >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+    # 17:00 Monthly report check (runner.py determines if last biz day)
+    0 17 * * 1-5 /home/ubuntu/trader/venv/bin/python3 /home/ubuntu/trader/runner.py --check-monthly >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+    # 15:35 Investment journal update (post-market closing price)
+    35 15 * * 1-5 /home/ubuntu/trader/venv/bin/python3 /home/ubuntu/trader/runner.py --update-journal >> /home/ubuntu/trader/logs/cron.log 2>&1
+
+
+════════════════════════════════════════════════════════════════
+SECTION 3. PROJECT STRUCTURE (Feature-based subfolder layout)
+════════════════════════════════════════════════════════════════
+
+kis-auto-trading-bot/
+│
+├── runner.py                        # Single entry point (cron target)
+├── requirements.txt
+├── .env                             # Secrets (MUST be git-excluded)
+├── .env.example                     # Key names only, no values
+├── .gitignore
+├── README.md
+│
+├── api/                             # API layer (isolated from strategy)
+│   ├── __init__.py
+│   ├── kis_api.py                   # KIS REST API client
+│   ├── api_constants.py             # TR IDs and API constants
+│   └── token_manager.py             # OAuth2 token lifecycle
+│
+├── trading/                         # Trade execution logic
+│   ├── __init__.py
+│   ├── buy.py                       # Buy logic (balance→lock→order)
+│   ├── sell.py                      # Sell logic (5-level priority)
+│   └── order_manager.py             # Asynchronous fill confirmation + cancellation
+│
+├── screening/                       # Stock screening engine
+│   ├── __init__.py
+│   ├── first_stage.py               # Stage 1: Basic filters
+│   ├── second_stage.py              # Stage 2: Score calculation engine
+│   ├── market_filter.py             # Market regime filter (KOSPI index)
+│   └── conditions/                  # Stage 2 condition modules
+│       ├── __init__.py
+│       ├── cond_volume_surge.py
+│       ├── cond_moving_average.py
+│       ├── cond_rsi.py
+│       ├── cond_price_momentum.py
+│       ├── cond_new_high.py
+│       ├── cond_bollinger_bands.py  # NEW
+│       ├── cond_stochastic.py       # NEW
+│       ├── cond_macd.py             # NEW
+│       ├── cond_obv.py              # NEW
+│       └── cond_cci.py              # NEW
+│
+├── backtest/
+│   ├── __init__.py
+│   ├── backtest_runner.py           # Full tax/fee + survivorship warning
+│   └── data_loader.py
+│
+├── report/
+│   ├── __init__.py
+│   ├── telegram_sender.py           # With cooldown deduplication
+│   ├── daily_report.py
+│   └── monthly_report.py            # Accurate last-business-day check
+│
+├── journal/                         # Investment Journal (NEW)
+│   ├── __init__.py
+│   ├── journal_writer.py
+│   └── journal_template.py
+│
+├── settings/
+│   ├── app.yaml
+│   ├── presets/
+│   │   ├── conservative.yaml
+│   │   ├── neutral.yaml
+│   │   └── aggressive.yaml
+│   └── secrets.yaml.example
+│
+├── utils/
+│   ├── __init__.py
+│   ├── time_utils.py
+│   ├── file_utils.py                # Thread-safe JSON I/O with filelock
+│   └── logger.py
+│
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_conditions.py
+│   ├── test_trading.py
+│   └── test_backtest.py
+│
+├── data/                            # Runtime data (auto-created)
+│   ├── trade_log.json
+│   ├── holdings.json
+│   ├── pending_orders.json          # For async fill checking
+│   ├── token_cache.json             # chmod 600
+│   ├── alert_history.json
+│   └── backtest/                    # CSV files: {stock_code}.csv
+│
+├── logs/
+│
+├── investment_journal/              # Investment journal files (NEW)
+│   ├── journal_YYYYMM.xlsx
+│   └── positions_YYYYMMDD.json
+│
+└── docs/
+    ├── INSTALL.md
+    ├── USAGE.md
+    ├── SETTINGS_GUIDE.md
+    ├── CONDITIONS_GUIDE.md
+    ├── HOW_TO_ADD_CONDITION.md
+    ├── BACKTEST_GUIDE.md
+    ├── POST_RUN_CHECKLIST.md
+    ├── AI_CODE_SAFETY_CHECKLIST.md
+    └── PROMPT.md
+
+
+════════════════════════════════════════════════════════════════
+SECTION 4. CODE QUALITY & TESTING REQUIREMENTS (STRICT)
+════════════════════════════════════════════════════════════════
+
+4-1. Every Python File Must Include
+  - Module-level docstring (purpose, main classes/functions)
+  - Per-function docstring (Parameters / Returns / Raises)
+  - Complete type hints (Python 3.11, from __future__ import annotations)
+  - Inline comments explaining WHY, not just WHAT
+  - File header: filename, role, key dependencies
+
+4-2. General Code Rules
+  - NO global variables (pass all state via function arguments)
+  - All config values from settings/app.yaml or .env only
+  - All numeric/string constants in api_constants.py or settings
+  - NO hardcoding whatsoever
+  - API logic EXISTS ONLY in api/ folder (trading/ and screening/ must not know API internals)
+
+4-3. Error Handling Principles
+  - All external calls (API, file I/O, JSON): try-except mandatory
+  - On exception: log → return safe default (do NOT kill process)
+  - sys.exit(1) only for fatal errors: token failure, missing required config
+  - Fail-fast: detect config errors at startup before any trading
+
+4-4. Testing Requirements
+  - pytest-based, shared fixtures in tests/conftest.py
+  - All order API calls: unittest.mock.MagicMock
+  - Condition score tests: boundary / normal / edge cases
+  - Backtest tests: stop-loss, take-profit, max-holding scenarios
+
+
+════════════════════════════════════════════════════════════════
+SECTION 5. SECURITY HARDENING
+════════════════════════════════════════════════════════════════
+
+5-1. Secret Management (.env + python-dotenv)
+  - .env file format:
+      KIS_APP_KEY=your_app_key_here
+      KIS_APP_SECRET=your_app_secret_here
+      TELEGRAM_BOT_TOKEN=your_bot_token_here
+      TELEGRAM_CHAT_ID=your_chat_id_here
+  - .env MUST be in .gitignore
+
+5-2. utils/config_loader.py Load Priority
+  1. OS environment variables (os.environ)
+  2. .env file (python-dotenv)
+  3. If still not found: raise ValueError with clear message
+
+5-3. File Permission Management
+  - data/token_cache.json: chmod 600 applied automatically after token file creation
+  - .env file: chmod 600 (documented in INSTALL.md)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 6. KIS REST API SPECIFICATION
+════════════════════════════════════════════════════════════════
+
+6-1. api/token_manager.py
+  - OAuth2 auto-refresh logic matching KIS requirements
+  - Cache to data/token_cache.json (chmod 600)
+  - Race condition prevention via filelock:
+      with FileLock("data/token_cache.lock"):
+          [read/write token]
+
+6-2. api/kis_api.py – Client
+  - Contains ONLY API communication logic
+  - Key methods:
+      get_price_info(code) → dict
+      get_daily_candles(code, count) → list
+      get_stock_list(market, sort, count) → list
+      get_balance() → dict
+      get_today_trades() → list
+      send_buy_order(code, qty, price, order_type) → dict
+      send_sell_order(code, qty, price, order_type) → dict
+      cancel_order(order_no, code, qty) → bool
+      check_order_status(order_no) → dict
+      log_api_stats() → None
+  - API call counter: log total calls per run
+  - Retry logic: max 3 attempts, 1-second interval
+
+
+════════════════════════════════════════════════════════════════
+SECTION 7. DUPLICATE ORDER PREVENTION + ASYNC FILL CONFIRMATION
+════════════════════════════════════════════════════════════════
+
+7-1. Process Lock
+  - runner.py acquires data/runner.lock via filelock at startup
+  - Timeout: 1 second — if already locked, sys.exit(0) immediately
+
+7-2. Thread-Safe JSON I/O (utils/file_utils.py)
+  - All JSON file reads/writes protected by filelock
+  - Functions: load_json_locked(path), save_json_locked(path, data)
+
+7-3. Pre-Order Balance Check (trading/buy.py)
+  - Re-query balance before EACH stock order (reflects prior buys)
+  - Condition: available >= qty × price + min_available_buffer
+
+7-4. Asynchronous Fill Confirmation (trading/order_manager.py)
+  - DO NOT poll or sleep. NO blocking the execution thread.
+  - After placing an order, save order details to data/pending_orders.json.
+  - On the NEXT 15-minute cron execution, runner.py must FIRST call `order_manager.check_pending_orders()`.
+  - If a pending order is FILLED: update trade_log, update holdings.json, and send telegram alert.
+  - If a pending order is UNFILLED after 15 minutes: cancel the order via API, remove from pending_orders, and send telegram warning.
+
+
+════════════════════════════════════════════════════════════════
+SECTION 8. SCREENING SYSTEM
+════════════════════════════════════════════════════════════════
+
+(Remain consistent with previous setup: 10 condition files, market filter, dynamic score aggregation logic.)
+* Note: Each condition file strictly follows the common interface and calculation logic outlined.
+
+
+════════════════════════════════════════════════════════════════
+SECTION 9. BUY LOGIC (trading/buy.py)
+════════════════════════════════════════════════════════════════
+
+9-1. Execution Steps (Asynchronous)
+  1) Check market regime filter → return if blocked
+  2) Run screening → sorted candidate list (highest score first)
+  3) Query account balance
+  4) Check current holding count → return if at max_holding_count
+  5) Exclude stocks already bought today (trade_log check)
+  6) Exclude currently held stocks (holdings.json check)
+  7) For each candidate stock:
+     (a) Re-query balance → check available funds
+     (b) Calculate qty: qty = buy_amount_per_stock // price
+     (c) Execute order (send_buy_order)
+     (d) Record order to pending_orders.json for async fill checking on next run.
+
+
+════════════════════════════════════════════════════════════════
+SECTION 10. SELL LOGIC (trading/sell.py)
+════════════════════════════════════════════════════════════════
+
+10-1. Sell Priority (evaluated in order)
+  Priority 1: Stop-loss  (profit_pct <= stop_loss_pct)
+  Priority 2: Take-profit (profit_pct >= take_profit_pct)
+  Priority 3: Force close before market end (15:00+, intraday)
+  Priority 4: Consecutive down days (early stop-loss)
+  Priority 5: Bollinger Band sell signal
+  Priority 6: Other technical signals (MA break, RSI overbought, Stochastic overbought)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 11. INVESTMENT JOURNAL (journal/)
+════════════════════════════════════════════════════════════════
+
+(Remain consistent with Excel generation, update_holdings_sheet at 15:35, and month-end summaries via openpyxl.)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 12. PRESET SYSTEM
+════════════════════════════════════════════════════════════════
+
+(Three default presets: conservative.yaml, neutral.yaml, aggressive.yaml configured as previously specified.)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 13. BACKTEST ENGINE (backtest/)
+════════════════════════════════════════════════════════════════
+
+(Includes full cost calculation, survivorship bias warning, and JSON result structure.)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 14. DOCUMENTATION SPECIFICATION (docs/)
+════════════════════════════════════════════════════════════════
+
+(Include all 8 markdown files specifying setup, usage, settings, conditions, adding conditions, backtesting, and AI safety checklists.)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 15. REQUIREMENTS.TXT FULL SPEC
+════════════════════════════════════════════════════════════════
+
+  requests==2.31.0
+  PyYAML==6.0.1
+  python-dotenv==1.0.0
+  filelock==3.13.1
+  openpyxl==3.1.2
+  pytest==7.4.3
+  pytest-cov==4.1.0
+
+
+════════════════════════════════════════════════════════════════
+SECTION 16. ADDITIONAL IMPROVEMENTS
+════════════════════════════════════════════════════════════════
+
+(Max holding period, sector limit, spread check, daily loss limit pause, reinvestment option, dynamic log level, telegram backtest results.)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 17. RUNNER.PY EXECUTION FLOW
+════════════════════════════════════════════════════════════════
+
+  [START]
+  → Parse argparse args
+  → Acquire process lock via filelock (1-second timeout)
+  → load_config()
+  → Mode branching:
+      --backtest: backtest_runner.run_backtest()
+      --check-monthly: is_last_business_day() → monthly_report()
+      --update-journal: journal_writer.update_holdings_sheet()
+      live/paper (default):
+        1. order_manager.check_pending_orders() (Resolve async previous orders)
+        2. market_filter.is_market_buyable()
+        3. is_market_open():
+           sell.run_sell() → buy.run_buy()
+        4. is_report_time(): daily_report.send_daily_report()
+  → api_client.log_api_stats()
+  → Normal exit (sys.exit(0))
+
+  Execution Principles:
+  - NO while True. NO sleep-based waiting.
+  - Maximum runtime: under 14 minutes (within 15-minute cron window).
+
+
+════════════════════════════════════════════════════════════════
+SECTION 18. FINAL OUTPUT CHECKLIST
+════════════════════════════════════════════════════════════════
+
+All files to generate:
+[Entry point] runner.py
+[api/] api/__init__.py, api/kis_api.py, api/api_constants.py, api/token_manager.py
+[trading/] trading/__init__.py, trading/buy.py, trading/sell.py, trading/order_manager.py
+[screening/] (all 10 condition files + core logic)
+[backtest/] backtest/__init__.py, backtest/backtest_runner.py, backtest/data_loader.py
+[report/] report/__init__.py, report/telegram_sender.py, report/daily_report.py, report/monthly_report.py
+[journal/] journal/__init__.py, journal/journal_writer.py, journal/journal_template.py
+[settings/] settings/app.yaml, settings/presets/*.yaml
+[utils/] utils/__init__.py, utils/time_utils.py, utils/file_utils.py, utils/logger.py
+[tests/] (pytest files)
+[Root] requirements.txt, .env.example, .gitignore, README.md
+[docs/] (all markdown documentation files)
+
+
+════════════════════════════════════════════════════════════════
+SECTION 19. FINAL CONSTRAINTS & CLAUDE CODE INSTRUCTIONS
+════════════════════════════════════════════════════════════════
+
+- NEVER provide example code only — generate complete runnable code
+- Every Python file must include detailed comments
+- NO global variables
+- API logic ONLY in api/ folder
+- NO hardcoding
+- NO infinite loops (NO while True, NO sleep-based waiting)
+- All order functions MUST branch on live/paper mode
+- Backtest MUST always print survivorship bias warning
+- .env MUST NOT contain actual API keys/tokens in committed code
+
+[CRITICAL FOR CLAUDE CODE / AI AGENT]
+Do NOT generate all files at once. Please generate the project iteratively and step-by-step to avoid context limits.
+1. Start with the core project structure, `requirements.txt`, `.gitignore`, and base configuration files.
+2. Run `git add` and `git commit` to save the state.
+3. Pause and ask for my approval before moving to the next section.
+4. Ensure that subsequent code generation referencing previously created files accurately understands the established context.
+================================================================
+END OF PROMPT V3 (ENGLISH)
+================================================================
