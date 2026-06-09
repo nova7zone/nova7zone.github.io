@@ -213,7 +213,6 @@ Linux instance-lab 6.1.0-28-generic #49-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Li
 
 Free Tier에서 ARM 자원이 부족하다면 AMD로 전환하는 게 현실적인 해결책이다. 메모리가 6GB → 1GB로 줄어들지만, AI 매매 시스템의 신호 생성과 주문 실행 정도는 1GB로도 충분히 돌아간다.
 
-다음 글에서는 이 서버 위에 실제 자동매매 환경을 구축하는 과정을 다룬다.
 
 ---
 
