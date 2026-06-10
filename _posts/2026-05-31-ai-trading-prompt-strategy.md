@@ -112,8 +112,3 @@ description: Claude로 시작해서 토큰이 부족하면 ChatGPT와 Gemini로 
 - [KIWOOM_TRADING_PROMPT_V3_KR.txt](/downloads/prompts/KIWOOM_TRADING_PROMPT_V3_KR.txt) — 한글 프롬프트 V3
 - [KIWOOM_TRADING_PROMPT_V3_EN.txt](/downloads/prompts/KIWOOM_TRADING_PROMPT_V3_EN.txt) — 영문 프롬프트 V3
 
----
-
-## 다음 단계
-
-다음 글에서는 Gemini의 프롬프트 검토 결과를 바탕으로 증권사 API를 한국투자증권(KIS)으로 확정하고, V4 프롬프트를 완성하는 과정을 기록한다.
