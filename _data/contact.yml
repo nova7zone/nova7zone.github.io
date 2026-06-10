@@ -3,8 +3,9 @@
 - type: github
   icon: "fab fa-github"
 
-- type: twitter
-  icon: "fa-brands fa-x-twitter"
+- type: telegram
+  icon: "fab fa-telegram"
+  url: "https://t.me/evan7zone"
 
 - type: email
   icon: "fas fa-envelope"
