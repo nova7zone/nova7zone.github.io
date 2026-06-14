@@ -180,7 +180,7 @@ Private IPv4 주소는 자동 할당으로 설정했다.
 |------|-----|
 | Name | instance-lab |
 | State | **Running** |
-| Public IP | 134.185.109.162 |
+| Public IP | (서버 IP) |
 | Private IP | 10.0.0.130 |
 | Shape | VM.Standard.E2.1.Micro |
 | OCPU | 1 |
@@ -193,7 +193,7 @@ Private IPv4 주소는 자동 할당으로 설정했다.
 
 ```bash
 chmod 600 private_key.pem
-ssh -i private_key.pem ubuntu@134.185.109.162
+ssh -i private_key.pem ubuntu@<서버 IP>
 
 # 접속 후 확인
 $ uname -a

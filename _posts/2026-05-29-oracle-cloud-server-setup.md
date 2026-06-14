@@ -84,7 +84,7 @@ Oracle Cloud에서 받은 `.key` 파일은 PuTTY가 직접 읽지 못한다. **P
 ### SSH 접속
 
 ```
-호스트: 168.110.107.113 (Reserved IP)
+호스트: <서버 IP> (Reserved IP)
 포트: 22
 인증: 위에서 생성한 .ppk 파일
 초기 사용자: ubuntu
@@ -174,7 +174,7 @@ FileZilla 실행 → **파일 > 사이트 관리자** → 새사이트 추가
 |------|-----|
 | 사이트 이름 | nova_lab |
 | 프로토콜 | SFTP |
-| 호스트 | 168.110.107.113 |
+| 호스트 | <서버 IP> |
 | 포트 | 22 |
 | 로그온 유형 | 키 파일 |
 | 사용자 | ubuntu |
@@ -197,7 +197,7 @@ ls -la /path/to/uploaded/file
 
 | 항목 | 완료 |
 |------|------|
-| 고정 IP (Reserved) | ✅ 168.110.107.113 |
+| 고정 IP (Reserved) | ✅ (서버 IP) |
 | SSH 접속 (PuTTY) | ✅ ubuntu / root |
 | 가상 메모리 | ✅ Swap 4GB |
 | SFTP 연결 | ✅ FileZilla |

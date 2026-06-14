@@ -142,13 +142,13 @@ sudo ufw enable
 
 14. 정상적으로 웹서버 접속
 
-15 접속 사이트 : http://168.110.107.113:8080/
+15 접속 사이트 : http://<서버 IP>:8080/
 
- 
+
 초기 설정 — KIS 트레이딩
-① Google Authenticator 앱에서 QR 코드를 스캔하세요 QR 코드가 안 보이면 수동 입력 YVCMJTUFWR4NSTEERPJWTFCVA3DXPOBT ② 비밀번호를 설정하세요 비밀번호 (8자 이상) 비밀번호 확인 ③ 앱에 표시된 6자리 코드를 입력해 확인하세요 설정 완료
+① Google Authenticator 앱에서 QR 코드를 스캔하세요 QR 코드가 안 보이면 수동 입력 [REDACTED-TOTP-SECRET] ② 비밀번호를 설정하세요 비밀번호 (8자 이상) 비밀번호 확인 ③ 앱에 표시된 6자리 코드를 입력해 확인하세요 설정 완료
 
-168.110.107.113
+<서버 IP>
 
 16. OCI_QUICKSTART.md 의 4-3 까지 실행 완료
 
