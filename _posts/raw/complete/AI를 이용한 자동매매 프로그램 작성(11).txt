@@ -1,0 +1,177 @@
+AI를 이용한 자동매매 프로그램 작성(11)
+
+프로파일
+ Evan ・ 2026. 6. 2. 13:32 ・ 비공개
+URL 복사  통계 
+본문 기타 기능
+Harness engineering 방법 사용을 위해 claude.md 수정 요청
+
+아래 플러그인 설치 후 재 업데이트
+
+각 플러그인이 실제로 무엇인지 먼저 확인할게요.
+
+------------------------------------
+
+각 플러그인이 이 프로젝트에 실제로 어떤 가치를 주는지 분석해드릴게요.
+
+각 플러그인 평가 (kis-auto-trading-bot 기준)
+
+1. superpowers ★★★ 필수
+
+clarify → design → plan → code → verify 5단계 강제 규율. 실거래 봇에서 가장 중요 — "일단 코딩" 실패 패턴을 막아줌. 매매 로직 수정 전에 설계를 먼저 검토하게 됨.
+
+2. claude-hud ★★ 있으면 좋음
+
+컨텍스트 사용량·툴 활동을 터미널에 실시간 표시. 긴 세션에서 컨텍스트가 꽉 찰 때를 미리 파악 가능. 기능 개발보다 모니터링 목적.
+
+3. harness (claude-code-harness) ★★ 선택적
+
+/harness-plan, /harness-work, /harness-review 슬래시 커맨드 제공. 이미 CLAUDE.md로 harness 구조를 만들었으므로 중복되는 부분이 있음. 팀 작업이라면 가치 있고, 혼자라면 superpowers로 충분.
+
+4. Context7 MCP ★★★ 필수
+
+실시간 최신 문서를 컨텍스트에 주입. 이 프로젝트에서 직접적으로 유용한 경우:
+
+FastAPI 라우터 작성 시
+
+SQLite/sqlite3 쿼리 작성 시
+
+KIS REST API 스펙 확인 시
+
+
+AI를 이용한 자동매매 프로그램 제작(12)
+
+프로파일
+ Evan ・ 2026. 6. 2. 13:54 ・ 비공개
+URL 복사  통계 
+본문 기타 기능
+
+ 
+야호의 블로그 : 네이버 블로그
+자기소개가 없습니다.
+
+blog.naver.com
+
+AI를 이용한 자동매매 프로그램 제작(8) 에 이어서 서버에 설치
+
+시작
+
+-------------------------------------
+
+# 1. 프로젝트 폴더로 이동
+
+cd ~/trader/kis-auto-trading-bot
+
+​
+
+# 2. 가상환경 활성화 (안되어 있을 경우)
+
+source venv/bin/activate
+
+​
+
+# 3. 최신 코드 받아오기
+
+git pull origin master
+
+------------------------------------------
+
+3. 패키지 설치 완료(2-2 완료)
+
+   pip install -r ./requirements.txt
+
+4. .env 파일 생성(kis, 텔레그램 등 api 입력)
+
+5. crontab 수정 및 /etc/crontab 저장 완료
+
+6. 웹서버 구축
+
+    pip install -r requirements-web.txt
+
+7. .env 파일에 세션 시크릿 코드 삽입
+
+8. 웹서버 임시 실행을 했는데 에러 발생
+
+    pip install itsdangerous fastapi starlette
+
+9. 웹서버 임시 실행 됨
+
+10. Oracle 서버 설정
+
+     링크 : https://cloud.oracle.com/networking/vcns/ocid1.vcn.oc1.ap-chuncheon-1.amaaaaaawyosyxqaew6rs7qfkzsgiwdnpjkp4vfcywroqwhej5ol37zzyspq/security-lists/ocid1.securitylist.oc1.ap-chuncheon-1.aaaaaaaa42iuveuhpy7lnagdc7dhtt632zpc2b5x65mjgl3cw4kvfhsjklxa/security-rules?region=ap-chuncheon-1
+
+ 
+cloud.oracle.com
+cloud.oracle.com
+
+Stateless:          체크 해제
+
+Source Type:        CIDR
+
+Source CIDR:        123.456.789.000/32  ← 본인 IP
+
+IP Protocol:        TCP
+
+Source Port Range:  All
+
+Dest Port Range:    8080
+
+​
+
+11. 포트 활성화
+
+# 1. SSH 포트 먼저 열기 (접속 끊김 방지!) 
+
+sudo ufw allow 22/tcp 
+
+# 2. 8080 포트 열기 
+
+sudo ufw allow 8080/tcp 
+
+# 3. ufw 활성화 
+
+sudo ufw enable
+
+12. 웹서버의 middle ware 가 문제가 발생해서 ./web/main.py 전면 수정
+
+13. IP table 문제였음.
+
+     sudo iptables -I INPUT 1 -p tcp --dport 8080 -j ACCEPT 
+
+     sudo iptables -I INPUT 1 -p tcp --dport 80 -j ACCEPT
+
+14. 정상적으로 웹서버 접속
+
+15 접속 사이트 : http://168.110.107.113:8080/
+
+ 
+초기 설정 — KIS 트레이딩
+① Google Authenticator 앱에서 QR 코드를 스캔하세요 QR 코드가 안 보이면 수동 입력 YVCMJTUFWR4NSTEERPJWTFCVA3DXPOBT ② 비밀번호를 설정하세요 비밀번호 (8자 이상) 비밀번호 확인 ③ 앱에 표시된 6자리 코드를 입력해 확인하세요 설정 완료
+
+168.110.107.113
+
+16. OCI_QUICKSTART.md 의 4-3 까지 실행 완료
+
+​
+
+​
+
+웹서버 정리
+
+​
+
+✅ Oracle Cloud VM 설정 
+
+✅ GitHub Private 저장소 clone 
+
+✅ Python venv 가상환경 구성 
+
+✅ 패키지 설치 (requirements.txt) 
+
+✅ SessionMiddleware 문제 해결 
+
+✅ OCI Security List 포트 개방 
+
+✅ iptables 방화벽 설정 
+
+✅ 웹서버 외부 접속 성공!

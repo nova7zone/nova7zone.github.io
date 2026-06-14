@@ -1,0 +1,115 @@
+AI  를 이용한 자동매매 구축(13)
+
+프로파일
+ Evan ・ 2026. 6. 2. 18:00 ・ 비공개
+URL 복사  통계 
+본문 기타 기능
+systemd 서비스 등록 (상시 실행) 실시
+
+sudo systemctl start kis-web 등록 중 에러 발생
+
+/etc/systemd/system/kis-web.service 의 경로가 잘못되어 수정함
+
+재 시작 후 동작함
+
+   sudo systemctl daemon-reload 
+
+   sudo systemctl restart kis-web 
+
+   sudo systemctl status kis-web
+
+​
+
+4. WEBSERVICE_DEPLOY.md 수행
+
+5. Phase 4 — nginx + HTTPS 설정 (선택)
+
+6. nginx 설치
+
+7. 도메인 없이 IP 직접 접근 (간단한 방법)
+
+8. OCI_QUICKSTART.md 의 step 5 수행 필요
+
+
+AI 를 이용한 자동매매 프로그램 구축(14)
+
+프로파일
+ Evan ・ 2026. 6. 4. 8:58 ・ 비공개
+URL 복사  통계 
+본문 기타 기능
+Claude.md 파일을 수정하여 시작 절차와 종료 절차 간단히 할 수 있도록 작성(참고: https://blog.naver.com/seungguk/224302580654 )
+
+오늘의 할일 전달
+
+오늘의 할일이야. 
+
+     - OCI_Quckstart.md 에 설치와 관련된 문서를 확인하여 순서상 이전 문서와 중복된 내용의 경우 문서 출처 및 중복 표기 
+
+     - OCI_Quckstart.md 에 문서 읽기 순서 부분에 나머지 모든 문서의 링크를 추가함.단 서버에 설치와 관련없는 문서는 참고 문서로 함. 
+
+     - 모든 문서(설명자료 md 파일) 최신화 
+
+     - 현 프로그램에 대한 워크플로어 요청
+
+4. 워크플로어의 요청에 대하여 비주얼을 보여 줄 필요가 있어 플러그 인 자동 설치 됨
+
+     C:/Users/KTR/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/scripts/start-server.sh --project-dir "h:/개인자료/claude/kis-auto-trading-bot"
+
+5. 오늘의 할일 작업 진행
+
+
+AI 를 이용한 자동매매 프로그램 구축(15)
+
+프로파일
+ Evan ・ 2026. 6. 4. 9:55 ・ 비공개
+URL 복사  통계 
+본문 기타 기능
+서버의 로그 기록 확인 - 실행이 되지 않음
+
+파악 : crontab 의 폴더명이 잘못 되어 있었음.
+
+crontab 수정
+
+15분마다 매매 실행 (평일 09:00~15:30)
+
+*/15 9-15 * * 1-5 ubuntu /home/ubuntu/trader/kis-auto-trading-bot/venv/bin/python3 /home/ubuntu/trader/kis-auto-trading-bot/runner.py >> /home/ubuntu/trader/kis-auto-trading-bot/logs/cron.log 2>&1
+
+16:00 일간 리포트
+
+0 16 * * 1-5 ubuntu /home/ubuntu/trader/kis-auto-trading-bot/venv/bin/python3 /home/ubuntu/trader/kis-auto-trading-bot/runner.py --report-daily >> /home/ubuntu/trader/kis-auto-trading-bot/logs/cron.log 2>&1
+
+17:00 월간 리포트 확인 (마지막 영업일에만 발송)
+
+0 17 * * 1-5 ubuntu /home/ubuntu/trader/kis-auto-trading-bot/venv/bin/python3 /home/ubuntu/trader/kis-auto-trading-bot/runner.py --check-monthly >> /home/ubuntu/trader/kis-auto-trading-bot/logs/cron.log 2>&1
+
+15:35 투자 일지 보유현황 업데이트
+
+35 15 * * 1-5 ubuntu /home/ubuntu/trader/kis-auto-trading-bot/venv/bin/python3 /home/ubuntu/trader/kis-auto-trading-bot/runner.py --update-journal >> /home/ubuntu/trader/kis-auto-trading-bot/logs/cron.log 2>&1 (venv) ubuntu@nova-vnic:~/trader/kis-auto-trading-bot/logs$
+
+4. 일단 임시 실행으로 수행 되는 것을 확인 하였음. crontab 실행 여부 확인 필요.
+
+   /home/ubuntu/trader/kis-auto-trading-bot/venv/bin/python3 /home/ubuntu/trader/kis-auto-trading-bot/runner.py
+
+5. crontab 실핼 결과 오류 발생 app.yaml 을 찾지 못함. runner.py 수정
+
+  import os os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+6. 토큰 발급 문제로 실행이 안됨(KIS 서버에서 1일 1회 방행) - 다음날 확인 필요
+
+7. 다음에 토큰 발행 문제로 인하여 실행이 어려울 경우 dry-run 옵션을 이용하여 프로그램의 작동 문제 확인을 할 수 있도록 코드 수정
+
+8. 일간 및 월간 보고서 md 파일로 제작 요청 및 obsidian 폴더에 동시 저장 루틴 추가
+
+AI를 이용한 자동매매 프로그램 구축(16)
+
+프로파일
+ Evan ・ 2026. 6. 5. 13:05 ・ 비공개
+URL 복사  통계 
+본문 기타 기능
+설정에서 report 파일을 구글드라이브와 연동에 대하여 on off 결정하기
+
+crontab 실행시 매수 조건에 따른 매수 대상 종목 확인을 위한 기록 여러개의 종목이 선정 되는지 종목이 없는지 확인
+
+paper 모드 및 live 모드시 초기자금 확인 방법, 설정이 없을 경우 예치금으로 하고 수익률 기본 자금으로 설정
+
+md 파일에 python 버전에 맞도록 실행 명령어 확인 prthon 인지 python3인지 통일
