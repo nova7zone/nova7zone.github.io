@@ -127,6 +127,7 @@ description: SEO용 한 줄 요약. 핵심 내용과 결과를 포함한다.
 
 ## 작업 흐름
 
+0. **세션 시작 시** 저장소 루트의 `WORK_LOG.md`를 먼저 읽고 이전 세션에서 어디까지 진행했는지 확인한다.
 1. `_posts/raw/` 폴더 및 하위 자료를 확인 (처리 완료된 자료는 `_posts/raw/complete/` 로 이동)
 2. 자료에 추가 될 수 있는 자료 확보 및 post 작성
 3. `_posts/YYYY-MM-DD-slug.md` 파일 생성 후 `_posts/draft/` 에 저장
@@ -135,6 +136,7 @@ description: SEO용 한 줄 요약. 핵심 내용과 결과를 포함한다.
 6. post 내용 확인 질문
 7. 확인 완료 후 커밋: `feat: add post {slug}` 형식
 8. `main` 브랜치 push → GitHub Actions가 자동 배포
+9. **작업 종료 시** `WORK_LOG.md`에 이번 세션 요약("한 일"/"현재 상태"/"다음에 할 일")을 갱신한다.
 
 ---
 
