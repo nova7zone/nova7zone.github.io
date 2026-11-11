@@ -400,9 +400,19 @@
       b.setAttribute("aria-expanded", open ? "true" : "false");
       b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
     });
+    function close() {
+      nav.classList.remove("menu-open");
+      b.setAttribute("aria-expanded", "false");
+      b.setAttribute("aria-label", "메뉴 열기");
+    }
     menu.addEventListener("click", function (e) {
-      if (e.target.closest("a")) nav.classList.remove("menu-open");
+      if (e.target.closest("a")) close();
     });
+    
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && nav.classList.contains("menu-open")) { close(); b.focus(); }
+    });
+    window.matchMedia("(min-width: 769px)").addEventListener("change", function (m) { if (m.matches) close(); });
   })();
 </script>
 
