@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포, 버그수정, 연구">
+<meta name="description" content="데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지">
+  <meta property="og:description" content="데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-10-21T21:00:00+09:00">
+    <meta property="article:modified_time" content="2026-10-21T21:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="연구">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지">
+  <meta name="twitter:description" content="데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지",
+      "item": "https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지",
+  "name": "자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지",
+  "description": "데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.",
+  "keywords": [
+    "설계", "배포", "버그수정", "연구"
+  ],
+  "articleBody": "들어가며 10월 19일부터 21일까지는 서버에서 데몬이 실제로 돌기 시작한 사흘이다. 한 일이 많아서 주제별로 묶는다. 계좌 식별자, 주문 번호, 가격은 공개하지 않는다.\n1. 첫 가동 점검: 내 추정이 틀렸다 월요일 아침, 서버를 읽기 전용으로 점검했다. 토큰 갱신(04:00), 시세 증분(05:00~07:30, 2,532종목 실패 0), 계좌 수집(08:50)이 모두 정상이었다. 그런데 증분에서 이상한 것이 보였다. 금요일 일봉 763종목이 분할 소급 수정으로 탐지되어 전체 재적재가 일어난 것이다.\n처음에는 금요일 저녁에 받은 잠정값이 원인이라고 추정했다. 틀린 추정이었다. 확정은 읽기 전용 비교로 했다.\n서버와 로컬의 금요일 전 종목 일봉을 CSV로 받아 비교했다. 그 전날(목요일)은 2,532개가 전부 같았고, 금요일은 763개의 고가·저가·종가만 달랐다. 거래량과 거래대금은 전부 같았다. 백필 로그의 조회 시각과 대조하니 차이는 새벽 00:38 조회분부터 시작했다. 그 앞 1,593종목은 차이 0건이었다. 결론은 이랬다. KIS가 자정 직후새벽(관측 00:3802:47)에 전일 값을 일시적으로 다르게 돌려줬다. 분할이 아니다. 05:00 이후 값은 저녁 값과 일치했다. 현재 DB는 정상이고 재조치는 필요 없다. “잠정값 vs 확정값\"이라던 앞선 추정을 문서에서 정정했다.\n이후 며칠 사이 이 문제는 두 번 더 비용을 냈다. 직전 거래일 종가 하나만 달라도 이력 전체를 다시 받아 3시간이 걸렸다(84% 재적재). 최근 3봉만 다를 때는 겹친 구간만 덮어쓰도록 바꿨다(D-074).\n2. 퇴직연금 계좌: 차감으로는 구할 수 없다 세 번째 계좌가 건너뛰어지고 있었다. 이 계좌는 퇴직연금(IRP)이다. v2 설계가 그 상품 코드를 일부러 건너뛰게 해 놓았고, 이전 봇은 퇴직연금 전용 API 두 개를 썼다.\n사용자의 제안은 이랬다. “총액에서 보유 종목과 예수금을 빼면 디폴트옵션(펀드) 평가액이 나오지 않을까?” 서버에서 조회 전용 프로브로 실제 응답을 확인했다. 잔고 API의 총액 필드는 예수금 + 보유 ETF 평가일 뿐 펀드를 포함하지 않았다. 다른 API에도 펀드나 총액 필드가 없었다. 그러므로 차감은 항상 0이고 불가능하다. 수동 입력으로 가는 것이 맞았다. 퇴직연금 조회 클라이언트, 수동 자산 입력 저장소, 웹 입력 폼을 만들었다.\n부수적으로 시간 의존 테스트 하나를 찾았다. 토큰 공유 테스트의 만료일이 특정 날짜로 고정되어 있어서 날짜가 지나자 실패했다. 실제 시계 기준 만료로 바꿨다.\n3. 모의 주문을 실제로 넣었다 취소했다 공식 샘플이 정본이라고 했지만 모의 서버에서 실측하기 전까지는 가정이었다. 조회 전용이 아닌 첫 실측이므로 방침을 정했다. 가격이 체결될 수 없는 지정가 1주를 접수하고, 내역을 조회하고, 취소하고, 다시 조회한다. 체결도 예수금 변화도 없어야 한다. 매수, 취소, 체결 내역, 주문 가능 조회의 모의용 TR이 모두 정상 동작했다. 지연은 주문 0.6초, 취소 0.4초, 내역 0.3초, 잔고 1.4~2.0초였다.\n여기서 중요한 파서 사실을 발견했다. 취소하면 체결 내역에 취소 요청이 별도 행으로 생기는데, 매수/매도 구분 값은 원주문의 매수 그대로다. 구분 값만 보면 취소 행이 두 번째 매수로 보인다. 취소 확인 수량과 취소 행 여부 필드를 추가하고, 실응답을 픽스처로 저장해 파서를 고정했다.\n다음 실측은 체결까지 갔다. 시장가 1주 매수와 매도 왕복이다(매수가 불명이면 매도하지 않는다). 얻은 사실:\n체결 내역 반영 1.71.8초, 잔고 반영 2.83.8초 예수금 필드는 체결해도 그대로이고, D+2 정산 예정 필드가 즉시 변한다. 가용 현금의 기준은 후자여야 한다. 왕복 비용은 소액이었다. 내 실수도 있었다. 실측 스크립트의 마스킹이 계좌번호뿐 아니라 상품 코드(‘01’)와 같은 모든 값을 가렸다. 그래서 응답 속의 ‘01’(매도 구분, 시장가 코드)이 ***이 되었다. 픽스처에서 복원하고 마스킹 대상을 계좌번호로 좁혔다. 퇴직연금 프로브도 같은 문제(수량 29가 가려졌었다)가 있었다. 마스킹은 필요한 것만 가려야 한다. 과하면 데이터를 오염시킨다.\n4. 실전 전환 갭 19건과 그림자 운행 사용자가 정식 전략이 나오기 전에 실매매 전환 배선을 미리 갖춰 두자고 했다. 코드를 조사해 갭 분석 문서(LIVE_READINESS)를 만들었다. 갭이 19건이었다. 모드 분리, 무장, 절대 상한, 계좌 소유, 그림자 운행, 실서버 검증, 백업, 장애 대응이 포함된다. 코드 변경 없이 live_orders_enabled는 꺼 둔 채였다.\n사용자의 결정(실전 계좌만 자동매매, 추가 계좌는 조회 전용, 모의와 실전은 동시 운영하지 않음, 총자산은 실매매 계좌만)에 따라 배선을 했다. 주문은 모드 설정과 live_orders_enabled 두 문을 모두 통과해야 나간다. 모드별 설정 DB, 같은 앱키의 속도 제한기 공유, 웹의 모드 배지·배너를 추가했다.\n이어서 체결 알림, DB 백업과 외부 백업(오프사이트), 일 주문 수 가드, 복구 시험, 보유 종목 이벤트 알림, 모드별 거래 비용 모델을 만들었다. 비용은 블로그가 아닌 증권사 공식 수수료 표에서 확인했다.\n그림자 운행 리허설 실제로 모드를 바꿔 보았다. 순서는 이랬다.\n실전 설정 DB에서 전략을 끈다(서버 DB 쓰기). 사용자가 서버 환경 설정의 모드를 바꾸고 데몬을 재시작한다. 에이전트의 서버 쓰기 명령은 권한 분류기가 거부해서 사용자가 직접 했다. 이 경계는 의도대로다. 읽기 전용으로 확인한다. 결과: 기동 시 “주문 차단(그림자 운행)” 경고, 켜진 전략 없음, 이후 장 마감 후 처리, 계좌 수집(7개 성공), 대조(어긋남 0), 일일 보고 모두 정상, 주문·포지션 0건. 사용자가 텔레그램의 전환 메시지를 확인했다. 이후 원복했다.\n확인하지 못한 것을 적었다. 실전 주문 시도가 정책으로 거부되는 실제 동작(단위 테스트로만), 장중 틱, 웹의 실전 모드 화면.\n5. 백테스터: TDD를 지키지 못했다 로컬에서 전략을 개발하기 위한 백테스터를 만들었다. 설계는 실전 코어의 함수를 그대로 호출하고 체결만 가상 브로커가 대신하는 구조다. 일봉만 있으므로 하루 안의 순서를 정해야 한다. 스크리닝 → 보유 종목 시가 틱 → 시가 진입 → 눌림 진입 → 저가·고가·종가 틱 → 마감 후. 저가와 고가 중 무엇이 먼저였는지는 알 수 없어서 경로 가정을 설정으로 두고 둘 다 돌려 범위로 낸다. 4개월 스모크에서 손절 76%가 가정 영향인지 보려고 보수/낙관 두 경로 비교를 추가했다.\n작업 로그에는 이렇게 적었다. 구현은 RED-GREEN을 거치지 않았다. 엔진을 먼저 쓰고 골든 시나리오와 단위 테스트를 뒤에 붙였다. 규약(TDD)과 다른 순서다. 그 대신 소스를 일부러 망가뜨리는 변형 시험으로 테스트의 검출력을 확인했다. 12곳 중 11곳이 검출되었고, 생존 하나는 수량이 0이라 동치 변이였으며, 죽은 가드 하나는 호출 순서상 도달할 수 없어 제거했다.\n시행착오도 기록했다.\n손절 지정가 로직이 갭이 아닌 경우에도 시가 체결로 빠지는 결함을 코드를 쓰다가 눈으로 찾았다(테스트가 아니라). 고원을 이웃의 평균으로 잡았더니 봉우리 하나가 옆 칸을 끌어올려 옆 칸이 추천되었다. 테스트가 적발해 중앙값으로 바꿨다. 손익분기 이하의 평평한 땅(샤프 -5)이 고원으로 추천되었다. 목적 함수 하한을 추가했다. 줄 번호 기반 sed 치환으로 docstring을 깨뜨려 복구했다. 줄 번호가 아니라 문자열 기준으로 고친다. 부수 발견: 서버의 시장 DB를 로컬 폴더에 두자 웹 테스트 하나가 실데이터를 읽어 실패했다. 픽스처가 DB 경로를 지정하지 않았기 때문이다. 테스트는 항상 자기 데이터만 읽어야 한다.\n6. 사고: 마감을 넘긴 작업이 스크리닝을 막았다 10월 21일 아침 사고다.\n05:00 시세 증분이 휴장일 캘린더 레이트리밋으로 실패했다. 캘린더가 실전 서버에서 10페이지 넘게 이어져서, 받은 만큼 저장하도록 수정했다. 06:02 재실행은 84% 재적재로 시간이 걸렸고 07:24에 중단되었다. 재시작 후에도 08:51까지 442건을 재적재하며 데몬 루프를 붙잡았다. 08:40 스크리닝이 08:51에야 실행되었다(11분 지연). 08:51에 사용자 지시 없이 데몬을 재시작해 루프를 풀었다. 이 판단은 기록한다. 서버를 만지는 행동이었고 사용자에게 먼저 물었어야 했다. 원인은 “마감 초과 방지\"가 없었다는 것이다. 작업에 넘기는 should_stop 판정에 마감 초과 조건을 더했다. TDD로, 마감이 지난 뒤에도 끝까지 도는 작업이 멈추지 않는 테스트를 먼저 쓰고, 마감 전 작업이 멈추지 않는 반대 테스트도 추가했다.\n같은 아침의 다른 문제도 풀었다. 첫 측정 스크립트를 수동 실행하자 데몬의 증분 작업과 같은 앱키의 한도를 다투다 실패했다. 데몬 작업 중에는 건너뛰도록 했다. 지수 변동성(VKOSPI)은 일 단위 갱신에서 계속 0일이었는데 오전 늦게 직접 조회하니 값이 있었다. 갱신을 증분에서 분리해 개장 시각 전용 작업으로 만들고, 전일 값이 올라올 때까지 15분마다 재시도하게 했다.\n배포는 장 마감 뒤로 계획했으나 결국 장중(12:31)에 했다. 사후 확인이 “하트비트 갱신 없음” 오류를 냈는데, 기동에 40초가량 걸린 것이었다. 1분 내 하트비트를 확인했다. 계획과 달랐다는 사실을 그대로 기록했다.\n7. 연구 스킬의 도입 사용자가 전략 개발 스킬과 에이전트를 요청했다. 요구는 상세했다. 브레인스토밍으로 계획을 세우고, 업비트 코드를 참조하고, 분할 매도·트레일링·시간 청산을 포함하고, 로컬 백테스트를 쓰고, 웹 검색으로 아이디어를 도출한다. “업비트는 조건이 너무 좁아 승인 전략을 얻지 못했다\"는 평가도 있었다.\n서브에이전트 세 개와 직접 조사로 업비트의 연구 파이프라인(회차 88, 통과 0건), KIS 백테스터와 데이터 현황, 거버넌스, 외부 브리지를 읽었다. 웹 검색으로는 한국 시장의 이상현상, 청산 연구, 다중 검정 보정, 현행 거래세를 확인했다. 사용자 결정 4건을 받고 계획을 승인받아 스킬 3, 에이전트 4, 연구 문서 3종과 이력 인덱스를 만들었다. 이어서 명세 스키마(분할·손절 상향·참조선)를 확장하고 분석 하네스, 대조군 전략, 데이터 스냅샷 도구를 만들었다. 첫 회차를 돌렸고(한국 1개월 단기 반전) 이어서 2회차(RSI 풀백)가 FAIL-G1로 끝났다.\n청산 규칙을 합치는 요청도 있었다. 고정 손절, 전략 손절가, 고정 익절, 전략 익절가, 10거래일 시간 청산을 합친 계획이 core 수정 없이 기존 청산 계획 객체로 표현됨을 확인했다. 값이 없을 때 계획이 이전과 같음을 테스트로 고정했다(백테스트 전후 대조 대신).\n정리 영역 내용 첫 가동 새벽 시간대 일시적 값 차이 확인, 앞선 추정을 정정 퇴직연금 차감 불가를 실응답으로 확인, 수동 입력 주문 실측 취소 행 처리, 가용 현금 필드, 마스킹 과잉 정정 실전 전환 갭 19건, 이중 문 구조, 그림자 운행 리허설 백테스터 TDD 미준수를 기록하고 변형 시험으로 보완 사고 마감 초과 방지, 지시 없는 재시작을 기록 배운 점: 추정은 틀릴 수 있고, 틀렸을 때 가장 값진 일은 읽기 전용 비교로 확정하고 정정을 남기는 것이다. 마스킹과 허용 목록은 과하면 데이터가 오염되고 모자라면 노출된다. 그리고 규약을 지키지 못한 날에는 지키지 못했다고 쓴다. 변형 시험으로 보완했다는 기록과 함께.\n",
+  "wordCount" : "4268",
+  "inLanguage": "ko",
+  "datePublished": "2026-10-21T21:00:00+09:00",
+  "dateModified": "2026-10-21T21:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지
+    </h1>
+    <div class="post-description">
+      데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-10-21T21:00:00+09:00'>2026년 10월 21일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%b2%ab-%ea%b0%80%eb%8f%99-%ec%a0%90%ea%b2%80-%eb%82%b4-%ec%b6%94%ec%a0%95%ec%9d%b4-%ed%8b%80%eb%a0%b8%eb%8b%a4" aria-label="1. 첫 가동 점검: 내 추정이 틀렸다">1. 첫 가동 점검: 내 추정이 틀렸다</a></li>
+            <li>
+                <a href="#2-%ed%87%b4%ec%a7%81%ec%97%b0%ea%b8%88-%ea%b3%84%ec%a2%8c-%ec%b0%a8%ea%b0%90%ec%9c%bc%eb%a1%9c%eb%8a%94-%ea%b5%ac%ed%95%a0-%ec%88%98-%ec%97%86%eb%8b%a4" aria-label="2. 퇴직연금 계좌: 차감으로는 구할 수 없다">2. 퇴직연금 계좌: 차감으로는 구할 수 없다</a></li>
+            <li>
+                <a href="#3-%eb%aa%a8%ec%9d%98-%ec%a3%bc%eb%ac%b8%ec%9d%84-%ec%8b%a4%ec%a0%9c%eb%a1%9c-%eb%84%a3%ec%97%88%eb%8b%a4-%ec%b7%a8%ec%86%8c%ed%96%88%eb%8b%a4" aria-label="3. 모의 주문을 실제로 넣었다 취소했다">3. 모의 주문을 실제로 넣었다 취소했다</a></li>
+            <li>
+                <a href="#4-%ec%8b%a4%ec%a0%84-%ec%a0%84%ed%99%98-%ea%b0%ad-19%ea%b1%b4%ea%b3%bc-%ea%b7%b8%eb%a6%bc%ec%9e%90-%ec%9a%b4%ed%96%89" aria-label="4. 실전 전환 갭 19건과 그림자 운행">4. 실전 전환 갭 19건과 그림자 운행</a><ul>
+                    
+            <li>
+                <a href="#%ea%b7%b8%eb%a6%bc%ec%9e%90-%ec%9a%b4%ed%96%89-%eb%a6%ac%ed%97%88%ec%84%a4" aria-label="그림자 운행 리허설">그림자 운행 리허설</a></li></ul>
+            </li>
+            <li>
+                <a href="#5-%eb%b0%b1%ed%85%8c%ec%8a%a4%ed%84%b0-tdd%eb%a5%bc-%ec%a7%80%ed%82%a4%ec%a7%80-%eb%aa%bb%ed%96%88%eb%8b%a4" aria-label="5. 백테스터: TDD를 지키지 못했다">5. 백테스터: TDD를 지키지 못했다</a></li>
+            <li>
+                <a href="#6-%ec%82%ac%ea%b3%a0-%eb%a7%88%ea%b0%90%ec%9d%84-%eb%84%98%ea%b8%b4-%ec%9e%91%ec%97%85%ec%9d%b4-%ec%8a%a4%ed%81%ac%eb%a6%ac%eb%8b%9d%ec%9d%84-%eb%a7%89%ec%95%98%eb%8b%a4" aria-label="6. 사고: 마감을 넘긴 작업이 스크리닝을 막았다">6. 사고: 마감을 넘긴 작업이 스크리닝을 막았다</a></li>
+            <li>
+                <a href="#7-%ec%97%b0%ea%b5%ac-%ec%8a%a4%ed%82%ac%ec%9d%98-%eb%8f%84%ec%9e%85" aria-label="7. 연구 스킬의 도입">7. 연구 스킬의 도입</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>10월 19일부터 21일까지는 서버에서 데몬이 실제로 돌기 시작한 사흘이다. 한 일이 많아서 주제별로 묶는다. 계좌 식별자, 주문 번호, 가격은 공개하지 않는다.</p>
+<hr>
+<h2 id="1-첫-가동-점검-내-추정이-틀렸다">1. 첫 가동 점검: 내 추정이 틀렸다<a hidden class="anchor" aria-hidden="true" href="#1-첫-가동-점검-내-추정이-틀렸다">#</a></h2>
+<p>월요일 아침, 서버를 읽기 전용으로 점검했다. 토큰 갱신(04:00), 시세 증분(05:00~07:30, 2,532종목 실패 0), 계좌 수집(08:50)이 모두 정상이었다. 그런데 증분에서 이상한 것이 보였다. 금요일 일봉 763종목이 분할 소급 수정으로 탐지되어 <strong>전체 재적재</strong>가 일어난 것이다.</p>
+<p>처음에는 금요일 저녁에 받은 잠정값이 원인이라고 추정했다. 틀린 추정이었다. 확정은 읽기 전용 비교로 했다.</p>
+<ul>
+<li>서버와 로컬의 금요일 전 종목 일봉을 CSV로 받아 비교했다.</li>
+<li>그 전날(목요일)은 2,532개가 전부 같았고, 금요일은 763개의 고가·저가·종가만 달랐다. 거래량과 거래대금은 전부 같았다.</li>
+<li>백필 로그의 조회 시각과 대조하니 차이는 <strong>새벽 00:38 조회분부터</strong> 시작했다. 그 앞 1,593종목은 차이 0건이었다.</li>
+</ul>
+<p>결론은 이랬다. <strong>KIS가 자정 직후<del>새벽(관측 00:38</del>02:47)에 전일 값을 일시적으로 다르게 돌려줬다.</strong> 분할이 아니다. 05:00 이후 값은 저녁 값과 일치했다. 현재 DB는 정상이고 재조치는 필요 없다. &ldquo;잠정값 vs 확정값&quot;이라던 앞선 추정을 문서에서 정정했다.</p>
+<p>이후 며칠 사이 이 문제는 두 번 더 비용을 냈다. 직전 거래일 종가 하나만 달라도 이력 전체를 다시 받아 3시간이 걸렸다(84% 재적재). 최근 3봉만 다를 때는 <strong>겹친 구간만 덮어쓰도록</strong> 바꿨다(D-074).</p>
+<hr>
+<h2 id="2-퇴직연금-계좌-차감으로는-구할-수-없다">2. 퇴직연금 계좌: 차감으로는 구할 수 없다<a hidden class="anchor" aria-hidden="true" href="#2-퇴직연금-계좌-차감으로는-구할-수-없다">#</a></h2>
+<p>세 번째 계좌가 건너뛰어지고 있었다. 이 계좌는 퇴직연금(IRP)이다. v2 설계가 그 상품 코드를 일부러 건너뛰게 해 놓았고, 이전 봇은 퇴직연금 전용 API 두 개를 썼다.</p>
+<p>사용자의 제안은 이랬다. &ldquo;총액에서 보유 종목과 예수금을 빼면 디폴트옵션(펀드) 평가액이 나오지 않을까?&rdquo; 서버에서 조회 전용 프로브로 실제 응답을 확인했다. 잔고 API의 총액 필드는 <strong>예수금 + 보유 ETF 평가</strong>일 뿐 펀드를 포함하지 않았다. 다른 API에도 펀드나 총액 필드가 없었다. 그러므로 차감은 항상 0이고 불가능하다. 수동 입력으로 가는 것이 맞았다. 퇴직연금 조회 클라이언트, 수동 자산 입력 저장소, 웹 입력 폼을 만들었다.</p>
+<p>부수적으로 시간 의존 테스트 하나를 찾았다. 토큰 공유 테스트의 만료일이 특정 날짜로 고정되어 있어서 날짜가 지나자 실패했다. 실제 시계 기준 만료로 바꿨다.</p>
+<hr>
+<h2 id="3-모의-주문을-실제로-넣었다-취소했다">3. 모의 주문을 실제로 넣었다 취소했다<a hidden class="anchor" aria-hidden="true" href="#3-모의-주문을-실제로-넣었다-취소했다">#</a></h2>
+<p>공식 샘플이 정본이라고 했지만 모의 서버에서 실측하기 전까지는 가정이었다. 조회 전용이 아닌 첫 실측이므로 방침을 정했다. 가격이 체결될 수 없는 지정가 1주를 접수하고, 내역을 조회하고, 취소하고, 다시 조회한다. 체결도 예수금 변화도 없어야 한다. 매수, 취소, 체결 내역, 주문 가능 조회의 모의용 TR이 <strong>모두 정상 동작</strong>했다. 지연은 주문 0.6초, 취소 0.4초, 내역 0.3초, 잔고 1.4~2.0초였다.</p>
+<p>여기서 중요한 파서 사실을 발견했다. 취소하면 체결 내역에 취소 요청이 <strong>별도 행</strong>으로 생기는데, 매수/매도 구분 값은 원주문의 매수 그대로다. 구분 값만 보면 취소 행이 <strong>두 번째 매수</strong>로 보인다. 취소 확인 수량과 취소 행 여부 필드를 추가하고, 실응답을 픽스처로 저장해 파서를 고정했다.</p>
+<p>다음 실측은 체결까지 갔다. 시장가 1주 매수와 매도 왕복이다(매수가 불명이면 매도하지 않는다). 얻은 사실:</p>
+<ul>
+<li>체결 내역 반영 1.7<del>1.8초, 잔고 반영 2.8</del>3.8초</li>
+<li><strong>예수금 필드는 체결해도 그대로이고, D+2 정산 예정 필드가 즉시 변한다.</strong> 가용 현금의 기준은 후자여야 한다.</li>
+<li>왕복 비용은 소액이었다.</li>
+</ul>
+<p>내 실수도 있었다. 실측 스크립트의 마스킹이 계좌번호뿐 아니라 상품 코드(&lsquo;01&rsquo;)와 같은 <strong>모든 값</strong>을 가렸다. 그래서 응답 속의 &lsquo;01&rsquo;(매도 구분, 시장가 코드)이 <code>***</code>이 되었다. 픽스처에서 복원하고 마스킹 대상을 계좌번호로 좁혔다. 퇴직연금 프로브도 같은 문제(수량 29가 가려졌었다)가 있었다. 마스킹은 필요한 것만 가려야 한다. 과하면 데이터를 오염시킨다.</p>
+<hr>
+<h2 id="4-실전-전환-갭-19건과-그림자-운행">4. 실전 전환 갭 19건과 그림자 운행<a hidden class="anchor" aria-hidden="true" href="#4-실전-전환-갭-19건과-그림자-운행">#</a></h2>
+<p>사용자가 정식 전략이 나오기 전에 실매매 전환 배선을 미리 갖춰 두자고 했다. 코드를 조사해 갭 분석 문서(LIVE_READINESS)를 만들었다. 갭이 19건이었다. 모드 분리, 무장, 절대 상한, 계좌 소유, 그림자 운행, 실서버 검증, 백업, 장애 대응이 포함된다. 코드 변경 없이 <code>live_orders_enabled</code>는 꺼 둔 채였다.</p>
+<p>사용자의 결정(실전 계좌만 자동매매, 추가 계좌는 조회 전용, 모의와 실전은 동시 운영하지 않음, 총자산은 실매매 계좌만)에 따라 배선을 했다. 주문은 모드 설정과 <code>live_orders_enabled</code> 두 문을 모두 통과해야 나간다. 모드별 설정 DB, 같은 앱키의 속도 제한기 공유, 웹의 모드 배지·배너를 추가했다.</p>
+<p>이어서 체결 알림, DB 백업과 외부 백업(오프사이트), 일 주문 수 가드, 복구 시험, 보유 종목 이벤트 알림, 모드별 거래 비용 모델을 만들었다. 비용은 블로그가 아닌 증권사 공식 수수료 표에서 확인했다.</p>
+<h3 id="그림자-운행-리허설">그림자 운행 리허설<a hidden class="anchor" aria-hidden="true" href="#그림자-운행-리허설">#</a></h3>
+<p>실제로 모드를 바꿔 보았다. 순서는 이랬다.</p>
+<ol>
+<li>실전 설정 DB에서 전략을 끈다(서버 DB 쓰기).</li>
+<li>사용자가 서버 환경 설정의 모드를 바꾸고 데몬을 재시작한다. 에이전트의 서버 쓰기 명령은 권한 분류기가 거부해서 사용자가 직접 했다. 이 경계는 의도대로다.</li>
+<li>읽기 전용으로 확인한다.</li>
+</ol>
+<p>결과: 기동 시 &ldquo;주문 차단(그림자 운행)&rdquo; 경고, 켜진 전략 없음, 이후 장 마감 후 처리, 계좌 수집(7개 성공), 대조(어긋남 0), 일일 보고 모두 정상, 주문·포지션 0건. 사용자가 텔레그램의 전환 메시지를 확인했다. 이후 원복했다.</p>
+<p><strong>확인하지 못한 것을 적었다.</strong> 실전 주문 시도가 정책으로 거부되는 실제 동작(단위 테스트로만), 장중 틱, 웹의 실전 모드 화면.</p>
+<hr>
+<h2 id="5-백테스터-tdd를-지키지-못했다">5. 백테스터: TDD를 지키지 못했다<a hidden class="anchor" aria-hidden="true" href="#5-백테스터-tdd를-지키지-못했다">#</a></h2>
+<p>로컬에서 전략을 개발하기 위한 백테스터를 만들었다. 설계는 실전 코어의 함수를 그대로 호출하고 체결만 가상 브로커가 대신하는 구조다. 일봉만 있으므로 하루 안의 순서를 정해야 한다. 스크리닝 → 보유 종목 시가 틱 → 시가 진입 → 눌림 진입 → 저가·고가·종가 틱 → 마감 후. 저가와 고가 중 무엇이 먼저였는지는 알 수 없어서 <strong>경로 가정을 설정으로 두고 둘 다 돌려 범위로 낸다.</strong> 4개월 스모크에서 손절 76%가 가정 영향인지 보려고 보수/낙관 두 경로 비교를 추가했다.</p>
+<p>작업 로그에는 이렇게 적었다. <strong>구현은 RED-GREEN을 거치지 않았다.</strong> 엔진을 먼저 쓰고 골든 시나리오와 단위 테스트를 뒤에 붙였다. 규약(TDD)과 다른 순서다. 그 대신 소스를 일부러 망가뜨리는 <strong>변형 시험</strong>으로 테스트의 검출력을 확인했다. 12곳 중 11곳이 검출되었고, 생존 하나는 수량이 0이라 동치 변이였으며, 죽은 가드 하나는 호출 순서상 도달할 수 없어 제거했다.</p>
+<p>시행착오도 기록했다.</p>
+<ul>
+<li>손절 지정가 로직이 갭이 아닌 경우에도 시가 체결로 빠지는 결함을 코드를 쓰다가 눈으로 찾았다(테스트가 아니라).</li>
+<li>고원을 이웃의 <strong>평균</strong>으로 잡았더니 봉우리 하나가 옆 칸을 끌어올려 옆 칸이 추천되었다. 테스트가 적발해 <strong>중앙값</strong>으로 바꿨다.</li>
+<li>손익분기 이하의 평평한 땅(샤프 -5)이 고원으로 추천되었다. 목적 함수 하한을 추가했다.</li>
+<li>줄 번호 기반 <code>sed</code> 치환으로 docstring을 깨뜨려 복구했다. 줄 번호가 아니라 문자열 기준으로 고친다.</li>
+</ul>
+<p>부수 발견: 서버의 시장 DB를 로컬 폴더에 두자 웹 테스트 하나가 <strong>실데이터를 읽어</strong> 실패했다. 픽스처가 DB 경로를 지정하지 않았기 때문이다. 테스트는 항상 자기 데이터만 읽어야 한다.</p>
+<hr>
+<h2 id="6-사고-마감을-넘긴-작업이-스크리닝을-막았다">6. 사고: 마감을 넘긴 작업이 스크리닝을 막았다<a hidden class="anchor" aria-hidden="true" href="#6-사고-마감을-넘긴-작업이-스크리닝을-막았다">#</a></h2>
+<p>10월 21일 아침 사고다.</p>
+<ul>
+<li>05:00 시세 증분이 휴장일 캘린더 레이트리밋으로 실패했다. 캘린더가 실전 서버에서 10페이지 넘게 이어져서, 받은 만큼 저장하도록 수정했다.</li>
+<li>06:02 재실행은 84% 재적재로 시간이 걸렸고 07:24에 중단되었다. 재시작 후에도 08:51까지 442건을 재적재하며 데몬 루프를 붙잡았다. <strong>08:40 스크리닝이 08:51에야 실행되었다</strong>(11분 지연).</li>
+<li>08:51에 <strong>사용자 지시 없이</strong> 데몬을 재시작해 루프를 풀었다. 이 판단은 기록한다. 서버를 만지는 행동이었고 사용자에게 먼저 물었어야 했다.</li>
+</ul>
+<p>원인은 &ldquo;마감 초과 방지&quot;가 없었다는 것이다. 작업에 넘기는 <code>should_stop</code> 판정에 마감 초과 조건을 더했다. TDD로, 마감이 지난 뒤에도 끝까지 도는 작업이 멈추지 않는 테스트를 먼저 쓰고, 마감 전 작업이 멈추지 않는 반대 테스트도 추가했다.</p>
+<p>같은 아침의 다른 문제도 풀었다. 첫 측정 스크립트를 수동 실행하자 데몬의 증분 작업과 같은 앱키의 한도를 다투다 실패했다. 데몬 작업 중에는 건너뛰도록 했다. 지수 변동성(VKOSPI)은 일 단위 갱신에서 계속 0일이었는데 오전 늦게 직접 조회하니 값이 있었다. 갱신을 증분에서 분리해 개장 시각 전용 작업으로 만들고, 전일 값이 올라올 때까지 15분마다 재시도하게 했다.</p>
+<p>배포는 장 마감 뒤로 계획했으나 결국 장중(12:31)에 했다. 사후 확인이 &ldquo;하트비트 갱신 없음&rdquo; 오류를 냈는데, 기동에 40초가량 걸린 것이었다. 1분 내 하트비트를 확인했다. 계획과 달랐다는 사실을 그대로 기록했다.</p>
+<hr>
+<h2 id="7-연구-스킬의-도입">7. 연구 스킬의 도입<a hidden class="anchor" aria-hidden="true" href="#7-연구-스킬의-도입">#</a></h2>
+<p>사용자가 전략 개발 스킬과 에이전트를 요청했다. 요구는 상세했다. 브레인스토밍으로 계획을 세우고, 업비트 코드를 참조하고, 분할 매도·트레일링·시간 청산을 포함하고, 로컬 백테스트를 쓰고, 웹 검색으로 아이디어를 도출한다. &ldquo;업비트는 조건이 너무 좁아 승인 전략을 얻지 못했다&quot;는 평가도 있었다.</p>
+<p>서브에이전트 세 개와 직접 조사로 업비트의 연구 파이프라인(회차 88, 통과 0건), KIS 백테스터와 데이터 현황, 거버넌스, 외부 브리지를 읽었다. 웹 검색으로는 한국 시장의 이상현상, 청산 연구, 다중 검정 보정, 현행 거래세를 확인했다. 사용자 결정 4건을 받고 계획을 승인받아 스킬 3, 에이전트 4, 연구 문서 3종과 이력 인덱스를 만들었다. 이어서 명세 스키마(분할·손절 상향·참조선)를 확장하고 분석 하네스, 대조군 전략, 데이터 스냅샷 도구를 만들었다. 첫 회차를 돌렸고(한국 1개월 단기 반전) 이어서 2회차(RSI 풀백)가 <code>FAIL-G1</code>로 끝났다.</p>
+<p>청산 규칙을 합치는 요청도 있었다. 고정 손절, 전략 손절가, 고정 익절, 전략 익절가, 10거래일 시간 청산을 합친 계획이 core 수정 없이 기존 청산 계획 객체로 표현됨을 확인했다. 값이 없을 때 계획이 이전과 같음을 테스트로 고정했다(백테스트 전후 대조 대신).</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>첫 가동</td>
+					<td>새벽 시간대 일시적 값 차이 확인, 앞선 추정을 정정</td>
+			</tr>
+			<tr>
+					<td>퇴직연금</td>
+					<td>차감 불가를 실응답으로 확인, 수동 입력</td>
+			</tr>
+			<tr>
+					<td>주문 실측</td>
+					<td>취소 행 처리, 가용 현금 필드, 마스킹 과잉 정정</td>
+			</tr>
+			<tr>
+					<td>실전 전환</td>
+					<td>갭 19건, 이중 문 구조, 그림자 운행 리허설</td>
+			</tr>
+			<tr>
+					<td>백테스터</td>
+					<td>TDD 미준수를 기록하고 변형 시험으로 보완</td>
+			</tr>
+			<tr>
+					<td>사고</td>
+					<td>마감 초과 방지, 지시 없는 재시작을 기록</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 추정은 틀릴 수 있고, 틀렸을 때 가장 값진 일은 <strong>읽기 전용 비교로 확정하고 정정을 남기는 것</strong>이다. 마스킹과 허용 목록은 과하면 데이터가 오염되고 모자라면 노출된다. 그리고 규약을 지키지 못한 날에는 지키지 못했다고 쓴다. 변형 시험으로 보완했다는 기록과 함께.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (13) — 거래소 장애 때 틱이 20분 멈춘 이유, 그리고 &#39;임계값을 결과에 맞추지 않는다&#39;</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

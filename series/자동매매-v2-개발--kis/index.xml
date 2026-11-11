@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>자동매매 V2 개발 · KIS on Evan&#39;s Blog</title>
+    <link>https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--kis/</link>
+    <description>Recent content in 자동매매 V2 개발 · KIS on Evan&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>ko-KR</language>
+    <lastBuildDate>Tue, 10 Nov 2026 19:30:00 +0900</lastBuildDate>
+    <atom:link href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--kis/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/</link>
+      <pubDate>Tue, 10 Nov 2026 19:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/</guid>
+      <description>신규 후보 38개가 전부 기준가 불일치로 거절되어 하루 종일 진입이 없었다. 원인은 새벽에 받은 직전 거래일 종가가 잠정값이라는 것이었고, 갱신 시각을 옮겨 해결했다. 같은 주에 전체 코드 리뷰로 약 90건을 정리하고, 지수 종가 공급을 코어에 추가했으며, 수급 기반 전략이 처음으로 1단계를 조건부로 통과해 모의 관측으로 이식된 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/</link>
+      <pubDate>Tue, 03 Nov 2026 23:50:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/</guid>
+      <description>에이전트는 실전 주문을 낼 수 없고 이 프로젝트도 실전은 조회 전용이다. 사용자가 실전 주문 점검을 요청하자 거절하고 대안을 제시해, 절차 문서를 거쳐 가짜 브로커로 시험한 점검 스크립트를 만들고 실행은 사용자가 서버에서 했다. 같은 기간의 시세 조회 실전 전환, 일정이 겹치는 작업의 시각 분배, 파서가 거부한 형식 오류 한 줄, 레이트리밋 경고의 원인 세션 식별을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · KIS (4) — 한 번에 조건 하나씩: 사전등록 프로그램과 대조군 20시드로 연구하기</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/</link>
+      <pubDate>Thu, 29 Oct 2026 23:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/</guid>
+      <description>국내 주식 전략 연구 회차 27번가량을 사흘 동안 돌린 기록. 후보를 하나씩 평가하는 대신 가장 단순한 기준선에서 조건을 하나씩 더하는 &amp;#39;프로그램&amp;#39; 방식으로 바꾸고, 같은 규칙의 무작위 대조군 20시드와 비교해 채택 여부를 정했다. 도구 버그, 구조 결함 조기 발견, 국면 사이징을 전략별 설정으로 옮긴 설계와 처음 조건부로 살아남은 후보까지 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · KIS (3) — 일봉 이력 확장, 모의투자 대시보드, 그리고 병렬 에이전트 7개로 한 전체 코드 리뷰</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/</link>
+      <pubDate>Mon, 26 Oct 2026 22:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/</guid>
+      <description>주말마다 일봉 이력을 늘리는 데몬 작업, 새로고침 기준으로 전략별 성과를 보는 모의투자 화면과 자동 갱신, 홈 화면 설치용 PWA를 만들었다. 저장소 전체를 읽기 전용 에이전트 7개로 병렬 리뷰해 High 15건을 TDD로 고친 과정과, 사용자 질문 한 줄로 연구 설계의 학습/검증 비율을 결과를 보기 전에 폐기하고 다시 사전등록한 일을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/</link>
+      <pubDate>Wed, 21 Oct 2026 21:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/</guid>
+      <description>데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/</link>
+      <pubDate>Sat, 17 Oct 2026 14:10:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/</guid>
+      <description>업비트 V2의 구조를 가져와 KIS 증권 자동매매를 데몬 방식으로 새로 시작한 첫 이틀. 공식 샘플의 한도값이 지속 사용에는 맞지 않음을 실측으로 확인하고, 하루 1회 토큰 제약을 코드로 강제했다. 로컬에서는 통과했지만 서버의 깨끗한 환경에서만 드러난 결함, 당일 일봉이 장 마감 후에도 변한다는 발견, 6시간 백필까지 정리한다.</description>
+    </item>
+  </channel>
+</rss>

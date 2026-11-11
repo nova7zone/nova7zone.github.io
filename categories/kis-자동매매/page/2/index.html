@@ -10,7 +10,7 @@
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.5a385ef0bceefb6b490abe4342de754d3174fddddd99a021dffa4b1d7a206b2d.css" integrity="sha256-Wjhe8Lzu&#43;2tJCr5DQt51TTF0/d3dmaAh3/pLHXogay0=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -180,132 +180,132 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (48) — KRX 401 오류는 코드가 아니라 서비스 신청 문제였다
     </h2>
   </header>
-  <div class="entry-content"><p>브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.</p>
+  <div class="entry-content"><p>서버 로그의 KRX VKOSPI 401 오류를 추적했더니 코드 결함이 아니라 API 이용신청 누락이었다. 같은 날 &#39;매수량이 너무 적다&#39;는 제보는 버그가 아니라 방어 로직의 정상 동작이었고, 그 조사 중 시장 위치 판정에 미완성 봉이 섞이는 진짜 버그를 하나 찾았다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-29T10:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그" href="https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/"></a>
+<span title='2026-07-07T21:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (48) — KRX 401 오류는 코드가 아니라 서비스 신청 문제였다" href="https://nova7zone.github.io/posts/krx-401-and-market-filter-incomplete-candle/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나
     </h2>
   </header>
-  <div class="entry-content"><p>매도 주문 하나가 29시간 동안 40회나 취소 시도만 반복하던 좀비 주문 사고를 추적해, qty_before 캡처를 API 재조회 대신 로컬 holdings 기반으로 바꾸고 cancel_order 응답을 3-state로 구분해 재시도해도 해소되지 않는 케이스를 걸러낸 과정을 정리한다.</p>
+  <div class="entry-content"><p>잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, &#34;무엇을 만들까&#34;보다 &#34;무엇을 지킬까&#34;를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-25T17:00:00+09:00'>2026년 6월 25일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고" href="https://nova7zone.github.io/posts/sell-qty-before-local-holdings-and-cancel-order-3state/"></a>
+<span title='2026-07-07T14:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나" href="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축
     </h2>
   </header>
-  <div class="entry-content"><p>보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.</p>
+  <div class="entry-content"><p>기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-25T11:00:00+09:00'>2026년 6월 25일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈" href="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/"></a>
+<span title='2026-07-07T10:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축" href="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈
     </h2>
   </header>
-  <div class="entry-content"><p>일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.</p>
+  <div class="entry-content"><p>holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-24T18:00:00+09:00'>2026년 6월 24일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈" href="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/"></a>
+<span title='2026-07-05T15:00:00+09:00'>2026년 7월 5일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈" href="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome
     </h2>
   </header>
-  <div class="entry-content"><p>종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.</p>
+  <div class="entry-content"><p>매수 사이클마다 시장 상황 전체를 스냅샷으로 남기는 market_context_log와, 매수되지 않은 후보까지 포함한 스크리닝 전체 결과의 사후 수익률을 추적하는 candidate_outcome 테이블을 신설했다. SQLite UNIQUE 제약의 NULL 처리 방식이 만든 재실행 중복 버그도 함께 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-24T10:00:00+09:00'>2026년 6월 24일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도" href="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/"></a>
+<span title='2026-07-05T09:00:00+09:00'>2026년 7월 5일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome" href="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders
     </h2>
   </header>
-  <div class="entry-content"><p>직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.</p>
+  <div class="entry-content"><p>매도 판단 과정 전체를 남기는 sell_evaluation_log 테이블과, 주문 생애주기를 append-only 이벤트로 기록하는 orders 테이블을 신설했다. brainstorming부터 설계·계획·subagent 구현까지 전체 절차로 진행한 Phase 2 데이터 수집 계층의 첫 두 테이블을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-23T23:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/"></a>
+<span title='2026-07-04T10:00:00+09:00'>2026년 7월 4일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders" href="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증
     </h2>
   </header>
-  <div class="entry-content"><p>v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.</p>
+  <div class="entry-content"><p>KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-23T12:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"></a>
+<span title='2026-07-03T10:00:00+09:00'>2026년 7월 3일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증" href="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (43) — docs 전면 최신화, v0.7.0 릴리즈
     </h2>
   </header>
-  <div class="entry-content"><p>같은 종목 매수 주문이 15분마다 반복 시도되는 로그를 발견했다. 추적해보니 실제로는 매번 체결되고 있었는데 KIS 모의투자 체결조회 API 한계로 봇이 이를 인지하지 못해 수량이 통제 밖에 쌓여 있었다. 체결판단을 holdings-diff 방식으로 전환하고 같은 날 발견한 extra_05 계좌 버그까지 잡은 과정을 기록한다.</p>
+  <div class="entry-content"><p>strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-22T20:00:00+09:00'>2026년 6월 22일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환" href="https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/"></a>
+<span title='2026-07-02T17:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (43) — docs 전면 최신화, v0.7.0 릴리즈" href="https://nova7zone.github.io/posts/docs-update-and-v070-release/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환
     </h2>
   </header>
-  <div class="entry-content"><p>웹에서 백테스트를 실행하고 결과를 확인하는 기능을 9개 Task로 구현했다. 재검토 중 발견한 preset 경로탈출 취약점을 막고, 백테스트 데이터 다운로드의 무한 페이지네이션과 모의투자 30거래일 하드캡을 두 번에 걸쳐 추적해 진짜 원인(빈 시작일 파라미터)을 찾아낸 6월 21일 마지막 작업을 정리한다.</p>
+  <div class="entry-content"><p>v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-21T18:00:00+09:00'>2026년 6월 21일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기" href="https://nova7zone.github.io/posts/web-backtest-implementation-and-bugfixes/"></a>
+<span title='2026-07-02T10:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
     </h2>
   </header>
-  <div class="entry-content"><p>웹에서 백테스트를 실행하는 기능을 위해 한국투자증권 공식 백테스팅 엔진을 조사하고, 모의투자 매도 실패 2건을 코드 분석으로 추적해 운영 안정성 공백 두 가지를 기록했다. v0.5.2 릴리즈 직후 holdings.json과 실제 KIS 잔고의 불일치를 발견해 정정한 6월 21일 중반 작업을 정리한다.</p>
+  <div class="entry-content"><p>v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-21T14:00:00+09:00'>2026년 6월 21일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈" href="https://nova7zone.github.io/posts/web-backtest-investigation-and-v052-release/"></a>
+<span title='2026-07-01T16:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그" href="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

@@ -10,7 +10,7 @@
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.5a385ef0bceefb6b490abe4342de754d3174fddddd99a021dffa4b1d7a206b2d.css" integrity="sha256-Wjhe8Lzu&#43;2tJCr5DQt51TTF0/d3dmaAh3/pLHXogay0=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -180,132 +180,132 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
     </h2>
   </header>
-  <div class="entry-content"><p>IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.</p>
+  <div class="entry-content"><p>그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-21T10:00:00+09:00'>2026년 6월 21일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설" href="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/"></a>
+<span title='2026-07-01T10:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈
     </h2>
   </header>
-  <div class="entry-content"><p>API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.</p>
+  <div class="entry-content"><p>전략명에 들어간 언더스코어 때문에 텔레그램 알림이 400 오류로 반복 실패하던 버그와, 이틀 전 고쳤던 reversal/fear_driven 손실 매도 버그가 다른 경로로 재발한 사고를 정리하고, PR #77을 머지해 v0.6.4를 릴리즈한 과정을 다룬다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-20T21:00:00+09:00'>2026년 6월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈" href="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/"></a>
+<span title='2026-06-30T12:00:00+09:00'>2026년 6월 30일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈" href="https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (25) — IRP 퇴직연금 평가금액 보정 3단계
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
     </h2>
   </header>
-  <div class="entry-content"><p>IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.</p>
+  <div class="entry-content"><p>매 세션 전체 로드되는 CLAUDE.md 520줄을 181줄로 줄이며 개발 문서를 docs/development 폴더로 재구성하고, PR #63~#74 구간 docs 재점검·v0.6.3 릴리즈, 그리고 스크리닝 로그가 v2 전환 이후 한 번도 기록되지 않았던 원인을 조사한 하루를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-20T12:00:00+09:00'>2026년 6월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (25) — IRP 퇴직연금 평가금액 보정 3단계" href="https://nova7zone.github.io/posts/irp-pension-valuation-fix/"></a>
+<span title='2026-06-29T16:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈" href="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그
     </h2>
   </header>
-  <div class="entry-content"><p>매수 후보가 9회 연속 0건이던 원인을 추적해 캐시 만료시간 설정과 ATR 필터의 hard block 설계를 함께 수정했다. 이어서 계좌별 원금·평가금액·수익률을 한눈에 보여주는 표시 기능과 수동 입출금 기능을 추가한 6월 19일 작업을 정리한다.</p>
+  <div class="entry-content"><p>브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-19T19:00:00+09:00'>2026년 6월 19일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시" href="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/"></a>
+<span title='2026-06-29T10:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그" href="https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고
     </h2>
   </header>
-  <div class="entry-content"><p>항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.</p>
+  <div class="entry-content"><p>매도 주문 하나가 29시간 동안 40회나 취소 시도만 반복하던 좀비 주문 사고를 추적해, qty_before 캡처를 API 재조회 대신 로컬 holdings 기반으로 바꾸고 cancel_order 응답을 3-state로 구분해 재시도해도 해소되지 않는 케이스를 걸러낸 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-18T22:00:00+09:00'>2026년 6월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환" href="https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/"></a>
+<span title='2026-06-25T17:00:00+09:00'>2026년 6월 25일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고" href="https://nova7zone.github.io/posts/sell-qty-before-local-holdings-and-cancel-order-3state/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈
     </h2>
   </header>
-  <div class="entry-content"><p>거래량순위 조회가 1페이지(30건)만 받고 멈추는 문제를 페이지네이션 구현, 응답 헤더 대소문자 버그 수정까지 두 번 고친 끝에 결국 KIS API 자체의 시장당 30건 하드 리밋이라는 결론에 도달해 universe 목표치를 60으로 재조정한 과정을 정리한다.</p>
+  <div class="entry-content"><p>보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-18T11:00:00+09:00'>2026년 6월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지" href="https://nova7zone.github.io/posts/volume-rank-pagination-saga/"></a>
+<span title='2026-06-25T11:00:00+09:00'>2026년 6월 25일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈" href="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (21) — 매매설정 v2 카드 확장(3·4단계), next-pre-market 분리
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈
     </h2>
   </header>
-  <div class="entry-content"><p>거래량순위 API가 장 개시 전엔 빈 응답을 준다는 걸 발견해 pre-market 캐시 빌드를 18:00 next-pre-market으로 분리했다. 이어서 매매설정 탭에 v2 전용 카드 4종과 캐시 매니저·계좌 관리 페이지를 추가한 6월 17일 작업을 정리한다.</p>
+  <div class="entry-content"><p>일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-17T21:00:00+09:00'>2026년 6월 17일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (21) — 매매설정 v2 카드 확장(3·4단계), next-pre-market 분리" href="https://nova7zone.github.io/posts/v2-settings-cards-and-next-premarket-split/"></a>
+<span title='2026-06-24T18:00:00+09:00'>2026년 6월 24일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈" href="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도
     </h2>
   </header>
-  <div class="entry-content"><p>pre-market 실행 시 모의투자 API 제약을 우회하고 KOSPI 지수 일봉을 영구 캐시로 전환해 API 호출을 줄였다. 이어서 주문 체결 검증 로직에 CANCELLED 처리와 2단계 fallback 조회를 추가해 더 정확하게 판단하도록 개선한 PR #29 작업을 정리한다.</p>
+  <div class="entry-content"><p>종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-16T18:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)" href="https://nova7zone.github.io/posts/premarket-optimization-and-order-fill-pr29/"></a>
+<span title='2026-06-24T10:00:00+09:00'>2026년 6월 24일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도" href="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈
     </h2>
   </header>
-  <div class="entry-content"><p>v1/v2 전략의 매수·매도 흐름을 Mermaid 플로우차트로 보여주는 전략확인 페이지를 신설했다. 이어서 OCI 실행 중 발견한 모의투자 API 500 오류와, 비교연산자 때문에 다이어그램이 깨지던 렌더링 버그 두 건을 같은 날 바로 수정한 과정을 기록한다.</p>
+  <div class="entry-content"><p>직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-15T20:00:00+09:00'>2026년 6월 15일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건" href="https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/"></a>
+<span title='2026-06-23T23:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (18) — 추가 계좌 투자원금 입력 기능, 릴리즈 노트 작성 skill
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
     </h2>
   </header>
-  <div class="entry-content"><p>조회 전용 추가 계좌(KIS_EXTRA_01~10)에 투자원금을 입력·저장하는 기능을 추가해 향후 수익률 계산의 기준값을 마련했다. 이어서 릴리즈마다 반복하던 릴리즈 노트 작성 절차를 별도 skill로 표준화한 6월 15일 작업을 정리한다.</p>
+  <div class="entry-content"><p>v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-15T09:00:00+09:00'>2026년 6월 15일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (18) — 추가 계좌 투자원금 입력 기능, 릴리즈 노트 작성 skill" href="https://nova7zone.github.io/posts/extra-account-capital-and-release-notes-skill/"></a>
+<span title='2026-06-23T12:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

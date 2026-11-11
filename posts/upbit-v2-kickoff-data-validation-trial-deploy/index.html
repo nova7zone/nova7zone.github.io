@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포, 연구">
+<meta name="description" content="크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &#39;생존 편향은 해결할 수 없다&#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다">
+  <meta property="og:description" content="크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &#39;생존 편향은 해결할 수 없다&#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-08-04T23:00:00+09:00">
+    <meta property="article:modified_time" content="2026-08-04T23:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="연구">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다">
+  <meta name="twitter:description" content="크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &#39;생존 편향은 해결할 수 없다&#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다",
+  "name": "자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다",
+  "description": "크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 '생존 편향은 해결할 수 없다'는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.",
+  "keywords": [
+    "설계", "배포", "연구"
+  ],
+  "articleBody": "들어가며 V1(크론 기반 Bot)은 운영하면서 한계가 분명해졌다. 15분 주기 점검은 청산 반응이 느렸고, 전략 실험이 쌓일수록 운영 코드가 실험 코드와 섞였다. V2는 신규 구축으로 결정했다. 상시 데몬, 4시간봉 신호, 1~10초 간격 감시, 추가 매수 금지, 24시간 운영, 단일 진입점, 웹은 설정만 쓰고 주문은 하지 않는다는 요구사항 10건이 출발점이다.\n이 글은 7월 28일 착수부터 8월 4일 첫 서버 기동까지의 기록이다.\n1. 첫 주는 문서만 썼다 7월 28일에는 코드가 없었다. 개발 문서 세트(착수 요청서, 아키텍처, 규약, DB 스키마, 로드맵, V1 교훈, 결정 기록 등 10여 종)를 먼저 썼다. 이유는 V1에서 배웠기 때문이다. 같은 실패를 반복한 곳은 코드가 아니라 합의되지 않은 가정이었다.\n몇 가지 설계 결정이 이때 정해졌다.\n청산 값 전달 계약. 전략이 청산 조건을 자유 형식 딕셔너리로 넘기는 방식을 버리고 타입이 있는 청산 계획 객체로 올렸다. 절대 가격 원칙, 코어의 검증 규칙, 우선순위 9단계를 문서화했다. 불변식도 하나 정했다. 손절선은 내려가지 않는다(저장 계층이 거부한다). 모든 단계에서 같은 엔진. 연구의 1·2단계(스모크, 엄격 검증)와 3단계(운영 코드 재현)가 서로 다른 구현이면 단계 사이의 괴리가 “구현 차이\"인지 “전략 문제\"인지 분간할 수 없다. 그래서 전 단계를 같은 백테스트 엔진으로 통일하고 옵션 프리셋만 다르게 했다. 검증 에이전트는 신호 함수만 구현한다. 회차 누적 다중 검정. 연구 시도가 쌓일수록 우연히 좋아 보이는 후보가 나올 확률이 커진다. 누적 시도 횟수를 관리하고 봉인 구간의 문턱을 이에 연동해 올린다. 수정 루프도 시도로 센다. 분류 체계(taxonomy) 8개 클래스. 후보마다 클래스를 태깅하고, 같은 클래스가 연속으로 기각되면 그 클래스를 봉인한다. 운영 문서 세트. 개발 문서와 별도로 운영 문서 5분류 22종의 목록과 공통 양식을 정했다. 착수 전 최종 점검에서 결정 16건을 확정해 DECISIONS.md에 번호를 붙여 쌓기 시작했다.\n2. 공개 시세 데이터를 실물로 검증하다 백테스트는 데이터가 전부다. 거래소가 제공하는 과거 시세 다운로드를 쓰기로 했는데, 문서를 믿지 않고 사용자가 파일을 직접 받아 열어 보았다.\n체크섬 파일은 해시 64자만 담고 파일명이 없다. 검증 통과. 출시 공지는 “2022-05-01부터\"라고 했지만 2017년 데이터가 실제로 있었다. 캔들은 거의 전 구간을 덮는다. 봉 경계가 UTC 00·04·08·12·16·20시이고, 이를 한국 시간으로 바꾸면 우리가 쓰는 앵커 시각(01·05·09·13·17·21시)과 정확히 일치했다. 컬럼 순서가 대금이 먼저고 수량이 나중이다. 이름이 헷갈리기 쉬운 지점이라 매핑에 명시했다. 일 단위 파일은 하루 6봉짜리라 종목당 3,200개, 270종목이면 86만 개가 된다. 월 단위로 받으면 종목당 약 105개다. 월 단위로 확정했다. 상장 초기의 저유동성 구간이 필터 없이 들어온다. 유동성 티어에서 걸러야 한다. 가장 큰 기대가 무산됐다 상장폐지된 종목의 데이터는 제공되지 않는다. 이 데이터가 있으면 백테스트의 생존 편향(살아남은 종목만 보는 오류)을 줄일 수 있다고 기대했는데 무산됐다. 그래서 결정을 바꿨다.\n생존 편향은 해결하지 않고 막고, 줍고, 밝힌다.\n막는다: 폐지 감시자를 만든다. 사이클마다 마스터 목록을 대조해서 사라진 종목을 기록하고 즉시 캔들 스냅샷을 남긴다. 스냅샷 실패는 CRITICAL이다. 되돌릴 수 없는 손실이기 때문이다. 지금 넣지 않으면 1년 뒤 같은 문제를 다시 겪는다. 줍는다: V1의 2018~2020년 데이터에서 현재 미상장 종목을 폐지로 살린다. 밝힌다: 백테스트 리포트에 생존 편향 배너를 강제한다. “폐지 종목 N개 미포함, 편향 방향은 낙관.” 없는 것을 있는 척하지 않는 것이 이 결정의 핵심이다.\n3. 단계별로 쌓은 코어 로드맵은 단계마다 게이트(통과 조건)가 있다. 8월 34일에 단계 04를 연속으로 마쳤다.\n단계 내용 0 저장소 골격, 검증 게이트(린트, 타입, 의존성 규칙, 테스트), CI, 스킬 3종 1 실측, 설정/API/데이터 계층, 백필 스크립트, 오케스트레이터 2 지표 8종, 거시 국면, 시장 미시 국면 5축, 공포 게이트, 거래 적격성, 폐지 감시자, 종료 게이트 3 리스크 순수 함수 계층, 식별자, DB 연동, 실행기, 대조(reconcile), 포지션 저장 4 데몬, 스케줄러, 배포 스크립트, 운영 문서 실측으로만 드러난 문제도 있었다.\n백필이 403에서 죽었다. 없는 달이 404가 아니라 403으로 응답하는데 첫 백필이 일시 오류로 보고 3회 재시도하다가 전체가 중단되었다. 403·404는 즉시 건너뛰고, 재시도는 429·5xx·네트워크 예외에만 걸도록 분리했다. 테스트 5건을 추가했다. 상태 파일이 저장되기 전에 죽은 것도 확인해서 부분 상태 정리 없이 처음부터 재실행하면 되었다. 도구 쪽 사소한 함정도 있었다. 셸의 출력 리다이렉션이 표준 오류를 오류 객체로 감싸 읽기 어려워서, 로그를 파일 핸들러로 직접 쓰도록 바꿨다. 국면 분류기의 품질을 진단하는 지표 6종을 별도 스크립트로 만들어 종료 게이트에 넣었다. 4. 임시 서버 배포 8월 4일에는 배포 스크립트를 실제 서버에서 돌려 보았다. 명시적으로 임시(트라이얼) 배포다. 등록된 실전략이 없어서 주문 리스크는 없고, “설치와 기동이 죽지 않는가\"만 본다.\n실행 권한 비트 버그. 로컬(Windows)에서는 core.filemode=false라 chmod +x가 저장소에 기록되지 않는다. 배포 스크립트 7개가 비실행 모드로 커밋되어 서버에서 Permission denied가 났다. git update-index --chmod=+x로 모드를 명시 기록했다. V1에서도 같은 문제를 겪었는데, 이번에는 결정 문서에 원인과 해법을 남겼다. 인증 문제. 서버에서 저장소를 가져올 때 기존 토큰이 권한 오류로 거부되었다(저장소 생성 전에 발급된 토큰의 SSO 미승인 추정). 새 토큰을 발급해 해결했다. 이 과정에서 비밀값을 채팅에 붙여넣는 실수가 있었고, 이후 비밀값은 항상 서버 터미널에 직접 입력하고 채팅에는 붙여넣지 않는다는 원칙을 세워 계속 적용하고 있다. 노출된 값은 폐기하는 것이 원칙이다. 설치 스크립트가 가상환경, 의존성, DB 스키마 초기화, 서비스 유닛 배치까지 정상 완료했다. 웹 서비스는 아직 앱이 없어서 활성화를 보류했다. 시장 DB 반입. 운영 상태 DB와 시장 데이터 DB를 구분해, 시장 데이터 파일 하나만 올리고 운영 DB는 절대 로컬 사본으로 덮어쓰지 않는다. 업로드 후 무결성 검사 통과. 데몬 기동 후 하트비트 테이블에서 프로세스 ID 일치, 틱 카운트 증가, 킬스위치 꺼짐을 확인했다. 거래소 계좌 조회도 정상 응답했다. 백업 스크립트가 두 DB의 사본을 만드는 것까지 확인했다. 남은 일도 정직하게 적었다. V1 크론을 주석 처리하고 V1 데몬을 정지했는지는 대화에서 명시적으로 재확인되지 않았다. 72시간 연속 구동이라는 로드맵 게이트는 아직 미완이다. 이번은 1차 확인일 뿐이다.\n정리 영역 결정 문서 코드 전에 요구사항·결정 16건을 문서화 청산 타입 있는 청산 계획, 손절선 하향 금지 연구 전 단계 같은 엔진, 누적 시도 관리, 클래스 봉인 데이터 월 단위 확정, 생존 편향은 막고 밝힌다 배포 임시 서버로 설치·기동만 확인, 실전략 없음 배운 점: 외부 데이터 문서는 실물을 열어 보기 전까지 가설이다. 공지의 기간 서술이 틀렸고(좋은 쪽으로), 폐지 종목 데이터가 없다는 사실은(나쁜 쪽으로) 실물에서만 드러났다. 그리고 해결할 수 없는 문제는 해결한 척하지 말고 한계를 리포트에 박아 두는 편이 이후의 모든 결과를 정직하게 만든다.\n",
+  "wordCount" : "2924",
+  "inLanguage": "ko",
+  "datePublished": "2026-08-04T23:00:00+09:00",
+  "dateModified": "2026-08-04T23:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다
+    </h1>
+    <div class="post-description">
+      크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &#39;생존 편향은 해결할 수 없다&#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-08-04T23:00:00+09:00'>2026년 8월 4일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%b2%ab-%ec%a3%bc%eb%8a%94-%eb%ac%b8%ec%84%9c%eb%a7%8c-%ec%8d%bc%eb%8b%a4" aria-label="1. 첫 주는 문서만 썼다">1. 첫 주는 문서만 썼다</a></li>
+            <li>
+                <a href="#2-%ea%b3%b5%ea%b0%9c-%ec%8b%9c%ec%84%b8-%eb%8d%b0%ec%9d%b4%ed%84%b0%eb%a5%bc-%ec%8b%a4%eb%ac%bc%eb%a1%9c-%ea%b2%80%ec%a6%9d%ed%95%98%eb%8b%a4" aria-label="2. 공개 시세 데이터를 실물로 검증하다">2. 공개 시세 데이터를 실물로 검증하다</a><ul>
+                    
+            <li>
+                <a href="#%ea%b0%80%ec%9e%a5-%ed%81%b0-%ea%b8%b0%eb%8c%80%ea%b0%80-%eb%ac%b4%ec%82%b0%eb%90%90%eb%8b%a4" aria-label="가장 큰 기대가 무산됐다">가장 큰 기대가 무산됐다</a></li></ul>
+            </li>
+            <li>
+                <a href="#3-%eb%8b%a8%ea%b3%84%eb%b3%84%eb%a1%9c-%ec%8c%93%ec%9d%80-%ec%bd%94%ec%96%b4" aria-label="3. 단계별로 쌓은 코어">3. 단계별로 쌓은 코어</a></li>
+            <li>
+                <a href="#4-%ec%9e%84%ec%8b%9c-%ec%84%9c%eb%b2%84-%eb%b0%b0%ed%8f%ac" aria-label="4. 임시 서버 배포">4. 임시 서버 배포</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>V1(크론 기반 Bot)은 운영하면서 한계가 분명해졌다. 15분 주기 점검은 청산 반응이 느렸고, 전략 실험이 쌓일수록 운영 코드가 실험 코드와 섞였다. V2는 <strong>신규 구축</strong>으로 결정했다. 상시 데몬, 4시간봉 신호, 1~10초 간격 감시, 추가 매수 금지, 24시간 운영, 단일 진입점, 웹은 설정만 쓰고 주문은 하지 않는다는 요구사항 10건이 출발점이다.</p>
+<p>이 글은 7월 28일 착수부터 8월 4일 첫 서버 기동까지의 기록이다.</p>
+<hr>
+<h2 id="1-첫-주는-문서만-썼다">1. 첫 주는 문서만 썼다<a hidden class="anchor" aria-hidden="true" href="#1-첫-주는-문서만-썼다">#</a></h2>
+<p>7월 28일에는 코드가 없었다. 개발 문서 세트(착수 요청서, 아키텍처, 규약, DB 스키마, 로드맵, V1 교훈, 결정 기록 등 10여 종)를 먼저 썼다. 이유는 V1에서 배웠기 때문이다. 같은 실패를 반복한 곳은 코드가 아니라 <strong>합의되지 않은 가정</strong>이었다.</p>
+<p>몇 가지 설계 결정이 이때 정해졌다.</p>
+<ul>
+<li><strong>청산 값 전달 계약.</strong> 전략이 청산 조건을 자유 형식 딕셔너리로 넘기는 방식을 버리고 <strong>타입이 있는 청산 계획 객체</strong>로 올렸다. 절대 가격 원칙, 코어의 검증 규칙, 우선순위 9단계를 문서화했다. 불변식도 하나 정했다. 손절선은 <strong>내려가지 않는다</strong>(저장 계층이 거부한다).</li>
+<li><strong>모든 단계에서 같은 엔진.</strong> 연구의 1·2단계(스모크, 엄격 검증)와 3단계(운영 코드 재현)가 서로 다른 구현이면 단계 사이의 괴리가 &ldquo;구현 차이&quot;인지 &ldquo;전략 문제&quot;인지 분간할 수 없다. 그래서 전 단계를 같은 백테스트 엔진으로 통일하고 옵션 프리셋만 다르게 했다. 검증 에이전트는 신호 함수만 구현한다.</li>
+<li><strong>회차 누적 다중 검정.</strong> 연구 시도가 쌓일수록 우연히 좋아 보이는 후보가 나올 확률이 커진다. 누적 시도 횟수를 관리하고 봉인 구간의 문턱을 이에 연동해 올린다. 수정 루프도 시도로 센다.</li>
+<li><strong>분류 체계(taxonomy) 8개 클래스.</strong> 후보마다 클래스를 태깅하고, 같은 클래스가 연속으로 기각되면 그 클래스를 봉인한다.</li>
+<li><strong>운영 문서 세트.</strong> 개발 문서와 별도로 운영 문서 5분류 22종의 목록과 공통 양식을 정했다.</li>
+</ul>
+<p>착수 전 최종 점검에서 <strong>결정 16건</strong>을 확정해 <code>DECISIONS.md</code>에 번호를 붙여 쌓기 시작했다.</p>
+<hr>
+<h2 id="2-공개-시세-데이터를-실물로-검증하다">2. 공개 시세 데이터를 실물로 검증하다<a hidden class="anchor" aria-hidden="true" href="#2-공개-시세-데이터를-실물로-검증하다">#</a></h2>
+<p>백테스트는 데이터가 전부다. 거래소가 제공하는 과거 시세 다운로드를 쓰기로 했는데, 문서를 믿지 않고 사용자가 <strong>파일을 직접 받아</strong> 열어 보았다.</p>
+<ul>
+<li>체크섬 파일은 해시 64자만 담고 파일명이 없다. 검증 통과.</li>
+<li>출시 공지는 &ldquo;2022-05-01부터&quot;라고 했지만 <strong>2017년 데이터가 실제로 있었다.</strong> 캔들은 거의 전 구간을 덮는다.</li>
+<li>봉 경계가 UTC 00·04·08·12·16·20시이고, 이를 한국 시간으로 바꾸면 우리가 쓰는 앵커 시각(01·05·09·13·17·21시)과 정확히 일치했다.</li>
+<li>컬럼 순서가 대금이 먼저고 수량이 나중이다. 이름이 헷갈리기 쉬운 지점이라 매핑에 명시했다.</li>
+<li><strong>일 단위 파일은 하루 6봉짜리라 종목당 3,200개, 270종목이면 86만 개</strong>가 된다. 월 단위로 받으면 종목당 약 105개다. 월 단위로 확정했다.</li>
+<li>상장 초기의 저유동성 구간이 필터 없이 들어온다. 유동성 티어에서 걸러야 한다.</li>
+</ul>
+<h3 id="가장-큰-기대가-무산됐다">가장 큰 기대가 무산됐다<a hidden class="anchor" aria-hidden="true" href="#가장-큰-기대가-무산됐다">#</a></h3>
+<p>상장폐지된 종목의 데이터는 제공되지 않는다. 이 데이터가 있으면 백테스트의 <strong>생존 편향</strong>(살아남은 종목만 보는 오류)을 줄일 수 있다고 기대했는데 무산됐다. 그래서 결정을 바꿨다.</p>
+<blockquote>
+<p>생존 편향은 해결하지 않고 <strong>막고, 줍고, 밝힌다.</strong></p>
+</blockquote>
+<ul>
+<li><strong>막는다</strong>: 폐지 감시자를 만든다. 사이클마다 마스터 목록을 대조해서 사라진 종목을 기록하고 즉시 캔들 스냅샷을 남긴다. 스냅샷 실패는 CRITICAL이다. 되돌릴 수 없는 손실이기 때문이다. 지금 넣지 않으면 1년 뒤 같은 문제를 다시 겪는다.</li>
+<li><strong>줍는다</strong>: V1의 2018~2020년 데이터에서 현재 미상장 종목을 폐지로 살린다.</li>
+<li><strong>밝힌다</strong>: 백테스트 리포트에 생존 편향 배너를 강제한다. &ldquo;폐지 종목 N개 미포함, 편향 방향은 낙관.&rdquo;</li>
+</ul>
+<p>없는 것을 있는 척하지 않는 것이 이 결정의 핵심이다.</p>
+<hr>
+<h2 id="3-단계별로-쌓은-코어">3. 단계별로 쌓은 코어<a hidden class="anchor" aria-hidden="true" href="#3-단계별로-쌓은-코어">#</a></h2>
+<p>로드맵은 단계마다 <strong>게이트</strong>(통과 조건)가 있다. 8월 3<del>4일에 단계 0</del>4를 연속으로 마쳤다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>단계</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>0</td>
+					<td>저장소 골격, 검증 게이트(린트, 타입, 의존성 규칙, 테스트), CI, 스킬 3종</td>
+			</tr>
+			<tr>
+					<td>1</td>
+					<td>실측, 설정/API/데이터 계층, 백필 스크립트, 오케스트레이터</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>지표 8종, 거시 국면, 시장 미시 국면 5축, 공포 게이트, 거래 적격성, 폐지 감시자, 종료 게이트</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>리스크 순수 함수 계층, 식별자, DB 연동, 실행기, 대조(reconcile), 포지션 저장</td>
+			</tr>
+			<tr>
+					<td>4</td>
+					<td>데몬, 스케줄러, 배포 스크립트, 운영 문서</td>
+			</tr>
+	</tbody>
+</table>
+<p>실측으로만 드러난 문제도 있었다.</p>
+<ul>
+<li><strong>백필이 403에서 죽었다.</strong> 없는 달이 404가 아니라 <strong>403</strong>으로 응답하는데 첫 백필이 일시 오류로 보고 3회 재시도하다가 전체가 중단되었다. 403·404는 즉시 건너뛰고, 재시도는 429·5xx·네트워크 예외에만 걸도록 분리했다. 테스트 5건을 추가했다. 상태 파일이 저장되기 전에 죽은 것도 확인해서 부분 상태 정리 없이 처음부터 재실행하면 되었다.</li>
+<li>도구 쪽 사소한 함정도 있었다. 셸의 출력 리다이렉션이 표준 오류를 오류 객체로 감싸 읽기 어려워서, 로그를 파일 핸들러로 직접 쓰도록 바꿨다.</li>
+<li>국면 분류기의 품질을 진단하는 지표 6종을 별도 스크립트로 만들어 종료 게이트에 넣었다.</li>
+</ul>
+<hr>
+<h2 id="4-임시-서버-배포">4. 임시 서버 배포<a hidden class="anchor" aria-hidden="true" href="#4-임시-서버-배포">#</a></h2>
+<p>8월 4일에는 배포 스크립트를 실제 서버에서 돌려 보았다. 명시적으로 <strong>임시(트라이얼)</strong> 배포다. 등록된 실전략이 없어서 주문 리스크는 없고, &ldquo;설치와 기동이 죽지 않는가&quot;만 본다.</p>
+<ul>
+<li><strong>실행 권한 비트 버그.</strong> 로컬(Windows)에서는 <code>core.filemode=false</code>라 <code>chmod +x</code>가 저장소에 기록되지 않는다. 배포 스크립트 7개가 비실행 모드로 커밋되어 서버에서 <code>Permission denied</code>가 났다. <code>git update-index --chmod=+x</code>로 모드를 명시 기록했다. V1에서도 같은 문제를 겪었는데, 이번에는 결정 문서에 원인과 해법을 남겼다.</li>
+<li><strong>인증 문제.</strong> 서버에서 저장소를 가져올 때 기존 토큰이 권한 오류로 거부되었다(저장소 생성 전에 발급된 토큰의 SSO 미승인 추정). 새 토큰을 발급해 해결했다. 이 과정에서 비밀값을 채팅에 붙여넣는 실수가 있었고, 이후 <strong>비밀값은 항상 서버 터미널에 직접 입력하고 채팅에는 붙여넣지 않는다</strong>는 원칙을 세워 계속 적용하고 있다. 노출된 값은 폐기하는 것이 원칙이다.</li>
+<li>설치 스크립트가 가상환경, 의존성, DB 스키마 초기화, 서비스 유닛 배치까지 정상 완료했다. 웹 서비스는 아직 앱이 없어서 활성화를 보류했다.</li>
+<li><strong>시장 DB 반입.</strong> 운영 상태 DB와 시장 데이터 DB를 구분해, 시장 데이터 파일 하나만 올리고 운영 DB는 절대 로컬 사본으로 덮어쓰지 않는다. 업로드 후 무결성 검사 통과.</li>
+<li>데몬 기동 후 하트비트 테이블에서 프로세스 ID 일치, 틱 카운트 증가, 킬스위치 꺼짐을 확인했다. 거래소 계좌 조회도 정상 응답했다.</li>
+<li>백업 스크립트가 두 DB의 사본을 만드는 것까지 확인했다.</li>
+</ul>
+<p>남은 일도 정직하게 적었다. V1 크론을 주석 처리하고 V1 데몬을 정지했는지는 대화에서 명시적으로 재확인되지 않았다. 72시간 연속 구동이라는 로드맵 게이트는 아직 미완이다. 이번은 1차 확인일 뿐이다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>결정</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>문서</td>
+					<td>코드 전에 요구사항·결정 16건을 문서화</td>
+			</tr>
+			<tr>
+					<td>청산</td>
+					<td>타입 있는 청산 계획, 손절선 하향 금지</td>
+			</tr>
+			<tr>
+					<td>연구</td>
+					<td>전 단계 같은 엔진, 누적 시도 관리, 클래스 봉인</td>
+			</tr>
+			<tr>
+					<td>데이터</td>
+					<td>월 단위 확정, 생존 편향은 막고 밝힌다</td>
+			</tr>
+			<tr>
+					<td>배포</td>
+					<td>임시 서버로 설치·기동만 확인, 실전략 없음</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 외부 데이터 문서는 실물을 열어 보기 전까지 가설이다. 공지의 기간 서술이 틀렸고(좋은 쪽으로), 폐지 종목 데이터가 없다는 사실은(나쁜 쪽으로) 실물에서만 드러났다. 그리고 해결할 수 없는 문제는 해결한 척하지 말고 <strong>한계를 리포트에 박아 두는</strong> 편이 이후의 모든 결과를 정직하게 만든다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

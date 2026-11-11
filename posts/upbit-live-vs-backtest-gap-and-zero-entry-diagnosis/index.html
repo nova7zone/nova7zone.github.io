@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="연구, 설정, 버그수정, 리뷰">
+<meta name="description" content="실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 &#39;파라미터가 아니라 시장 국면&#39;이라고 결론 낸 과정을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다">
+  <meta property="og:description" content="실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 &#39;파라미터가 아니라 시장 국면&#39;이라고 결론 낸 과정을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-08-03T23:00:00+09:00">
+    <meta property="article:modified_time" content="2026-08-03T23:00:00+09:00">
+    <meta property="article:tag" content="연구">
+    <meta property="article:tag" content="설정">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="리뷰">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다">
+  <meta name="twitter:description" content="실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 &#39;파라미터가 아니라 시장 국면&#39;이라고 결론 낸 과정을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다",
+      "item": "https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다",
+  "name": "자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다",
+  "description": "실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 '파라미터가 아니라 시장 국면'이라고 결론 낸 과정을 정리한다.",
+  "keywords": [
+    "연구", "설정", "버그수정", "리뷰"
+  ],
+  "articleBody": "들어가며 7월 28일부터 8월 3일까지는 새로 만든 것보다 진단과 판단이 많은 한 주였다. 운영 중인 전략의 실거래 성과가 백테스트에서 확정한 판정과 크게 어긋나 있었다. 이 괴리가 출발점이다.\n1. 실거래와 백테스트가 다르다 운영 로그와 DB의 청산 완료 거래를 분석했다. 눈에 띈 점은 이랬다.\n실거래 손익비는 백테스트의 검증 구간 확정치와 큰 폭으로 달랐다. 추세 이탈로 인한 청산이 전부 손실이었고 평균 보유 시간이 길었다. 청산 사유별로 가장 큰 손실원이었다. 코드를 보니 광폭 손절과 고정 익절 사이에 미실현 이익을 지키는 장치(중간 트레일)가 없었다. 여기서 구조적 개선안 하나가 나왔다. 미실현 수익이 일정 수준을 넘으면 손절선을 진입가로 한 번 끌어올리는 “본전 스톱\"이다. 손절선은 조이는 방향으로만 움직이므로 기존 원칙과 충돌하지 않는다.\n2. 본전 스톱: 구현하고, 시험하고, 기각했다 기본값은 비활성(0.0)으로 두고 TDD로 구현했다(비활성 시 무영향, 트리거 도달 시 상향, 상향된 선에서 정상 손절, 재무장 안 함).\n검증은 앞의 글에서 정립한 절차를 그대로 썼다. 이 파라미터는 이전에 오염된(학습·검증 양쪽에서 이미 본) 네 가지와 달리 처음 탐색하는 축이라, 학습/검증 분할이 유효한 최초의 검증이었다.\n학습 구간: 비활성(기본)이 1위였고, 트리거를 켤수록 성과가 단조롭게 나빠지고 낙폭이 폭증했다. 검증 구간: 유일하게 통과 판정을 받은 설정도 개선폭이 노이즈 수준이었다. 거래 수 차이가 4건뿐이어서 사실상 거의 발동하지 않았다는 뜻이다. 채택 후보 없음. 설정은 비활성 그대로 두었고 프로덕션 동작은 바뀌지 않았다. 이 검증으로 “청산 로직 결함” 가설은 배제되었지만, 실거래와 백테스트의 괴리 자체는 규명되지 않았다. 표본 크기(운영 약 2주), 과최적화 잔존, 실행 계층의 차이 같은 후속 조사 과제로 남겼다.\n조사 중 계측 공백도 발견했다. 이 전략이 최대 유리/불리 변동폭(MFE/MAE)을 실측하지 않고 코어의 대체값(손익의 0 이상)을 쓰고 있었다. 그래서 “수익권을 반납한 손실\"과 “처음부터 이익이 없던 손실\"을 구분할 수 없었다.\n3. 매크로 국면 게이트: 비교 두 번, 채택 같은 날 사용자가 두 가지를 요청했다. 하나는 기각된 후속 전략이 쓰던 매크로 국면 필터를 운영 전략에 가져오는 것이고, 다른 하나는 매수·매도 판단 근거를 손익 분석용으로 DB에 남기는 것이다.\n게이트. 장기 이동평균의 기울기로 상승/하락 두 상태를 나누고, 하락장에서는 미시 국면이 상승일 때만 진입을 허용하는 2계층 구조다. 전략 간 import 금지 계약 때문에 코드를 공유할 수 없어서 로직을 복제했고, 원본과 같은 오라클로 테스트 3건을 붙였다. 파라미터는 원본에서 채택한 값을 그대로 썼다. 재탐색이 아니라 켜고 끄는 단순 비교다.\n학습 구간: 성과는 개선, 낙폭은 소폭 악화로 혼조였다. 검증 구간: 성과와 낙폭이 모두 개선되었다. 거래 수가 17% 줄면서 두 지표가 함께 좋아졌다. 본전 스톱의 노이즈 수준 결과와는 질적으로 다르다. 채택 기준(검증 구간에서 두 지표 모두 개선)을 충족해 활성화했다. 단 학습 구간의 낙폭 악화가 라이브에서 어떻게 나타나는지는 관찰 항목으로 남겼다.\n판단 근거 스냅샷. 진입 시점에는 매크로 국면, 돌파 기준선, 진입 방식을 후보 메타에 기록하고, 보유 중에는 최고가·최저가를 틱마다 추적해 청산 시 실측 MFE/MAE와 사유별 판정 임계값을 함께 남긴다. 앞에서 발견한 계측 공백을 메우는 작업이다. 테스트 10건을 더했다.\n4. 검증 없이 설정을 바꾼 일 7월 30일에는 다른 AI 모델로 진행한 세션에서 운영 데이터를 바탕으로 리스크·진입·청산 파라미터를 한꺼번에 조정했다. 포지션 비중, 총 노출 상한, 동시 보유 수, 일 손실 한도, 재진입 쿨다운을 줄이고, 손절 폭을 넓히고 익절 목표를 올렸다.\n이 변경에는 백테스트 검증이 없었다. 로그의 손실 패턴만 보고 바꾼 것이다. 앞의 글에서 강조한 절차(사전 등록, 학습/검증 분리)에 비추면 반대편에 있는 변경이다. 적어도 기록에는 정직하게 “1~3일 관찰 필요\"가 남았다. 이 변경의 효과를 평가하려면 그런데 이후에 진입 자체가 없었다. 아래 5절이 그 이야기다.\n배운 점이 하나 있다. 서로 다른 세션, 서로 다른 모델이 같은 저장소에서 일할 때는 같은 절차가 모든 세션에 적용되는가를 문서와 스킬에 박아 둬야 한다. 절차가 사람의 기억에만 있으면 세션이 바뀌는 순간 사라진다.\n5. CI 스모크가 깨진 이유: 레거시 별칭 변경이 풀 리퀘스트로 병합되는 과정에서 CI의 검증 단계가 실패했다. 스모크 테스트가 부르는 옛 전략 별칭(구 전략 이름)이 현재 레지스트리에 없었다. 전략 개명 때 별칭 하나가 정리되지 않았던 것이다.\n옛 별칭을 현재 전략으로 매핑해 호환성을 복구하고, 별칭 회귀 테스트를 추가했다. 개명은 단순해 보여도 문자열로 이름을 부르는 모든 곳에 영향을 준다는 점을 다시 확인했다.\n6. 진입이 한 건도 없다: 파라미터인가, 시장인가 배포 이후 일주일 가까이 진입과 청산이 0건이었다. 사용자의 질문은 정확했다. “조건이 좁아서인지, 시장 문제인지.”\n순서대로 확인했다.\n로그 점검: 로테이션된 로그 전체에서 ERROR/CRITICAL이 0건이었다. 경고는 평상시 범주였고, 배포 로그의 검증도 통과였다. DB에도 이상한 손익이나 중복 포지션이 없었다. 배포 공백 배제: 로컬 브랜치가 원격보다 뒤처져 보였지만 git fetch로 확인하니 모든 커밋이 이미 병합·배포되어 있었다. 로컬에서 당겨 오지 않았을 뿐이다. 진입 경로 확인: 이 전략의 선별 단계는 시장 국면이 하락이면 돌파 검사 전에 곧바로 빈 목록을 반환한다(몇 주 전부터 존재하는 동작이고 이번 튜닝과 무관). 로그의 국면 판정 이벤트가 보존 구간 206건 전부 하락이었다. 판정기 검증: 국면 판정기가 오탐일 수도 있어서, 로컬 캔들 캐시의 실제 BTC 종가로 교차 검증했다. 일주일 넘게 꾸준히 하락하고 있었다. 판정기 오류가 아니라 실제 시장 하락이다. 결론은 파라미터 문제가 아니다. 조건이 좁은 게 아니라 하락장에서는 애초에 진입 단계에 도달하지 않는 구조가 의도대로 작동 중이었다. 따라서 7월 30일 튜닝의 효과를 평가할 기회가 아직 없다. 국면이 상승이나 횡보로 전환된 뒤 실제 진입과 청산이 발생하는지, 새 파라미터가 정상 반영되는지가 다음 확인 항목이다.\n7. 소소한 정리 대시보드의 전략 패널에 전략별 배분 비율 배지를 추가했다(0% 초과는 녹색, 0%는 회색). 에이전트 도구의 허용 규칙이 세션 ID와 정확한 파일 경로가 박힌 1회성 항목 약 40개로 불어나 매 세션 재승인을 요구했다. 범주형 규칙 16개로 통합했다. 실주문을 실행하는 모듈 차단 규칙은 이번 정리의 범위 밖이라 건드리지 않았다. 권한 모델에서 차단 규칙이 허용 규칙보다 우선하므로, 허용 범위를 넓혀도 실주문 스크립트는 여전히 막힌다. 정리 영역 내용 괴리 실거래 성과가 백테스트 확정치와 크게 다름, 원인은 아직 미규명 개선안 본전 스톱은 학습/검증으로 기각, 매크로 게이트는 채택 계측 최대 유리/불리 변동폭을 실측 기록 위험 검증 없는 설정 일괄 조정, 효과 평가는 보류 진단 진입 0건 = 하락 국면 게이트의 정상 동작, 시세로 교차 검증 배운 점: “거래가 없다\"는 증상에는 세 층의 가설이 있다. 배포되지 않았거나, 조건이 좁거나, 시장이 맞지 않는다. 순서대로 배제해야 한다. 배포 여부는 git fetch로, 조건은 로그의 판정 이벤트로, 시장은 판정기와 독립된 가격 데이터로 확인한다. 그리고 판정기가 맞는지 판정기 바깥의 데이터로 검증하는 습관이 결론의 무게를 바꾼다. 마지막으로, 검증 절차는 가장 바쁠 때 건너뛰기 쉽다. 절차가 필요한 순간은 오히려 “빨리 개선하고 싶을 때\"다.\n",
+  "wordCount" : "2959",
+  "inLanguage": "ko",
+  "datePublished": "2026-08-03T23:00:00+09:00",
+  "dateModified": "2026-08-03T23:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다
+    </h1>
+    <div class="post-description">
+      실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 &#39;파라미터가 아니라 시장 국면&#39;이라고 결론 낸 과정을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-08-03T23:00:00+09:00'>2026년 8월 3일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%8b%a4%ea%b1%b0%eb%9e%98%ec%99%80-%eb%b0%b1%ed%85%8c%ec%8a%a4%ed%8a%b8%ea%b0%80-%eb%8b%a4%eb%a5%b4%eb%8b%a4" aria-label="1. 실거래와 백테스트가 다르다">1. 실거래와 백테스트가 다르다</a></li>
+            <li>
+                <a href="#2-%eb%b3%b8%ec%a0%84-%ec%8a%a4%ed%86%b1-%ea%b5%ac%ed%98%84%ed%95%98%ea%b3%a0-%ec%8b%9c%ed%97%98%ed%95%98%ea%b3%a0-%ea%b8%b0%ea%b0%81%ed%96%88%eb%8b%a4" aria-label="2. 본전 스톱: 구현하고, 시험하고, 기각했다">2. 본전 스톱: 구현하고, 시험하고, 기각했다</a></li>
+            <li>
+                <a href="#3-%eb%a7%a4%ed%81%ac%eb%a1%9c-%ea%b5%ad%eb%a9%b4-%ea%b2%8c%ec%9d%b4%ed%8a%b8-%eb%b9%84%ea%b5%90-%eb%91%90-%eb%b2%88-%ec%b1%84%ed%83%9d" aria-label="3. 매크로 국면 게이트: 비교 두 번, 채택">3. 매크로 국면 게이트: 비교 두 번, 채택</a></li>
+            <li>
+                <a href="#4-%ea%b2%80%ec%a6%9d-%ec%97%86%ec%9d%b4-%ec%84%a4%ec%a0%95%ec%9d%84-%eb%b0%94%ea%be%bc-%ec%9d%bc" aria-label="4. 검증 없이 설정을 바꾼 일">4. 검증 없이 설정을 바꾼 일</a></li>
+            <li>
+                <a href="#5-ci-%ec%8a%a4%eb%aa%a8%ed%81%ac%ea%b0%80-%ea%b9%a8%ec%a7%84-%ec%9d%b4%ec%9c%a0-%eb%a0%88%ea%b1%b0%ec%8b%9c-%eb%b3%84%ec%b9%ad" aria-label="5. CI 스모크가 깨진 이유: 레거시 별칭">5. CI 스모크가 깨진 이유: 레거시 별칭</a></li>
+            <li>
+                <a href="#6-%ec%a7%84%ec%9e%85%ec%9d%b4-%ed%95%9c-%ea%b1%b4%eb%8f%84-%ec%97%86%eb%8b%a4-%ed%8c%8c%eb%9d%bc%eb%af%b8%ed%84%b0%ec%9d%b8%ea%b0%80-%ec%8b%9c%ec%9e%a5%ec%9d%b8%ea%b0%80" aria-label="6. 진입이 한 건도 없다: 파라미터인가, 시장인가">6. 진입이 한 건도 없다: 파라미터인가, 시장인가</a></li>
+            <li>
+                <a href="#7-%ec%86%8c%ec%86%8c%ed%95%9c-%ec%a0%95%eb%a6%ac" aria-label="7. 소소한 정리">7. 소소한 정리</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>7월 28일부터 8월 3일까지는 새로 만든 것보다 <strong>진단과 판단</strong>이 많은 한 주였다. 운영 중인 전략의 실거래 성과가 백테스트에서 확정한 판정과 크게 어긋나 있었다. 이 괴리가 출발점이다.</p>
+<hr>
+<h2 id="1-실거래와-백테스트가-다르다">1. 실거래와 백테스트가 다르다<a hidden class="anchor" aria-hidden="true" href="#1-실거래와-백테스트가-다르다">#</a></h2>
+<p>운영 로그와 DB의 청산 완료 거래를 분석했다. 눈에 띈 점은 이랬다.</p>
+<ul>
+<li>실거래 손익비는 백테스트의 검증 구간 확정치와 큰 폭으로 달랐다.</li>
+<li>추세 이탈로 인한 청산이 <strong>전부 손실</strong>이었고 평균 보유 시간이 길었다. 청산 사유별로 가장 큰 손실원이었다.</li>
+<li>코드를 보니 광폭 손절과 고정 익절 사이에 <strong>미실현 이익을 지키는 장치</strong>(중간 트레일)가 없었다.</li>
+</ul>
+<p>여기서 구조적 개선안 하나가 나왔다. 미실현 수익이 일정 수준을 넘으면 손절선을 진입가로 한 번 끌어올리는 &ldquo;본전 스톱&quot;이다. 손절선은 조이는 방향으로만 움직이므로 기존 원칙과 충돌하지 않는다.</p>
+<hr>
+<h2 id="2-본전-스톱-구현하고-시험하고-기각했다">2. 본전 스톱: 구현하고, 시험하고, 기각했다<a hidden class="anchor" aria-hidden="true" href="#2-본전-스톱-구현하고-시험하고-기각했다">#</a></h2>
+<p>기본값은 비활성(0.0)으로 두고 TDD로 구현했다(비활성 시 무영향, 트리거 도달 시 상향, 상향된 선에서 정상 손절, 재무장 안 함).</p>
+<p>검증은 앞의 글에서 정립한 절차를 그대로 썼다. 이 파라미터는 이전에 오염된(학습·검증 양쪽에서 이미 본) 네 가지와 달리 <strong>처음 탐색하는 축</strong>이라, 학습/검증 분할이 유효한 최초의 검증이었다.</p>
+<ul>
+<li>학습 구간: 비활성(기본)이 1위였고, 트리거를 켤수록 성과가 단조롭게 나빠지고 낙폭이 폭증했다.</li>
+<li>검증 구간: 유일하게 통과 판정을 받은 설정도 개선폭이 노이즈 수준이었다. 거래 수 차이가 4건뿐이어서 사실상 거의 발동하지 않았다는 뜻이다.</li>
+</ul>
+<p><strong>채택 후보 없음.</strong> 설정은 비활성 그대로 두었고 프로덕션 동작은 바뀌지 않았다. 이 검증으로 &ldquo;청산 로직 결함&rdquo; 가설은 배제되었지만, 실거래와 백테스트의 괴리 자체는 규명되지 않았다. 표본 크기(운영 약 2주), 과최적화 잔존, 실행 계층의 차이 같은 후속 조사 과제로 남겼다.</p>
+<p>조사 중 계측 공백도 발견했다. 이 전략이 최대 유리/불리 변동폭(MFE/MAE)을 실측하지 않고 코어의 대체값(손익의 0 이상)을 쓰고 있었다. 그래서 &ldquo;수익권을 반납한 손실&quot;과 &ldquo;처음부터 이익이 없던 손실&quot;을 구분할 수 없었다.</p>
+<hr>
+<h2 id="3-매크로-국면-게이트-비교-두-번-채택">3. 매크로 국면 게이트: 비교 두 번, 채택<a hidden class="anchor" aria-hidden="true" href="#3-매크로-국면-게이트-비교-두-번-채택">#</a></h2>
+<p>같은 날 사용자가 두 가지를 요청했다. 하나는 기각된 후속 전략이 쓰던 <strong>매크로 국면 필터</strong>를 운영 전략에 가져오는 것이고, 다른 하나는 매수·매도 판단 근거를 손익 분석용으로 DB에 남기는 것이다.</p>
+<p><strong>게이트.</strong> 장기 이동평균의 기울기로 상승/하락 두 상태를 나누고, 하락장에서는 미시 국면이 상승일 때만 진입을 허용하는 2계층 구조다. 전략 간 import 금지 계약 때문에 코드를 공유할 수 없어서 로직을 복제했고, 원본과 같은 오라클로 테스트 3건을 붙였다. 파라미터는 원본에서 채택한 값을 그대로 썼다. 재탐색이 아니라 <strong>켜고 끄는 단순 비교</strong>다.</p>
+<ul>
+<li>학습 구간: 성과는 개선, 낙폭은 소폭 악화로 혼조였다.</li>
+<li>검증 구간: 성과와 낙폭이 <strong>모두 개선</strong>되었다. 거래 수가 17% 줄면서 두 지표가 함께 좋아졌다. 본전 스톱의 노이즈 수준 결과와는 질적으로 다르다.</li>
+</ul>
+<p>채택 기준(검증 구간에서 두 지표 모두 개선)을 충족해 활성화했다. 단 학습 구간의 낙폭 악화가 라이브에서 어떻게 나타나는지는 관찰 항목으로 남겼다.</p>
+<p><strong>판단 근거 스냅샷.</strong> 진입 시점에는 매크로 국면, 돌파 기준선, 진입 방식을 후보 메타에 기록하고, 보유 중에는 최고가·최저가를 틱마다 추적해 청산 시 실측 MFE/MAE와 사유별 판정 임계값을 함께 남긴다. 앞에서 발견한 계측 공백을 메우는 작업이다. 테스트 10건을 더했다.</p>
+<hr>
+<h2 id="4-검증-없이-설정을-바꾼-일">4. 검증 없이 설정을 바꾼 일<a hidden class="anchor" aria-hidden="true" href="#4-검증-없이-설정을-바꾼-일">#</a></h2>
+<p>7월 30일에는 다른 AI 모델로 진행한 세션에서 운영 데이터를 바탕으로 <strong>리스크·진입·청산 파라미터를 한꺼번에 조정</strong>했다. 포지션 비중, 총 노출 상한, 동시 보유 수, 일 손실 한도, 재진입 쿨다운을 줄이고, 손절 폭을 넓히고 익절 목표를 올렸다.</p>
+<p>이 변경에는 백테스트 검증이 없었다. 로그의 손실 패턴만 보고 바꾼 것이다. 앞의 글에서 강조한 절차(사전 등록, 학습/검증 분리)에 비추면 <strong>반대편에 있는 변경</strong>이다. 적어도 기록에는 정직하게 &ldquo;1~3일 관찰 필요&quot;가 남았다. 이 변경의 효과를 평가하려면 그런데 이후에 진입 자체가 없었다. 아래 5절이 그 이야기다.</p>
+<p>배운 점이 하나 있다. 서로 다른 세션, 서로 다른 모델이 같은 저장소에서 일할 때는 <strong>같은 절차가 모든 세션에 적용되는가</strong>를 문서와 스킬에 박아 둬야 한다. 절차가 사람의 기억에만 있으면 세션이 바뀌는 순간 사라진다.</p>
+<hr>
+<h2 id="5-ci-스모크가-깨진-이유-레거시-별칭">5. CI 스모크가 깨진 이유: 레거시 별칭<a hidden class="anchor" aria-hidden="true" href="#5-ci-스모크가-깨진-이유-레거시-별칭">#</a></h2>
+<p>변경이 풀 리퀘스트로 병합되는 과정에서 CI의 검증 단계가 실패했다. 스모크 테스트가 부르는 <strong>옛 전략 별칭</strong>(구 전략 이름)이 현재 레지스트리에 없었다. 전략 개명 때 별칭 하나가 정리되지 않았던 것이다.</p>
+<p>옛 별칭을 현재 전략으로 매핑해 호환성을 복구하고, 별칭 회귀 테스트를 추가했다. 개명은 단순해 보여도 문자열로 이름을 부르는 모든 곳에 영향을 준다는 점을 다시 확인했다.</p>
+<hr>
+<h2 id="6-진입이-한-건도-없다-파라미터인가-시장인가">6. 진입이 한 건도 없다: 파라미터인가, 시장인가<a hidden class="anchor" aria-hidden="true" href="#6-진입이-한-건도-없다-파라미터인가-시장인가">#</a></h2>
+<p>배포 이후 일주일 가까이 진입과 청산이 0건이었다. 사용자의 질문은 정확했다. &ldquo;조건이 좁아서인지, 시장 문제인지.&rdquo;</p>
+<p>순서대로 확인했다.</p>
+<ol>
+<li><strong>로그 점검</strong>: 로테이션된 로그 전체에서 ERROR/CRITICAL이 0건이었다. 경고는 평상시 범주였고, 배포 로그의 검증도 통과였다. DB에도 이상한 손익이나 중복 포지션이 없었다.</li>
+<li><strong>배포 공백 배제</strong>: 로컬 브랜치가 원격보다 뒤처져 보였지만 <code>git fetch</code>로 확인하니 모든 커밋이 이미 병합·배포되어 있었다. 로컬에서 당겨 오지 않았을 뿐이다.</li>
+<li><strong>진입 경로 확인</strong>: 이 전략의 선별 단계는 시장 국면이 하락이면 돌파 검사 전에 곧바로 빈 목록을 반환한다(몇 주 전부터 존재하는 동작이고 이번 튜닝과 무관). 로그의 국면 판정 이벤트가 보존 구간 <strong>206건 전부 하락</strong>이었다.</li>
+<li><strong>판정기 검증</strong>: 국면 판정기가 오탐일 수도 있어서, 로컬 캔들 캐시의 실제 BTC 종가로 교차 검증했다. 일주일 넘게 꾸준히 하락하고 있었다. <strong>판정기 오류가 아니라 실제 시장 하락</strong>이다.</li>
+</ol>
+<p>결론은 <strong>파라미터 문제가 아니다.</strong> 조건이 좁은 게 아니라 하락장에서는 애초에 진입 단계에 도달하지 않는 구조가 의도대로 작동 중이었다. 따라서 7월 30일 튜닝의 효과를 평가할 기회가 아직 없다. 국면이 상승이나 횡보로 전환된 뒤 실제 진입과 청산이 발생하는지, 새 파라미터가 정상 반영되는지가 다음 확인 항목이다.</p>
+<hr>
+<h2 id="7-소소한-정리">7. 소소한 정리<a hidden class="anchor" aria-hidden="true" href="#7-소소한-정리">#</a></h2>
+<ul>
+<li>대시보드의 전략 패널에 전략별 배분 비율 배지를 추가했다(0% 초과는 녹색, 0%는 회색).</li>
+<li>에이전트 도구의 허용 규칙이 세션 ID와 정확한 파일 경로가 박힌 1회성 항목 약 40개로 불어나 매 세션 재승인을 요구했다. 범주형 규칙 16개로 통합했다. 실주문을 실행하는 모듈 차단 규칙은 이번 정리의 범위 밖이라 건드리지 않았다. 권한 모델에서 차단 규칙이 허용 규칙보다 우선하므로, 허용 범위를 넓혀도 실주문 스크립트는 여전히 막힌다.</li>
+</ul>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>괴리</td>
+					<td>실거래 성과가 백테스트 확정치와 크게 다름, 원인은 아직 미규명</td>
+			</tr>
+			<tr>
+					<td>개선안</td>
+					<td>본전 스톱은 학습/검증으로 기각, 매크로 게이트는 채택</td>
+			</tr>
+			<tr>
+					<td>계측</td>
+					<td>최대 유리/불리 변동폭을 실측 기록</td>
+			</tr>
+			<tr>
+					<td>위험</td>
+					<td>검증 없는 설정 일괄 조정, 효과 평가는 보류</td>
+			</tr>
+			<tr>
+					<td>진단</td>
+					<td>진입 0건 = 하락 국면 게이트의 정상 동작, 시세로 교차 검증</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: &ldquo;거래가 없다&quot;는 증상에는 세 층의 가설이 있다. 배포되지 않았거나, 조건이 좁거나, 시장이 맞지 않는다. 순서대로 배제해야 한다. 배포 여부는 <code>git fetch</code>로, 조건은 로그의 판정 이벤트로, 시장은 판정기와 독립된 가격 데이터로 확인한다. 그리고 판정기가 맞는지 판정기 바깥의 데이터로 검증하는 습관이 결론의 무게를 바꾼다. 마지막으로, 검증 절차는 가장 바쁠 때 건너뛰기 쉽다. 절차가 필요한 순간은 오히려 &ldquo;빨리 개선하고 싶을 때&quot;다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

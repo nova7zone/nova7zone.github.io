@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit | Evan&#39;s Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--upbit/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--upbit/index.xml" title="rss">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--upbit/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--upbit/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit">
+  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="website">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit">
+  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+
+</head>
+<body class="list" id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+<header class="page-header"><nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/series/">Series</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+  <h1>
+    자동매매 V2 개발 · Upbit
+  </h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트
+    </h2>
+  </header>
+  <div class="entry-content"><p>새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-10T19:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트" href="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (13) — 거래소 장애 때 틱이 20분 멈춘 이유, 그리고 &#39;임계값을 결과에 맞추지 않는다&#39;
+    </h2>
+  </header>
+  <div class="entry-content"><p>정기 점검 스크립트가 낸 발견 다섯 개를 순서대로 처리한 기록. 거래소 장애 때 틱 하나가 20분 가까이 멈춘 원인을 장애 로그로 확정해 막고, IOC 부분 체결이 종결 상태로 남던 문제를 고쳤다. 사이징 입력값을 체결 시점에 기록해 재현 가능하게 하고, 점검 임계값을 라이브 결과에 맞춰 고치지 않는다는 원칙도 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-22T13:00:00+09:00'>2026년 10월 22일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (13) — 거래소 장애 때 틱이 20분 멈춘 이유, 그리고 &#39;임계값을 결과에 맞추지 않는다&#39;" href="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트
+    </h2>
+  </header>
+  <div class="entry-content"><p>에이전트가 따르는 스킬과 지침 문서가 코드·설정·다른 문서와 어긋나기 시작했다. 스킬을 실물과 대조하는 정합성 리뷰로 지적 약 25건을 찾고, 정의가 네 곳에서 다른 판정 기준을 정본 하나로 맞췄다. 점검에 쓰는 AI 사용량을 줄이려고 읽기 전용 점검 스크립트를 만든 과정과, 외부 AI의 개선 제안서를 실물과 대조해 대부분 불채택한 판단을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-18T23:40:00+09:00'>2026년 10월 18일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트" href="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다
+    </h2>
+  </header>
+  <div class="entry-content"><p>정식 전략 승급을 앞두고 코어 전체를 12개 문서로 코드 리뷰해 지적 약 120건을 얻었다. 중요도와 연관성으로 Phase 0~3으로 나누어 모두 RED→GREEN으로 풀고, 정책 결정이 필요한 항목은 사용자에게 의미를 다시 설명해 결정받았다. 같은 날 배포 검증을 격리 작업 트리로 옮긴 일, 서비스 로그가 디스크를 먹던 원인과 정리를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-07T22:30:00+09:00'>2026년 10월 7일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다" href="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다
+    </h2>
+  </header>
+  <div class="entry-content"><p>사람이 하던 서버 점검(헬스체크, 재시작, 경계 점검, 일일 리포트)을 cron 스크립트로 옮기고 웹에 리스크 통제와 보고서 화면을 붙였다. 배포 과정에서 실행 권한 비트, 셸의 변수 확장, 임포트 경로라는 로컬 검증으로 못 잡는 버그 세 개가 다시 나왔다. 같은 날 연구 쪽에서는 판정 단위 추정식이 두 개 있다는 불일치도 찾아냈다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-06T18:00:00+09:00'>2026년 10월 6일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다" href="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (9) — 중복 체결 조사: 내가 쓴 &#39;체결 없음&#39; 기록이 틀렸다
+    </h2>
+  </header>
+  <div class="entry-content"><p>재시작 직후 같은 4시간 경계를 다시 처리해 중복 후보가 생긴 사고를 고쳤지만, 사용자의 의문 한 줄 덕분에 &#39;중복 후보는 체결까지 가지 않았다&#39;는 내 기록이 틀렸음이 드러났다. 거래소 체결 내역과 실제 잔고를 대조해 주문이 먼저 나가고 중복 확인이 나중이던 순서 결함을 찾고, 리스크 게이트 두 개가 같은 사유 이름으로 섞여 있던 문제와 함께 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-09-29T23:30:00+09:00'>2026년 9월 29일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (9) — 중복 체결 조사: 내가 쓴 &#39;체결 없음&#39; 기록이 틀렸다" href="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)
+    </h2>
+  </header>
+  <div class="entry-content"><p>단순한 첫 캐너리가 검증하지 못한 실행 경로를 채우는 두 번째 캐너리를 만들고, 웹에서 전략을 켜고 끄는 첫 쓰기 기능을 붙였다. 설계 탐색 중 &#39;자리만 있고 배선이 안 된 줄 알았던&#39; 설정 변경 장치가 이미 구현되어 있음을 발견해 설계를 바꾼 일, 서버에서 설정 파일을 직접 고쳐 생긴 드리프트, 홈 화면 설치용 PWA까지 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-09-26T15:00:00+09:00'>2026년 9월 26일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)" href="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (7) — 인프라 검증용 캐너리의 첫 실주문이 드러낸 버그 연쇄
+    </h2>
+  </header>
+  <div class="entry-content"><p>66회차까지 통과한 전략이 하나도 없는 상태에서 &#39;실주문 경로가 정말 작동하는가&#39;를 검증하려고, 수익이 목적이 아닌 캐너리 전략을 하루 만에 만들어 라이브로 돌렸다. 빈 유니버스, 무조건 거부하는 스텁, 즉시 판정 오류, 청산 주문 가격 파라미터까지 하루에 이어서 드러난 버그 네 건을 순서대로 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-09-23T22:00:00+09:00'>2026년 9월 23일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (7) — 인프라 검증용 캐너리의 첫 실주문이 드러낸 버그 연쇄" href="https://nova7zone.github.io/posts/upbit-v2-canary-first-live-orders-bug-chain/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (6) — 연구 45~66회차: 모든 분류가 닫혔을 때, 돈으로도 안 풀리는 것과 새 데이터를 검증하는 법
+    </h2>
+  </header>
+  <div class="entry-content"><p>연구 분류 체계의 모든 클래스가 봉인되거나 소진된 9월 중순~하순의 기록. 후보가 사실은 이미 시도한 후보의 부분집합임을 산술로 증명한 사례, 유료 자료원을 돈으로 사도 안 풀리는 이유를 가격 조사로 확인한 일, 그리고 과거 구간이 존재할 수 없는 신규 데이터를 검증하는 독립 경계 원칙을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-09-23T09:00:00+09:00'>2026년 9월 23일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (6) — 연구 45~66회차: 모든 분류가 닫혔을 때, 돈으로도 안 풀리는 것과 새 데이터를 검증하는 법" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-45-to-66-closed-loop/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락
+    </h2>
+  </header>
+  <div class="entry-content"><p>연구 41회차를 돌렸는데 통과가 한 건도 없다. 게이트가 과한 건지, 후보가 나쁜 건지를 가리려고 회차 이력을 전수 집계해 종결 사유를 네 가지로 분류했다. 봉인 해제 카운터가 서로 다른 두 일을 하나의 숫자로 재고 있어서 생긴 데드락을 푼 과정과, 통계 문턱은 건드리지 않는다는 결론을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-09-11T12:00:00+09:00'>2026년 9월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/"></a>
+</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--upbit/page/2/">다음 페이지&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

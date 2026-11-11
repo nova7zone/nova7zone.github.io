@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법 | Evan&#39;s Blog</title>
+<meta name="keywords" content="버그수정, 설계, 연구">
+<meta name="description" content="실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법">
+  <meta property="og:description" content="실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-15T23:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-15T23:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="연구">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법">
+  <meta name="twitter:description" content="실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법",
+      "item": "https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법",
+  "name": "자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법",
+  "description": "실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.",
+  "keywords": [
+    "버그수정", "설계", "연구"
+  ],
+  "articleBody": "들어가며 실거래를 시작하고 며칠이 지나도 체결이 없었다. “시장 국면이 안 맞아서\"라는 설명이 한동안 맞았지만, 국면이 풀린 7월 15일 이후에는 그 설명이 통하지 않게 되었다. 이날 하루 동안 주문 파이프라인의 서로 다른 세 지점에서 버그가 연달아 나왔다. 앞선 버그가 뒤의 버그를 가리고 있던 구조여서, 하나 고치자 다음이 드러났다.\n1. 첫 번째 막힘: 사이징 설정이 옛 전제를 가정하고 있었다 로그를 보니 한 전략이 횡보 국면에서 처음으로 후보를 통과시켰고 진입 판단도 참이었는데, 주문 금액이 0이라 “최소 금액 미만\"으로 전부 건너뛰었다.\n원인은 설정 파일이었다. 횡보 국면의 포지션 비율이 0.0이었다. 이 전략의 선별 단계가 “상승 국면만 통과\"시킨다는 옛 전제 때문에 그렇게 써 둔 것이다. 전날 국면 게이트를 완화해서 횡보 국면도 통과하게 했는데, 그 값을 같이 고치지 않았다. 설정값은 코드 수정과 달리 테스트가 걸리지 않는다. 게이트를 바꾼 변경이 사이징 설정에 미치는 영향을 아무도 추적하지 않았다.\n균등 가중으로 되돌리고 문서의 옛 전제 서술도 정정했다. 하락 국면은 게이트가 여전히 후보를 막으므로 사이징에 닿지 않아서 그대로 두었다.\n2. 두 번째 막힘: 추상 주문 유형을 번역하지 않았다 상승 국면으로 처음 전환된 사이클에서 두 전략이 모두 실제 진입을 시도했고, 거래소가 400 invalid_parameter 로 거절했다.\n전략 코드가 쓰는 추상 주문 유형(limit_ioc, best_ioc)을 번역 없이 그대로 거래소의 주문 유형 필드에 보낸 것이다. 거래소 공식 문서를 다시 확인하니 주문 유형은 limit, price, market, best 네 가지뿐이고, IOC/FOK는 별도의 체결 조건 필드였다. 청산 쪽은 모든 주문에 IOC 조건을 붙이고 있었는데, 시장가 손절에는 성립하지 않는 조합이었다. 첫 포지션이 없어서 그 경로가 한 번도 실행된 적이 없었을 뿐이다.\n이 버그가 첫 번째 막힘 뒤에 숨어 있었다는 점이 중요하다. 이전까지는 국면 게이트와 사이징에 막혀 주문 단계에 도달한 적이 없었다. 수정은 추상 유형을 (주문 유형, 체결 조건) 쌍으로 바꾸는 매핑 함수로 했고, 매핑값은 공식 문서로 다시 검증했다.\n3. 세 번째 막힘: 체결됐는데 “미체결\"로 읽었다 버그를 고치고 나서 사용자가 알려 왔다. “매수가 이뤄졌는데 텔레그램 알림이 안 왔다. 거래소 계좌에는 보인다.”\n처음 조사에서는 로그와 DB가 모두 체결 0건이라서 “체결 없음\"이라 결론 냈다. 사용자의 반박이 맞았다. 근본적으로 의심해야 할 지점은 체결 확인 방식이었다. 주문 직후 한 번만 주문을 조회해 체결 내역(trades)을 읽는데, 거래소가 실제로는 체결시켰어도 그 시점에는 내역 배열이 아직 비어 있는 최종 일관성 지연이 있을 수 있다. 그러면 봇은 “미체결\"로 판단하고 포지션을 기록하지 않는다.\n더 심각한 점은 안전망이 없다는 것이었다.\n포지션 조회는 봇의 장부에 없는 실제 잔고를 조용히 건너뛴다. 대조(reconcile)는 미체결 주문만 비교해서, 이미 끝난 주문은 대상이 아니다. 그래서 체결을 놓치면 실제 포지션이 손절·청산 관리 없이 무기한 방치될 수 있다. 대시보드의 “계좌 현황\"은 매 요청마다 거래소에서 실시간으로 잔고를 읽고, 거래 장부는 봇이 스스로 기록하는 별도 테이블이다. 둘이 어긋나도 잡는 곳이 없는 구조였다.\n복구 스크립트: 실패하면 닫는다(fail-closed) 원인 수정 전에 먼저 이미 생긴 미추적 포지션을 복구해야 했다. 진단·복구 스크립트의 설계 원칙은 이렇다.\n로그에서 “미체결” 판정 기록을 파싱하고, 직전 선별 로그의 메타 정보를 같은 키로 이어 붙여 진입 당시 스냅샷을 복원한다. 지금 시점에 주문을 다시 조회해, 실제로 체결된 것만 장부에 백필한다. 기본은 dry-run이고 --apply를 줘야만 기록한다. 청산 판단에 꼭 필요한 메타 키가 빠져 있으면 자동 백필 대신 수동 검토 대상으로 둔다. 불완전한 기록이 장부에 들어가면 다음 가드 사이클에서 그 전략의 청산 로직 전체가 예외로 죽을 수 있고, 그쪽이 훨씬 위험하기 때문이다. 서버에서 dry-run을 돌려 보니 8건 중 대부분은 재조회해도 진짜 미체결이었고, 두 건만 실제 체결이었다. 적용 후 두 건이 장부에 기록되고 알림이 왔다. 이후 가드 사이클부터 정상 관리되었다.\n근본 수정 그다음 단계에서 재시도를 넣었다. 체결 확인을 짧은 간격으로 최대 몇 번 반복한다. 이 간격은 매매 파라미터가 아니라 API 재시도 정책이므로 설정 파일이 아닌 코드 상수로 두었다. 대기 함수는 주입 가능하게 해서 테스트에서는 실제로 잠들지 않는다.\n백테스트 엔진도 같은 run_phase()를 쓰기 때문에, 엔진 쪽 의존성 조립에는 대기를 건너뛰는 함수를 명시했다. 가짜 증권사에는 네트워크 지연이 없으니 재시도가 무의미하고, 기본 대기를 그대로 두면 진입마다 리플레이가 실제로 멈춘다. 첫 조회에서 체결이 확인되면 재시도 루프 자체에 들어가지 않으므로 결정 로직은 변하지 않는다. 바뀐 건 네트워크 타이밍에 대한 내성뿐이다.\n4. 라이브 설정이 열위 변형을 쓰고 있었다 장기 재검증을 하다가 또 하나 발견했다. 한 전략의 진입 방식 설정이, 며칠 전 실험 이후 pullback_retest로 남아 있었다. 그리고 그 설정이 실서버에서 실제 자금으로 도는 설정이었다. 4년 구간에서 비교해 보니 기본 변형이 오히려 낫고, 18개월 구간에서의 순위는 완전히 뒤집혔다. 짧은 구간 결과가 긴 구간에서 뒤집힐 수 있다는 사례다.\n사용자에게 보고하고 확인을 받아 기본 변형으로 되돌렸다. 서버 반영은 다음 배포 때였고, 이 세션에서는 서버를 만지지 않았다. 실험용 설정이 운영 설정 파일에 그대로 남는 문제는 실험은 코드나 메모리 오버라이드로 하고 설정 파일은 건드리지 않는다는 원칙으로 이후 스크립트에 반영했다.\n5. 파라미터 그리드 탐색: 학습과 검증을 분리한다 4년 재검증에서 기준에 근소하게 못 미친 전략이 있었다. 조정 후보는 문서가 “그리드 탐색을 한 적 없다\"고 명시한 세 값(채널 길이, 손절 배수, 익절 폭)이었다. 과거 워크포워드에서 폴드마다 재선택한 파라미터가 검증 구간에서 무너진 전례가 있어서, 절차를 먼저 못박았다.\n학습(TRAIN) 4년에서만 27개 조합(3×3×3)을 탐색한다. 낙폭 상한 필터를 통과한 조합 중 수익 팩터 상위 3개만 뽑는다. 분리된 검증(TEST) 18개월에서 기본 설정과 함께 다시 돌린다. 채택 기준을 사전에 확정해 둔다. 검증 구간에서 최소 수익 팩터와 낙폭 상한을 만족하고, 기본 설정보다 두 지표가 모두 나아야 한다. 설정 파일은 건드리지 않고 메모리 오버라이드로 돌렸다. 학습 상위 3개가 공통적으로 “더 이른 익절, 더 넓은 손절\"을 가리키는 일관된 신호가 있었다. 검증에서는 두 개가 기준을 충족했고, 그중 성과가 더 나은 쪽을 채택했다. 지금까지 검증한 모든 변형 중 분리 구간에서 두 기준을 동시에 넘은 첫 사례였다.\n다만 문서에 한계를 적었다. 이 세 파라미터는 이제 학습·검증 두 구간을 모두 “본 적 있는” 상태다. 다음에 조정하려면 제3의 미탐색 구간이 필요하다.\n정리 순서 막힘 원인 조치 1 주문 금액 0 게이트 완화 후 사이징 설정이 옛 전제 유지 설정 정정 2 주문 400 거절 추상 주문 유형을 번역 없이 전송 매핑 함수, 공식 문서 재검증 3 체결 후 미기록 한 번만 조회, 최종 일관성 지연 재시도, 복구 스크립트 4 열위 변형 라이브 실험 설정이 운영 파일에 잔존 되돌림, 실험 방식 변경 배운 점: 파이프라인이 한 번도 끝까지 실행된 적 없으면, 앞 단계의 버그가 뒤 단계의 버그를 가린다. “체결 0건\"은 한 가지 원인이 아니라 겹겹이 쌓인 원인이었고, 하나씩 걷어낼 때마다 새로운 단계가 처음으로 실행되었다. 그리고 거래소 API는 추상화를 믿지 말고 공식 문서와 직접 대조해야 한다. 파라미터 탐색에서는 학습과 검증을 나누는 것만큼 채택 기준을 결과를 보기 전에 정해 두는 것이 중요하다.\n",
+  "wordCount" : "3052",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-15T23:00:00+09:00",
+  "dateModified": "2026-07-15T23:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법
+    </h1>
+    <div class="post-description">
+      실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-15T23:00:00+09:00'>2026년 7월 15일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%b2%ab-%eb%b2%88%ec%a7%b8-%eb%a7%89%ed%9e%98-%ec%82%ac%ec%9d%b4%ec%a7%95-%ec%84%a4%ec%a0%95%ec%9d%b4-%ec%98%9b-%ec%a0%84%ec%a0%9c%eb%a5%bc-%ea%b0%80%ec%a0%95%ed%95%98%ea%b3%a0-%ec%9e%88%ec%97%88%eb%8b%a4" aria-label="1. 첫 번째 막힘: 사이징 설정이 옛 전제를 가정하고 있었다">1. 첫 번째 막힘: 사이징 설정이 옛 전제를 가정하고 있었다</a></li>
+            <li>
+                <a href="#2-%eb%91%90-%eb%b2%88%ec%a7%b8-%eb%a7%89%ed%9e%98-%ec%b6%94%ec%83%81-%ec%a3%bc%eb%ac%b8-%ec%9c%a0%ed%98%95%ec%9d%84-%eb%b2%88%ec%97%ad%ed%95%98%ec%a7%80-%ec%95%8a%ec%95%98%eb%8b%a4" aria-label="2. 두 번째 막힘: 추상 주문 유형을 번역하지 않았다">2. 두 번째 막힘: 추상 주문 유형을 번역하지 않았다</a></li>
+            <li>
+                <a href="#3-%ec%84%b8-%eb%b2%88%ec%a7%b8-%eb%a7%89%ed%9e%98-%ec%b2%b4%ea%b2%b0%eb%90%90%eb%8a%94%eb%8d%b0-%eb%af%b8%ec%b2%b4%ea%b2%b0%eb%a1%9c-%ec%9d%bd%ec%97%88%eb%8b%a4" aria-label="3. 세 번째 막힘: 체결됐는데 &ldquo;미체결&quot;로 읽었다">3. 세 번째 막힘: 체결됐는데 &ldquo;미체결&quot;로 읽었다</a><ul>
+                    
+            <li>
+                <a href="#%eb%b3%b5%ea%b5%ac-%ec%8a%a4%ed%81%ac%eb%a6%bd%ed%8a%b8-%ec%8b%a4%ed%8c%a8%ed%95%98%eb%a9%b4-%eb%8b%ab%eb%8a%94%eb%8b%a4fail-closed" aria-label="복구 스크립트: 실패하면 닫는다(fail-closed)">복구 스크립트: 실패하면 닫는다(fail-closed)</a></li>
+            <li>
+                <a href="#%ea%b7%bc%eb%b3%b8-%ec%88%98%ec%a0%95" aria-label="근본 수정">근본 수정</a></li></ul>
+            </li>
+            <li>
+                <a href="#4-%eb%9d%bc%ec%9d%b4%eb%b8%8c-%ec%84%a4%ec%a0%95%ec%9d%b4-%ec%97%b4%ec%9c%84-%eb%b3%80%ed%98%95%ec%9d%84-%ec%93%b0%ea%b3%a0-%ec%9e%88%ec%97%88%eb%8b%a4" aria-label="4. 라이브 설정이 열위 변형을 쓰고 있었다">4. 라이브 설정이 열위 변형을 쓰고 있었다</a></li>
+            <li>
+                <a href="#5-%ed%8c%8c%eb%9d%bc%eb%af%b8%ed%84%b0-%ea%b7%b8%eb%a6%ac%eb%93%9c-%ed%83%90%ec%83%89-%ed%95%99%ec%8a%b5%ea%b3%bc-%ea%b2%80%ec%a6%9d%ec%9d%84-%eb%b6%84%eb%a6%ac%ed%95%9c%eb%8b%a4" aria-label="5. 파라미터 그리드 탐색: 학습과 검증을 분리한다">5. 파라미터 그리드 탐색: 학습과 검증을 분리한다</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>실거래를 시작하고 며칠이 지나도 체결이 없었다. &ldquo;시장 국면이 안 맞아서&quot;라는 설명이 한동안 맞았지만, 국면이 풀린 7월 15일 이후에는 그 설명이 통하지 않게 되었다. 이날 하루 동안 <strong>주문 파이프라인의 서로 다른 세 지점</strong>에서 버그가 연달아 나왔다. 앞선 버그가 뒤의 버그를 가리고 있던 구조여서, 하나 고치자 다음이 드러났다.</p>
+<hr>
+<h2 id="1-첫-번째-막힘-사이징-설정이-옛-전제를-가정하고-있었다">1. 첫 번째 막힘: 사이징 설정이 옛 전제를 가정하고 있었다<a hidden class="anchor" aria-hidden="true" href="#1-첫-번째-막힘-사이징-설정이-옛-전제를-가정하고-있었다">#</a></h2>
+<p>로그를 보니 한 전략이 횡보 국면에서 처음으로 후보를 통과시켰고 진입 판단도 참이었는데, 주문 금액이 0이라 &ldquo;최소 금액 미만&quot;으로 전부 건너뛰었다.</p>
+<p>원인은 설정 파일이었다. 횡보 국면의 포지션 비율이 <code>0.0</code>이었다. 이 전략의 선별 단계가 &ldquo;상승 국면만 통과&quot;시킨다는 <strong>옛 전제</strong> 때문에 그렇게 써 둔 것이다. 전날 국면 게이트를 완화해서 횡보 국면도 통과하게 했는데, 그 값을 같이 고치지 않았다. 설정값은 코드 수정과 달리 테스트가 걸리지 않는다. 게이트를 바꾼 변경이 사이징 설정에 미치는 영향을 아무도 추적하지 않았다.</p>
+<p>균등 가중으로 되돌리고 문서의 옛 전제 서술도 정정했다. 하락 국면은 게이트가 여전히 후보를 막으므로 사이징에 닿지 않아서 그대로 두었다.</p>
+<hr>
+<h2 id="2-두-번째-막힘-추상-주문-유형을-번역하지-않았다">2. 두 번째 막힘: 추상 주문 유형을 번역하지 않았다<a hidden class="anchor" aria-hidden="true" href="#2-두-번째-막힘-추상-주문-유형을-번역하지-않았다">#</a></h2>
+<p>상승 국면으로 처음 전환된 사이클에서 두 전략이 모두 실제 진입을 시도했고, 거래소가 <strong>400 <code>invalid_parameter</code></strong> 로 거절했다.</p>
+<p>전략 코드가 쓰는 추상 주문 유형(<code>limit_ioc</code>, <code>best_ioc</code>)을 번역 없이 그대로 거래소의 주문 유형 필드에 보낸 것이다. 거래소 공식 문서를 다시 확인하니 주문 유형은 <code>limit</code>, <code>price</code>, <code>market</code>, <code>best</code> 네 가지뿐이고, IOC/FOK는 별도의 체결 조건 필드였다. 청산 쪽은 모든 주문에 IOC 조건을 붙이고 있었는데, 시장가 손절에는 성립하지 않는 조합이었다. 첫 포지션이 없어서 그 경로가 한 번도 실행된 적이 없었을 뿐이다.</p>
+<p>이 버그가 첫 번째 막힘 뒤에 숨어 있었다는 점이 중요하다. 이전까지는 국면 게이트와 사이징에 막혀 주문 단계에 <strong>도달한 적이 없었다.</strong> 수정은 추상 유형을 <code>(주문 유형, 체결 조건)</code> 쌍으로 바꾸는 매핑 함수로 했고, 매핑값은 공식 문서로 다시 검증했다.</p>
+<hr>
+<h2 id="3-세-번째-막힘-체결됐는데-미체결로-읽었다">3. 세 번째 막힘: 체결됐는데 &ldquo;미체결&quot;로 읽었다<a hidden class="anchor" aria-hidden="true" href="#3-세-번째-막힘-체결됐는데-미체결로-읽었다">#</a></h2>
+<p>버그를 고치고 나서 사용자가 알려 왔다. &ldquo;매수가 이뤄졌는데 텔레그램 알림이 안 왔다. 거래소 계좌에는 보인다.&rdquo;</p>
+<p>처음 조사에서는 로그와 DB가 모두 체결 0건이라서 &ldquo;체결 없음&quot;이라 결론 냈다. 사용자의 반박이 맞았다. 근본적으로 의심해야 할 지점은 체결 확인 방식이었다. 주문 직후 <strong>한 번만</strong> 주문을 조회해 체결 내역(<code>trades</code>)을 읽는데, 거래소가 실제로는 체결시켰어도 그 시점에는 내역 배열이 아직 비어 있는 <strong>최종 일관성 지연</strong>이 있을 수 있다. 그러면 봇은 &ldquo;미체결&quot;로 판단하고 포지션을 기록하지 않는다.</p>
+<p>더 심각한 점은 안전망이 없다는 것이었다.</p>
+<ul>
+<li>포지션 조회는 봇의 장부에 없는 실제 잔고를 조용히 건너뛴다.</li>
+<li>대조(reconcile)는 미체결 주문만 비교해서, 이미 끝난 주문은 대상이 아니다.</li>
+<li>그래서 체결을 놓치면 <strong>실제 포지션이 손절·청산 관리 없이 무기한 방치</strong>될 수 있다.</li>
+</ul>
+<p>대시보드의 &ldquo;계좌 현황&quot;은 매 요청마다 거래소에서 실시간으로 잔고를 읽고, 거래 장부는 봇이 스스로 기록하는 별도 테이블이다. 둘이 어긋나도 잡는 곳이 없는 구조였다.</p>
+<h3 id="복구-스크립트-실패하면-닫는다fail-closed">복구 스크립트: 실패하면 닫는다(fail-closed)<a hidden class="anchor" aria-hidden="true" href="#복구-스크립트-실패하면-닫는다fail-closed">#</a></h3>
+<p>원인 수정 전에 먼저 이미 생긴 미추적 포지션을 복구해야 했다. 진단·복구 스크립트의 설계 원칙은 이렇다.</p>
+<ul>
+<li>로그에서 &ldquo;미체결&rdquo; 판정 기록을 파싱하고, 직전 선별 로그의 메타 정보를 같은 키로 이어 붙여 <strong>진입 당시 스냅샷을 복원</strong>한다.</li>
+<li>지금 시점에 주문을 다시 조회해, 실제로 체결된 것만 장부에 백필한다.</li>
+<li>기본은 dry-run이고 <code>--apply</code>를 줘야만 기록한다.</li>
+<li>청산 판단에 꼭 필요한 메타 키가 빠져 있으면 자동 백필 대신 <strong>수동 검토 대상</strong>으로 둔다. 불완전한 기록이 장부에 들어가면 다음 가드 사이클에서 그 전략의 청산 로직 전체가 예외로 죽을 수 있고, 그쪽이 훨씬 위험하기 때문이다.</li>
+</ul>
+<p>서버에서 dry-run을 돌려 보니 8건 중 대부분은 재조회해도 진짜 미체결이었고, 두 건만 실제 체결이었다. 적용 후 두 건이 장부에 기록되고 알림이 왔다. 이후 가드 사이클부터 정상 관리되었다.</p>
+<h3 id="근본-수정">근본 수정<a hidden class="anchor" aria-hidden="true" href="#근본-수정">#</a></h3>
+<p>그다음 단계에서 재시도를 넣었다. 체결 확인을 짧은 간격으로 최대 몇 번 반복한다. 이 간격은 매매 파라미터가 아니라 API 재시도 정책이므로 설정 파일이 아닌 코드 상수로 두었다. 대기 함수는 주입 가능하게 해서 테스트에서는 실제로 잠들지 않는다.</p>
+<p>백테스트 엔진도 같은 <code>run_phase()</code>를 쓰기 때문에, 엔진 쪽 의존성 조립에는 대기를 건너뛰는 함수를 명시했다. 가짜 증권사에는 네트워크 지연이 없으니 재시도가 무의미하고, 기본 대기를 그대로 두면 진입마다 리플레이가 실제로 멈춘다. 첫 조회에서 체결이 확인되면 재시도 루프 자체에 들어가지 않으므로 결정 로직은 변하지 않는다. 바뀐 건 네트워크 타이밍에 대한 내성뿐이다.</p>
+<hr>
+<h2 id="4-라이브-설정이-열위-변형을-쓰고-있었다">4. 라이브 설정이 열위 변형을 쓰고 있었다<a hidden class="anchor" aria-hidden="true" href="#4-라이브-설정이-열위-변형을-쓰고-있었다">#</a></h2>
+<p>장기 재검증을 하다가 또 하나 발견했다. 한 전략의 진입 방식 설정이, 며칠 전 실험 이후 <code>pullback_retest</code>로 남아 있었다. 그리고 그 설정이 <strong>실서버에서 실제 자금으로 도는 설정</strong>이었다. 4년 구간에서 비교해 보니 기본 변형이 오히려 낫고, 18개월 구간에서의 순위는 완전히 뒤집혔다. 짧은 구간 결과가 긴 구간에서 뒤집힐 수 있다는 사례다.</p>
+<p>사용자에게 보고하고 확인을 받아 기본 변형으로 되돌렸다. 서버 반영은 다음 배포 때였고, 이 세션에서는 서버를 만지지 않았다. 실험용 설정이 운영 설정 파일에 그대로 남는 문제는 <strong>실험은 코드나 메모리 오버라이드로 하고 설정 파일은 건드리지 않는다</strong>는 원칙으로 이후 스크립트에 반영했다.</p>
+<hr>
+<h2 id="5-파라미터-그리드-탐색-학습과-검증을-분리한다">5. 파라미터 그리드 탐색: 학습과 검증을 분리한다<a hidden class="anchor" aria-hidden="true" href="#5-파라미터-그리드-탐색-학습과-검증을-분리한다">#</a></h2>
+<p>4년 재검증에서 기준에 근소하게 못 미친 전략이 있었다. 조정 후보는 문서가 &ldquo;그리드 탐색을 한 적 없다&quot;고 명시한 세 값(채널 길이, 손절 배수, 익절 폭)이었다. 과거 워크포워드에서 폴드마다 재선택한 파라미터가 검증 구간에서 무너진 전례가 있어서, 절차를 먼저 못박았다.</p>
+<ol>
+<li>학습(TRAIN) 4년에서만 27개 조합(3×3×3)을 탐색한다.</li>
+<li>낙폭 상한 필터를 통과한 조합 중 수익 팩터 상위 3개만 뽑는다.</li>
+<li>분리된 검증(TEST) 18개월에서 기본 설정과 함께 다시 돌린다.</li>
+<li><strong>채택 기준을 사전에 확정</strong>해 둔다. 검증 구간에서 최소 수익 팩터와 낙폭 상한을 만족하고, 기본 설정보다 두 지표가 모두 나아야 한다.</li>
+</ol>
+<p>설정 파일은 건드리지 않고 메모리 오버라이드로 돌렸다. 학습 상위 3개가 공통적으로 &ldquo;더 이른 익절, 더 넓은 손절&quot;을 가리키는 일관된 신호가 있었다. 검증에서는 두 개가 기준을 충족했고, 그중 성과가 더 나은 쪽을 채택했다. 지금까지 검증한 모든 변형 중 분리 구간에서 두 기준을 동시에 넘은 첫 사례였다.</p>
+<p>다만 문서에 한계를 적었다. <strong>이 세 파라미터는 이제 학습·검증 두 구간을 모두 &ldquo;본 적 있는&rdquo; 상태</strong>다. 다음에 조정하려면 제3의 미탐색 구간이 필요하다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>순서</th>
+					<th>막힘</th>
+					<th>원인</th>
+					<th>조치</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>주문 금액 0</td>
+					<td>게이트 완화 후 사이징 설정이 옛 전제 유지</td>
+					<td>설정 정정</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>주문 400 거절</td>
+					<td>추상 주문 유형을 번역 없이 전송</td>
+					<td>매핑 함수, 공식 문서 재검증</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>체결 후 미기록</td>
+					<td>한 번만 조회, 최종 일관성 지연</td>
+					<td>재시도, 복구 스크립트</td>
+			</tr>
+			<tr>
+					<td>4</td>
+					<td>열위 변형 라이브</td>
+					<td>실험 설정이 운영 파일에 잔존</td>
+					<td>되돌림, 실험 방식 변경</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 파이프라인이 한 번도 끝까지 실행된 적 없으면, 앞 단계의 버그가 뒤 단계의 버그를 가린다. &ldquo;체결 0건&quot;은 한 가지 원인이 아니라 겹겹이 쌓인 원인이었고, 하나씩 걷어낼 때마다 새로운 단계가 처음으로 실행되었다. 그리고 거래소 API는 추상화를 믿지 말고 공식 문서와 직접 대조해야 한다. 파라미터 탐색에서는 학습과 검증을 나누는 것만큼 <strong>채택 기준을 결과를 보기 전에 정해 두는 것</strong>이 중요하다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (8) — 한 전략이 다른 전략의 물량까지 팔아 버린 사고</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-silent-cron-halt-and-fund-allocation/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (6) — 15시간 동안 조용히 멈춘 크론과 전략별 자금 배분</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

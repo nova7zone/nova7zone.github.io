@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="리뷰, 버그수정, 배포">
+<meta name="description" content="정식 전략 승급을 앞두고 코어 전체를 12개 문서로 코드 리뷰해 지적 약 120건을 얻었다. 중요도와 연관성으로 Phase 0~3으로 나누어 모두 RED→GREEN으로 풀고, 정책 결정이 필요한 항목은 사용자에게 의미를 다시 설명해 결정받았다. 같은 날 배포 검증을 격리 작업 트리로 옮긴 일, 서비스 로그가 디스크를 먹던 원인과 정리를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다">
+  <meta property="og:description" content="정식 전략 승급을 앞두고 코어 전체를 12개 문서로 코드 리뷰해 지적 약 120건을 얻었다. 중요도와 연관성으로 Phase 0~3으로 나누어 모두 RED→GREEN으로 풀고, 정책 결정이 필요한 항목은 사용자에게 의미를 다시 설명해 결정받았다. 같은 날 배포 검증을 격리 작업 트리로 옮긴 일, 서비스 로그가 디스크를 먹던 원인과 정리를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-10-07T22:30:00+09:00">
+    <meta property="article:modified_time" content="2026-10-07T22:30:00+09:00">
+    <meta property="article:tag" content="리뷰">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="배포">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다">
+  <meta name="twitter:description" content="정식 전략 승급을 앞두고 코어 전체를 12개 문서로 코드 리뷰해 지적 약 120건을 얻었다. 중요도와 연관성으로 Phase 0~3으로 나누어 모두 RED→GREEN으로 풀고, 정책 결정이 필요한 항목은 사용자에게 의미를 다시 설명해 결정받았다. 같은 날 배포 검증을 격리 작업 트리로 옮긴 일, 서비스 로그가 디스크를 먹던 원인과 정리를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다",
+  "name": "자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다",
+  "description": "정식 전략 승급을 앞두고 코어 전체를 12개 문서로 코드 리뷰해 지적 약 120건을 얻었다. 중요도와 연관성으로 Phase 0~3으로 나누어 모두 RED→GREEN으로 풀고, 정책 결정이 필요한 항목은 사용자에게 의미를 다시 설명해 결정받았다. 같은 날 배포 검증을 격리 작업 트리로 옮긴 일, 서비스 로그가 디스크를 먹던 원인과 정리를 정리한다.",
+  "keywords": [
+    "리뷰", "버그수정", "배포"
+  ],
+  "articleBody": "들어가며 10월 7일 하루에 서버 배포가 네 번 있었다. 그 중심은 아침에 시작된 코어 전체 코드 리뷰와 그 지적을 처리한 일이다. 정식 전략을 승급시키기 전에 코어의 가드가 충분한지 확인하려는 목적이었다.\n1. 리뷰: 12개 문서, 약 120건 리뷰 범위는 core/risk, core/execution, core/scheduler, core/api, core/registry, 메인 진입점, 전략 계층, 데몬, 호가 정렬과 상장폐지 처리, 데이터 계층, 설정 쓰기 경로, 수동 거래와 경계 처리였다. 영역별로 문서 12개를 만들었다. 지적은 약 120건이다.\n120건을 그대로 늘어놓으면 처리할 수 없다. 체크리스트 문서(CHECKLIST)로 중요도와 연관성을 정리해 단계로 나누었다.\n단계 성격 Phase 0 즉시 고칠 10항목 Phase 1 정책 결정이 필요한 항목 Phase 2 가드와 검증 보강 Phase 3 선별한 나머지 Phase 0 10항목은 TDD로 처리했다. 수정 전에 실패를 확인한 테스트 20건을 먼저 쓰고 구현했다.\n2. 정책 결정은 사용자의 몫 Phase 1에는 코드를 고치는 문제가 아니라 정책을 정해야 하는 항목 12개가 있었다. 접근 원칙은 두 가지였다.\n결정이 필요한 것은 사용자에게 의미를 설명하고 묻는다. “라이브 진입 경합\"은 사용자에게 의미를 다시 설명한 뒤 결정을 받았다. 기본값이 분명한 것은 바로 구현한다. 체결 기록 원자화, 5xx와 해석 오류 조회 분기, 418 정지 자동 해제, 전략 1회 로드, 기동 시 자격 증명 확인이 이쪽이다. 사용자가 직접 결정한 세 건은 이랬다. 상장폐지 종목은 격리하고 알림을 보낸다. 경계 캔들은 확인한 뒤 재시도한다. 킬스위치는 명시 값을 가진다. 다른 정책은 사용자가 위임했다. 예를 들어 “시장 필터가 켜졌는데 국면이 불명이면?“에는 이렇게 정했다. 사이징은 횡보 국면으로 처리하고 진입은 막지 않으며, 스냅샷 신선도는 6시간으로 하고 now를 주입해 테스트 가능하게 만든다. 기준선 기반 손절이 현재 가격 위에 있으면 진입을 막지 않고 WARNING을 남긴다.\n또 하나의 결정은 진입 우선순위다. 후보들이 한 사이클에 몰릴 때 어떤 순서로 처리하는가. 캐너리는 거래대금 순서를 유지하고, 점수는 전체 전략 글로벌이 아니라 전략별로 전략 안에서만 적용하기로 했다. 코드 변경 없이 “라이브는 한 전략의 후보를 낸 순서대로 처리한다\"는 사실을 테스트로 고정했다.\n3. Phase 2·3: 가드와 입력 검증 Phase 2는 영역별 가드 보강이다.\n리스크: 입력 검증 실행: 종결 상태에서 거꾸로 가는 상태 전이 거부, 존재하지 않는 주문 조회 제한, 알 수 없는 키 무시 API: 십진 직렬화, 빈 응답, 토큰 버킷 설정: 범위 검증, 호가표, 캐너리 6종의 Field 검증 레지스트리: 손절 갱신의 상태 보존, 모드별 조회, 스키마 버전 게이트 데몬: 종료 코드, 단조 시계, 최상위 가드, 잔고 조회의 인증 오류 시 종료 상장폐지 오판 방지와 복구 Phase 3은 선별했다. 모두 RED → GREEN으로 풀었다. 테스트는 1,700건을 넘었다.\n보류한 것은 세 건(수동 거래 정합, 꼬리 봉 보간, 일일 처리 따라잡기)이고 이유를 결정 문서에 적었다. 나중에 제안이 승인되어 구현했다.\n수동 거래 정합: 정합이 끝난 시각 컬럼을 추가하고(스키마 v10, 기존 행은 백필) 정합 대상을 “정합 시각이 비어 있는 행\"으로 바꿨다. 실패한 행이 재시도되고 부분 매도 경고가 1회로 줄었다. 꼬리 봉 보간: 마지막 봉이 비었을 때 최대 12봉까지만 보간한다. 실제 봉이 오면 보간을 덮어쓰는 테스트를 고정했다. 시작한 사이클에서 BTC 신선도가 확인된 경우에만 목표를 넘기고, 폴백 사이클과 틱 중 수집에서는 보간하지 않는다. 4. 배포 검증을 격리한다 배포 스크립트의 검증 단계를 **별도 작업 트리(worktree)**에서 돌리도록 바꿨다(D-190). 이전에는 pull을 먼저 하고 검증했다. 검증이 실패해도 운영 디렉터리의 코드는 이미 바뀐 뒤다. 격리 검증은 별도 사본에서 테스트한 뒤 통과해야 반영한다. 첫 격리 검증 배포에서 테스트 1,640건이 약 160초에 통과했고, 유닛 파일이 자동 재배치되었다.\n배포 때마다 같은 확인을 했다. 경계 시각 앞뒤 10분을 피한다. 열린 포지션이 있으면 --force 여부를 확인한다. 재시작 후 phase_failed, 자격 증명 오류, 트레이스백이 0건인지, 포지션이 유지되는지 본다. 헬스체크 전 항목이 통과해야 한다. 정지 시간 제한(TimeoutStopSec)은 서버 실측(사이클 소요 약 1분)을 근거로 30초에서 120초로 늘렸다.\n5. 로그가 디스크를 먹고 있었다 배포 중 서버의 서비스 로그(systemd 저널)가 상한인 4.0GB에 도달한 것을 발견했다. 원인 분석 결과 줄 수의 75%가 HTTP 클라이언트 라이브러리의 INFO 로그였다(체결 틱 조회 67%, 계좌 25%, 시세 8%). 반복되는 진입 건너뜀 로그가 약 8%였다.\n두 단계로 처리했다.\n코드: HTTP 클라이언트 로거를 WARNING으로 고정하고, 반복되는 건너뜀 로그를 DEBUG로 낮췄다(테스트 6건). 코드 변경만으로는 이미 쌓인 저널 파일이 줄지 않는다. 서버: 저널을 1GB로 정리(vacuum)하고 저널 설정 드롭인을 적용했다. 4.0GB가 1.0GB로 줄었고 서비스에는 영향이 없었다. 드롭인 절차는 운영 문서에 추가했고, 점검 스킬에도 로그 볼륨 확인 절을 신설했다. 배포 후 30분간 26줄, HTTP 클라이언트 로그 0줄로 효과가 유지되었다.\n정리 영역 결과 리뷰 12개 문서, 약 120건, 중요도 기준 4단계 처리 Phase 0~3 전부 RED → GREEN, 테스트 1,700건 이상 정책 사용자 결정과 위임을 구분, 설명 후 결정 배포 검증을 격리 작업 트리로, 하루 네 번 운영 로그 볼륨 4.0GB → 1.0GB 배운 점: 리뷰 결과를 수정 작업 목록으로 바꾸는 단계가 리뷰만큼 중요하다. 120건을 중요도와 연관성으로 분류했기에 사흘이 아니라 하루에 처리할 수 있었다. 그리고 정책 항목은 코드로 풀 수 없다. 의미를 설명하고 결정을 받는 절차를 분리하면 에이전트가 결정을 가로채는 일이 없다. 마지막으로, 로그도 운영 비용이다. 반복 로그의 대부분이 라이브러리 기본 설정에서 나오는 경우가 많다.\n",
+  "wordCount" : "2245",
+  "inLanguage": "ko",
+  "datePublished": "2026-10-07T22:30:00+09:00",
+  "dateModified": "2026-10-07T22:30:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다
+    </h1>
+    <div class="post-description">
+      정식 전략 승급을 앞두고 코어 전체를 12개 문서로 코드 리뷰해 지적 약 120건을 얻었다. 중요도와 연관성으로 Phase 0~3으로 나누어 모두 RED→GREEN으로 풀고, 정책 결정이 필요한 항목은 사용자에게 의미를 다시 설명해 결정받았다. 같은 날 배포 검증을 격리 작업 트리로 옮긴 일, 서비스 로그가 디스크를 먹던 원인과 정리를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-10-07T22:30:00+09:00'>2026년 10월 7일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%eb%a6%ac%eb%b7%b0-12%ea%b0%9c-%eb%ac%b8%ec%84%9c-%ec%95%bd-120%ea%b1%b4" aria-label="1. 리뷰: 12개 문서, 약 120건">1. 리뷰: 12개 문서, 약 120건</a></li>
+            <li>
+                <a href="#2-%ec%a0%95%ec%b1%85-%ea%b2%b0%ec%a0%95%ec%9d%80-%ec%82%ac%ec%9a%a9%ec%9e%90%ec%9d%98-%eb%aa%ab" aria-label="2. 정책 결정은 사용자의 몫">2. 정책 결정은 사용자의 몫</a></li>
+            <li>
+                <a href="#3-phase-23-%ea%b0%80%eb%93%9c%ec%99%80-%ec%9e%85%eb%a0%a5-%ea%b2%80%ec%a6%9d" aria-label="3. Phase 2·3: 가드와 입력 검증">3. Phase 2·3: 가드와 입력 검증</a></li>
+            <li>
+                <a href="#4-%eb%b0%b0%ed%8f%ac-%ea%b2%80%ec%a6%9d%ec%9d%84-%ea%b2%a9%eb%a6%ac%ed%95%9c%eb%8b%a4" aria-label="4. 배포 검증을 격리한다">4. 배포 검증을 격리한다</a></li>
+            <li>
+                <a href="#5-%eb%a1%9c%ea%b7%b8%ea%b0%80-%eb%94%94%ec%8a%a4%ed%81%ac%eb%a5%bc-%eb%a8%b9%ea%b3%a0-%ec%9e%88%ec%97%88%eb%8b%a4" aria-label="5. 로그가 디스크를 먹고 있었다">5. 로그가 디스크를 먹고 있었다</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>10월 7일 하루에 서버 배포가 네 번 있었다. 그 중심은 아침에 시작된 <strong>코어 전체 코드 리뷰</strong>와 그 지적을 처리한 일이다. 정식 전략을 승급시키기 전에 코어의 가드가 충분한지 확인하려는 목적이었다.</p>
+<hr>
+<h2 id="1-리뷰-12개-문서-약-120건">1. 리뷰: 12개 문서, 약 120건<a hidden class="anchor" aria-hidden="true" href="#1-리뷰-12개-문서-약-120건">#</a></h2>
+<p>리뷰 범위는 <code>core/risk</code>, <code>core/execution</code>, <code>core/scheduler</code>, <code>core/api</code>, <code>core/registry</code>, 메인 진입점, 전략 계층, 데몬, 호가 정렬과 상장폐지 처리, 데이터 계층, 설정 쓰기 경로, 수동 거래와 경계 처리였다. 영역별로 문서 12개를 만들었다. 지적은 약 120건이다.</p>
+<p>120건을 그대로 늘어놓으면 처리할 수 없다. 체크리스트 문서(CHECKLIST)로 <strong>중요도와 연관성</strong>을 정리해 단계로 나누었다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>단계</th>
+					<th>성격</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Phase 0</td>
+					<td>즉시 고칠 10항목</td>
+			</tr>
+			<tr>
+					<td>Phase 1</td>
+					<td>정책 결정이 필요한 항목</td>
+			</tr>
+			<tr>
+					<td>Phase 2</td>
+					<td>가드와 검증 보강</td>
+			</tr>
+			<tr>
+					<td>Phase 3</td>
+					<td>선별한 나머지</td>
+			</tr>
+	</tbody>
+</table>
+<p>Phase 0 10항목은 TDD로 처리했다. 수정 전에 실패를 확인한 테스트 20건을 먼저 쓰고 구현했다.</p>
+<hr>
+<h2 id="2-정책-결정은-사용자의-몫">2. 정책 결정은 사용자의 몫<a hidden class="anchor" aria-hidden="true" href="#2-정책-결정은-사용자의-몫">#</a></h2>
+<p>Phase 1에는 코드를 고치는 문제가 아니라 <strong>정책을 정해야 하는 항목</strong> 12개가 있었다. 접근 원칙은 두 가지였다.</p>
+<ul>
+<li>결정이 필요한 것은 사용자에게 의미를 설명하고 묻는다. &ldquo;라이브 진입 경합&quot;은 사용자에게 의미를 다시 설명한 뒤 결정을 받았다.</li>
+<li>기본값이 분명한 것은 바로 구현한다. 체결 기록 원자화, 5xx와 해석 오류 조회 분기, 418 정지 자동 해제, 전략 1회 로드, 기동 시 자격 증명 확인이 이쪽이다.</li>
+</ul>
+<p>사용자가 직접 결정한 세 건은 이랬다. 상장폐지 종목은 <strong>격리하고 알림</strong>을 보낸다. 경계 캔들은 <strong>확인한 뒤 재시도</strong>한다. 킬스위치는 <strong>명시 값</strong>을 가진다. 다른 정책은 사용자가 위임했다. 예를 들어 &ldquo;시장 필터가 켜졌는데 국면이 불명이면?&ldquo;에는 이렇게 정했다. 사이징은 횡보 국면으로 처리하고 진입은 막지 않으며, 스냅샷 신선도는 6시간으로 하고 <code>now</code>를 주입해 테스트 가능하게 만든다. 기준선 기반 손절이 현재 가격 위에 있으면 진입을 막지 않고 WARNING을 남긴다.</p>
+<p>또 하나의 결정은 진입 우선순위다. 후보들이 한 사이클에 몰릴 때 어떤 순서로 처리하는가. 캐너리는 거래대금 순서를 유지하고, 점수는 전체 전략 글로벌이 아니라 <strong>전략별로 전략 안에서만</strong> 적용하기로 했다. 코드 변경 없이 &ldquo;라이브는 한 전략의 후보를 낸 순서대로 처리한다&quot;는 사실을 테스트로 고정했다.</p>
+<hr>
+<h2 id="3-phase-23-가드와-입력-검증">3. Phase 2·3: 가드와 입력 검증<a hidden class="anchor" aria-hidden="true" href="#3-phase-23-가드와-입력-검증">#</a></h2>
+<p>Phase 2는 영역별 가드 보강이다.</p>
+<ul>
+<li>리스크: 입력 검증</li>
+<li>실행: 종결 상태에서 거꾸로 가는 상태 전이 거부, 존재하지 않는 주문 조회 제한, 알 수 없는 키 무시</li>
+<li>API: 십진 직렬화, 빈 응답, 토큰 버킷</li>
+<li>설정: 범위 검증, 호가표, 캐너리 6종의 <code>Field</code> 검증</li>
+<li>레지스트리: 손절 갱신의 상태 보존, 모드별 조회, 스키마 버전 게이트</li>
+<li>데몬: 종료 코드, 단조 시계, 최상위 가드, 잔고 조회의 인증 오류 시 종료</li>
+<li>상장폐지 오판 방지와 복구</li>
+</ul>
+<p>Phase 3은 선별했다. 모두 RED → GREEN으로 풀었다. 테스트는 1,700건을 넘었다.</p>
+<p>보류한 것은 세 건(수동 거래 정합, 꼬리 봉 보간, 일일 처리 따라잡기)이고 이유를 결정 문서에 적었다. 나중에 제안이 승인되어 구현했다.</p>
+<ul>
+<li><strong>수동 거래 정합</strong>: 정합이 끝난 시각 컬럼을 추가하고(스키마 v10, 기존 행은 백필) 정합 대상을 &ldquo;정합 시각이 비어 있는 행&quot;으로 바꿨다. 실패한 행이 재시도되고 부분 매도 경고가 1회로 줄었다.</li>
+<li><strong>꼬리 봉 보간</strong>: 마지막 봉이 비었을 때 최대 12봉까지만 보간한다. 실제 봉이 오면 보간을 덮어쓰는 테스트를 고정했다. 시작한 사이클에서 BTC 신선도가 확인된 경우에만 목표를 넘기고, 폴백 사이클과 틱 중 수집에서는 보간하지 않는다.</li>
+</ul>
+<hr>
+<h2 id="4-배포-검증을-격리한다">4. 배포 검증을 격리한다<a hidden class="anchor" aria-hidden="true" href="#4-배포-검증을-격리한다">#</a></h2>
+<p>배포 스크립트의 검증 단계를 **별도 작업 트리(worktree)**에서 돌리도록 바꿨다(D-190). 이전에는 pull을 먼저 하고 검증했다. 검증이 실패해도 운영 디렉터리의 코드는 이미 바뀐 뒤다. 격리 검증은 별도 사본에서 테스트한 뒤 통과해야 반영한다. 첫 격리 검증 배포에서 테스트 1,640건이 약 160초에 통과했고, 유닛 파일이 자동 재배치되었다.</p>
+<p>배포 때마다 같은 확인을 했다. 경계 시각 앞뒤 10분을 피한다. 열린 포지션이 있으면 <code>--force</code> 여부를 확인한다. 재시작 후 <code>phase_failed</code>, 자격 증명 오류, 트레이스백이 0건인지, 포지션이 유지되는지 본다. 헬스체크 전 항목이 통과해야 한다. 정지 시간 제한(<code>TimeoutStopSec</code>)은 서버 실측(사이클 소요 약 1분)을 근거로 30초에서 120초로 늘렸다.</p>
+<hr>
+<h2 id="5-로그가-디스크를-먹고-있었다">5. 로그가 디스크를 먹고 있었다<a hidden class="anchor" aria-hidden="true" href="#5-로그가-디스크를-먹고-있었다">#</a></h2>
+<p>배포 중 서버의 서비스 로그(systemd 저널)가 상한인 4.0GB에 도달한 것을 발견했다. 원인 분석 결과 줄 수의 <strong>75%가 HTTP 클라이언트 라이브러리의 INFO 로그</strong>였다(체결 틱 조회 67%, 계좌 25%, 시세 8%). 반복되는 진입 건너뜀 로그가 약 8%였다.</p>
+<p>두 단계로 처리했다.</p>
+<ol>
+<li>코드: HTTP 클라이언트 로거를 WARNING으로 고정하고, 반복되는 건너뜀 로그를 DEBUG로 낮췄다(테스트 6건). 코드 변경만으로는 이미 쌓인 저널 파일이 줄지 않는다.</li>
+<li>서버: 저널을 1GB로 정리(vacuum)하고 저널 설정 드롭인을 적용했다. 4.0GB가 1.0GB로 줄었고 서비스에는 영향이 없었다. 드롭인 절차는 운영 문서에 추가했고, 점검 스킬에도 로그 볼륨 확인 절을 신설했다.</li>
+</ol>
+<p>배포 후 30분간 26줄, HTTP 클라이언트 로그 0줄로 효과가 유지되었다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>리뷰</td>
+					<td>12개 문서, 약 120건, 중요도 기준 4단계</td>
+			</tr>
+			<tr>
+					<td>처리</td>
+					<td>Phase 0~3 전부 RED → GREEN, 테스트 1,700건 이상</td>
+			</tr>
+			<tr>
+					<td>정책</td>
+					<td>사용자 결정과 위임을 구분, 설명 후 결정</td>
+			</tr>
+			<tr>
+					<td>배포</td>
+					<td>검증을 격리 작업 트리로, 하루 네 번</td>
+			</tr>
+			<tr>
+					<td>운영</td>
+					<td>로그 볼륨 4.0GB → 1.0GB</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 리뷰 결과를 수정 작업 목록으로 바꾸는 단계가 리뷰만큼 중요하다. 120건을 중요도와 연관성으로 분류했기에 사흘이 아니라 하루에 처리할 수 있었다. 그리고 정책 항목은 코드로 풀 수 없다. 의미를 설명하고 결정을 받는 절차를 분리하면 에이전트가 결정을 가로채는 일이 없다. 마지막으로, 로그도 운영 비용이다. 반복 로그의 대부분이 라이브러리 기본 설정에서 나오는 경우가 많다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

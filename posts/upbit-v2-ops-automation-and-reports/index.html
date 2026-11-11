@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="배포, 버그수정, 설계, 연구">
+<meta name="description" content="사람이 하던 서버 점검(헬스체크, 재시작, 경계 점검, 일일 리포트)을 cron 스크립트로 옮기고 웹에 리스크 통제와 보고서 화면을 붙였다. 배포 과정에서 실행 권한 비트, 셸의 변수 확장, 임포트 경로라는 로컬 검증으로 못 잡는 버그 세 개가 다시 나왔다. 같은 날 연구 쪽에서는 판정 단위 추정식이 두 개 있다는 불일치도 찾아냈다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다">
+  <meta property="og:description" content="사람이 하던 서버 점검(헬스체크, 재시작, 경계 점검, 일일 리포트)을 cron 스크립트로 옮기고 웹에 리스크 통제와 보고서 화면을 붙였다. 배포 과정에서 실행 권한 비트, 셸의 변수 확장, 임포트 경로라는 로컬 검증으로 못 잡는 버그 세 개가 다시 나왔다. 같은 날 연구 쪽에서는 판정 단위 추정식이 두 개 있다는 불일치도 찾아냈다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-10-06T18:00:00+09:00">
+    <meta property="article:modified_time" content="2026-10-06T18:00:00+09:00">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="연구">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다">
+  <meta name="twitter:description" content="사람이 하던 서버 점검(헬스체크, 재시작, 경계 점검, 일일 리포트)을 cron 스크립트로 옮기고 웹에 리스크 통제와 보고서 화면을 붙였다. 배포 과정에서 실행 권한 비트, 셸의 변수 확장, 임포트 경로라는 로컬 검증으로 못 잡는 버그 세 개가 다시 나왔다. 같은 날 연구 쪽에서는 판정 단위 추정식이 두 개 있다는 불일치도 찾아냈다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다",
+  "name": "자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다",
+  "description": "사람이 하던 서버 점검(헬스체크, 재시작, 경계 점검, 일일 리포트)을 cron 스크립트로 옮기고 웹에 리스크 통제와 보고서 화면을 붙였다. 배포 과정에서 실행 권한 비트, 셸의 변수 확장, 임포트 경로라는 로컬 검증으로 못 잡는 버그 세 개가 다시 나왔다. 같은 날 연구 쪽에서는 판정 단위 추정식이 두 개 있다는 불일치도 찾아냈다.",
+  "keywords": [
+    "배포", "버그수정", "설계", "연구"
+  ],
+  "articleBody": "들어가며 10월 첫 주에는 개별 캐너리 전략이 일곱 종 가까이 늘었다. 그만큼 사람이 서버에서 확인해야 할 일이 늘었고, 사용자는 반복되는 점검을 자동화해 달라고 요청했다. 이 글은 운영 자동화, 웹의 리스크·보고서 화면, 그리고 같은 날 연구 쪽에서 발견한 통계 추정식 불일치를 다룬다.\n1. 앞선 며칠: 미배선 목록을 코드로 대조한다 10월 1일에 사용자가 이렇게 요청했다. “현재 프로그램에서 미배선 등 부족한 사항을 자세히 파악해서 알려 줘.” 상태 문서에는 “지금 안 되는 것\"과 “알려진 위험” 표가 있는데, 이 표의 모든 행을 코드 검색으로 직접 대조했다. 문서가 낡았을 수 있기 때문이다. 진입 리스크 체크 스텁, 호가 조회 미구현, 설정 적용의 메모리 미반영, 실행 기록 테이블 미배선, 보고서 부재, 킬스위치 웹 미구현이 실제로 사실임을 확인했다.\n그중 사용자가 5개를 바로 진행하라고 지시했다.\n실행 기록 테이블(phase_runs) 신설과 사이클·일일 처리 배선 웹의 “국면”, “시스템” 화면 킬스위치 웹 토글 이전 버전과 API 키를 공유하는 위험의 사실 반영(미가동, 동시 가동 계획 없음 → 위험도 하향) 실행 기록 테이블의 중복 행 정리 킬스위치 토글에서 버그를 하나 찾았다. 데몬이 한 번도 뜬 적 없는 상태에서는 하트비트 행이 없어 UPDATE가 0행에 적용되고 조용히 무시되었다. 시작 시점과 같은 INSERT ... ON CONFLICT DO UPDATE 패턴으로 고쳤다. 그리고 자동화된 테스트와 별개로 로컬 서버를 실제로 띄워 로그인 → 화면 조회 → 토글 → 재조회까지 실제 HTTP로 확인했다.\n2. 운영 점검을 스크립트로 사용자 요청은 구체적이었다. 헬스체크, 재시작, 경계 점검, 일일 리포트를 서버 cron으로 자동화한다. 재시작은 3회 실패 시 텔레그램으로 경고하고 중단한다. 개선 사항은 서버 로컬 로그에만 쌓아서 사람이 수동 검토한다(자동으로 고치지 않는다).\ncanary_monitor 스크립트, 래퍼, 설정 파일을 만들었다. 이어서 “일간 보고는 별도 스크립트가 파일을 만들고 대시보드에서 보이게, 텔레그램에는 요약만\"이라는 요청으로 일일 리포트 생성기를 분리했다. 리포트는 다섯 절이다.\n주요 시장(BTC, ETH)의 거시 시황 전략별 통계 일간 수익률 (이전에 입출금 오염을 고친 산식을 재사용) 점검에서 나온 발견(findings) 건수 기타 웹에는 목록 화면과 날짜별 상세 화면을 추가했다. 이 보고서 메뉴(일간·주간·월간, 게시판형)는 며칠 앞서 만든 탭 구조를 확장한 것이다.\n3. 배포 버그 세 개, 로컬에서는 절대 안 보이는 스크립트를 서버에 올리고 cron에 매시 15분으로 등록했다. 배포하자마자 세 개의 버그가 나왔다. 모두 로컬 검증을 통과한 상태였다.\n# 증상 원인 수정 1 Permission denied (종료 코드 126) 스크립트가 git에 비실행 모드(644)로 커밋됨 git update-index --chmod=+x 2 unbound variable 환경 파일의 값 안에 $600000... 같은 해시 패턴이 있고, set -u가 이를 위치 인자 $6으로 해석 -u 제거 3 ModuleNotFoundError 스크립트를 직접 호출해서 sys.path에 저장소 루트가 없음 PYTHONPATH에 저장소 루트 export 이 중 둘은 이미 한 번씩 겪은 문제다. 실행 권한 비트는 V2 첫 서버 배포에서 정확히 같은 원인으로 났고, 결정 문서(D-060)에 해법까지 남겨 두었다. $로 시작하는 값을 셸이 해석하는 문제는 V1에서 15시간 동안 크론을 멈춘 바로 그 버그다. 기록은 있었지만 새 스크립트를 쓸 때 기록을 대조하는 절차가 없었다.\n수정마다 4시간 경계 앞뒤 10분을 피해서 재배포했다. 세 번째 수정 후 서버에서 스크립트를 수동 실행해 종료 코드 0과 상태 파일에 두 서비스가 정상 기록된 것을 확인했다. 첫 cron 실행(수정 전 버전)은 버그 1로 실패했고, 그 뒤부터 정상이다. 텔레그램 발송 경로는 “알릴 일\"이 없어서 호출 자체가 되지 않았다(설계대로). 실제 발송은 다음 이벤트에서 확인하기로 했다.\n개선 방향은 분명하다. 새 셸 스크립트를 만들 때 쓰는 체크리스트(실행 권한, set -u와 환경 파일, 임포트 경로, 환경 파일 로딩 방식)를 문서화해 앞선 사례와 대조하게 하는 것이다.\n4. 같은 날, 연구 쪽의 불일치 사용자가 연구 이력을 보고 질문했다. Phase 2까지 간 전략이 0건이라 “단계 수” 대신 같은 계열의 반복 기각으로 SSL 계열(두 회차)을 골라 분석했다. 대차대조표 항목은 이랬다. 신호 자체의 엣지가 있었고, 선택 효과와 집행 효과가 이를 깎았으며, 최종 값은 통과선 아래였다. 결론은 “진입 개선만으로는 닫히지 않는다\"이고 재가동은 권하지 않는다. 아이디어 세 건은 이후 탐색 에이전트 인계용으로만 기록했다.\n유니버스 티어 측정 거래대금 상위 종목이 손실 위험이 적을 것이라는 가설을 신호 없는 배리어(진입 신호 없이 무작위 시점에 같은 청산 규칙을 적용)로 측정했다. 상위 10종은 비용 대비 위험 단위당 비용이 가장 낮았지만 순 기대값이 가장 나빴고 변동성도 낮지 않았다. “상위 종목이 손실 위험이 적다\"는 가설은 기각되었다. 한계는 메모에 명시했다. 생존 편향, 학습 구간 유니버스가 작은 점, 신호가 없는 측정이라는 점이다. 이 축을 정식 변수로 쓰려면 폐지 종목 복원 가능성 확인과 사전 등록된 재측정이 선행되어야 한다.\n추정식이 두 개였다 더블 바텀 후보를 다시 검토하다가 같은 1,089건의 거래가 두 가지 추정식으로 부호가 달라지는 것을 발견했다. 평균들의 평균(구간별 평균을 먼저 구하는 방식)으로는 음수였고 t값은 -0.86이었다. 거래 단위 평균으로는 양수였고 t값은 +1.73이었다. 판정 단위를 어떻게 정하느냐에 따라 방향이 달라진다.\n영향을 받는 회차는 5회차 재집계 중 1건뿐이었고, 나머지 기각은 두 추정식 모두에서 견고했다. 사용자 승인으로 규칙을 확정했다. 두 추정량을 병기하고 게이트는 더 비관적인 쪽을 따른다. 통계 문턱은 그대로이고 기존 판정도 바뀌지 않는다. 앞선 서술 한 줄(“연구 단계는 가드가 꺼져 있다”)이 두 회차에는 틀렸음도 같이 정정했다.\n정리 영역 내용 미배선 목록 문서의 표를 코드 검색으로 대조 후 5개 항목 진행 자동화 cron 점검 스크립트, 3회 실패 시 경고·중단, 개선 사항은 수동 검토 보고서 일일 리포트 생성기 분리, 웹 화면 신설 배포 버그 실행 권한, set -u와 $, 임포트 경로 (앞의 둘은 재발) 연구 티어 가설 기각, 판정 단위 추정식 병기 배운 점: 같은 버그가 재발한다는 것은 기록이 부족해서가 아니라 기록을 쓰는 시점에 기록이 보이지 않아서다. 해법을 결정 문서에 남기는 것만으로는 새 스크립트를 쓰는 손에 닿지 않는다. 체크리스트나 린터 규칙처럼 작업 흐름 안에서 자동으로 걸리는 장치가 필요하다. 그리고 같은 데이터에 추정식이 둘이면 둘 다 보여 주고 더 비관적인 쪽을 따르는 것이, 판정 단위를 정하는 가장 정직한 방법이다.\n",
+  "wordCount" : "2603",
+  "inLanguage": "ko",
+  "datePublished": "2026-10-06T18:00:00+09:00",
+  "dateModified": "2026-10-06T18:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다
+    </h1>
+    <div class="post-description">
+      사람이 하던 서버 점검(헬스체크, 재시작, 경계 점검, 일일 리포트)을 cron 스크립트로 옮기고 웹에 리스크 통제와 보고서 화면을 붙였다. 배포 과정에서 실행 권한 비트, 셸의 변수 확장, 임포트 경로라는 로컬 검증으로 못 잡는 버그 세 개가 다시 나왔다. 같은 날 연구 쪽에서는 판정 단위 추정식이 두 개 있다는 불일치도 찾아냈다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-10-06T18:00:00+09:00'>2026년 10월 6일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%95%9e%ec%84%a0-%eb%a9%b0%ec%b9%a0-%eb%af%b8%eb%b0%b0%ec%84%a0-%eb%aa%a9%eb%a1%9d%ec%9d%84-%ec%bd%94%eb%93%9c%eb%a1%9c-%eb%8c%80%ec%a1%b0%ed%95%9c%eb%8b%a4" aria-label="1. 앞선 며칠: 미배선 목록을 코드로 대조한다">1. 앞선 며칠: 미배선 목록을 코드로 대조한다</a></li>
+            <li>
+                <a href="#2-%ec%9a%b4%ec%98%81-%ec%a0%90%ea%b2%80%ec%9d%84-%ec%8a%a4%ed%81%ac%eb%a6%bd%ed%8a%b8%eb%a1%9c" aria-label="2. 운영 점검을 스크립트로">2. 운영 점검을 스크립트로</a></li>
+            <li>
+                <a href="#3-%eb%b0%b0%ed%8f%ac-%eb%b2%84%ea%b7%b8-%ec%84%b8-%ea%b0%9c-%eb%a1%9c%ec%bb%ac%ec%97%90%ec%84%9c%eb%8a%94-%ec%a0%88%eb%8c%80-%ec%95%88-%eb%b3%b4%ec%9d%b4%eb%8a%94" aria-label="3. 배포 버그 세 개, 로컬에서는 절대 안 보이는">3. 배포 버그 세 개, 로컬에서는 절대 안 보이는</a></li>
+            <li>
+                <a href="#4-%ea%b0%99%ec%9d%80-%eb%82%a0-%ec%97%b0%ea%b5%ac-%ec%aa%bd%ec%9d%98-%eb%b6%88%ec%9d%bc%ec%b9%98" aria-label="4. 같은 날, 연구 쪽의 불일치">4. 같은 날, 연구 쪽의 불일치</a><ul>
+                    
+            <li>
+                <a href="#%ec%9c%a0%eb%8b%88%eb%b2%84%ec%8a%a4-%ed%8b%b0%ec%96%b4-%ec%b8%a1%ec%a0%95" aria-label="유니버스 티어 측정">유니버스 티어 측정</a></li>
+            <li>
+                <a href="#%ec%b6%94%ec%a0%95%ec%8b%9d%ec%9d%b4-%eb%91%90-%ea%b0%9c%ec%98%80%eb%8b%a4" aria-label="추정식이 두 개였다">추정식이 두 개였다</a></li></ul>
+            </li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>10월 첫 주에는 개별 캐너리 전략이 일곱 종 가까이 늘었다. 그만큼 사람이 서버에서 확인해야 할 일이 늘었고, 사용자는 반복되는 점검을 자동화해 달라고 요청했다. 이 글은 운영 자동화, 웹의 리스크·보고서 화면, 그리고 같은 날 연구 쪽에서 발견한 통계 추정식 불일치를 다룬다.</p>
+<hr>
+<h2 id="1-앞선-며칠-미배선-목록을-코드로-대조한다">1. 앞선 며칠: 미배선 목록을 코드로 대조한다<a hidden class="anchor" aria-hidden="true" href="#1-앞선-며칠-미배선-목록을-코드로-대조한다">#</a></h2>
+<p>10월 1일에 사용자가 이렇게 요청했다. &ldquo;현재 프로그램에서 미배선 등 부족한 사항을 자세히 파악해서 알려 줘.&rdquo; 상태 문서에는 &ldquo;지금 안 되는 것&quot;과 &ldquo;알려진 위험&rdquo; 표가 있는데, 이 표의 모든 행을 <strong>코드 검색으로 직접 대조</strong>했다. 문서가 낡았을 수 있기 때문이다. 진입 리스크 체크 스텁, 호가 조회 미구현, 설정 적용의 메모리 미반영, 실행 기록 테이블 미배선, 보고서 부재, 킬스위치 웹 미구현이 실제로 사실임을 확인했다.</p>
+<p>그중 사용자가 5개를 바로 진행하라고 지시했다.</p>
+<ul>
+<li>실행 기록 테이블(<code>phase_runs</code>) 신설과 사이클·일일 처리 배선</li>
+<li>웹의 &ldquo;국면&rdquo;, &ldquo;시스템&rdquo; 화면</li>
+<li>킬스위치 웹 토글</li>
+<li>이전 버전과 API 키를 공유하는 위험의 사실 반영(미가동, 동시 가동 계획 없음 → 위험도 하향)</li>
+<li>실행 기록 테이블의 중복 행 정리</li>
+</ul>
+<p>킬스위치 토글에서 버그를 하나 찾았다. 데몬이 한 번도 뜬 적 없는 상태에서는 하트비트 행이 없어 <code>UPDATE</code>가 0행에 적용되고 <strong>조용히 무시</strong>되었다. 시작 시점과 같은 <code>INSERT ... ON CONFLICT DO UPDATE</code> 패턴으로 고쳤다. 그리고 자동화된 테스트와 별개로 로컬 서버를 실제로 띄워 로그인 → 화면 조회 → 토글 → 재조회까지 실제 HTTP로 확인했다.</p>
+<hr>
+<h2 id="2-운영-점검을-스크립트로">2. 운영 점검을 스크립트로<a hidden class="anchor" aria-hidden="true" href="#2-운영-점검을-스크립트로">#</a></h2>
+<p>사용자 요청은 구체적이었다. 헬스체크, 재시작, 경계 점검, 일일 리포트를 서버 cron으로 자동화한다. 재시작은 <strong>3회 실패 시 텔레그램으로 경고하고 중단</strong>한다. 개선 사항은 서버 로컬 로그에만 쌓아서 사람이 수동 검토한다(자동으로 고치지 않는다).</p>
+<p><code>canary_monitor</code> 스크립트, 래퍼, 설정 파일을 만들었다. 이어서 &ldquo;일간 보고는 별도 스크립트가 파일을 만들고 대시보드에서 보이게, 텔레그램에는 요약만&quot;이라는 요청으로 일일 리포트 생성기를 분리했다. 리포트는 다섯 절이다.</p>
+<ol>
+<li>주요 시장(BTC, ETH)의 거시 시황</li>
+<li>전략별 통계</li>
+<li>일간 수익률 (이전에 입출금 오염을 고친 산식을 재사용)</li>
+<li>점검에서 나온 발견(findings) 건수</li>
+<li>기타</li>
+</ol>
+<p>웹에는 목록 화면과 날짜별 상세 화면을 추가했다. 이 보고서 메뉴(일간·주간·월간, 게시판형)는 며칠 앞서 만든 탭 구조를 확장한 것이다.</p>
+<hr>
+<h2 id="3-배포-버그-세-개-로컬에서는-절대-안-보이는">3. 배포 버그 세 개, 로컬에서는 절대 안 보이는<a hidden class="anchor" aria-hidden="true" href="#3-배포-버그-세-개-로컬에서는-절대-안-보이는">#</a></h2>
+<p>스크립트를 서버에 올리고 cron에 매시 15분으로 등록했다. 배포하자마자 세 개의 버그가 나왔다. 모두 로컬 검증을 통과한 상태였다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>#</th>
+					<th>증상</th>
+					<th>원인</th>
+					<th>수정</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td><code>Permission denied</code> (종료 코드 126)</td>
+					<td>스크립트가 git에 비실행 모드(644)로 커밋됨</td>
+					<td><code>git update-index --chmod=+x</code></td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td><code>unbound variable</code></td>
+					<td>환경 파일의 값 안에 <code>$600000...</code> 같은 해시 패턴이 있고, <code>set -u</code>가 이를 위치 인자 <code>$6</code>으로 해석</td>
+					<td><code>-u</code> 제거</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td><code>ModuleNotFoundError</code></td>
+					<td>스크립트를 직접 호출해서 <code>sys.path</code>에 저장소 루트가 없음</td>
+					<td><code>PYTHONPATH</code>에 저장소 루트 export</td>
+			</tr>
+	</tbody>
+</table>
+<p>이 중 둘은 <strong>이미 한 번씩 겪은 문제</strong>다. 실행 권한 비트는 V2 첫 서버 배포에서 정확히 같은 원인으로 났고, 결정 문서(D-060)에 해법까지 남겨 두었다. <code>$</code>로 시작하는 값을 셸이 해석하는 문제는 V1에서 15시간 동안 크론을 멈춘 바로 그 버그다. 기록은 있었지만 새 스크립트를 쓸 때 <strong>기록을 대조하는 절차가 없었다.</strong></p>
+<p>수정마다 4시간 경계 앞뒤 10분을 피해서 재배포했다. 세 번째 수정 후 서버에서 스크립트를 수동 실행해 종료 코드 0과 상태 파일에 두 서비스가 정상 기록된 것을 확인했다. 첫 cron 실행(수정 전 버전)은 버그 1로 실패했고, 그 뒤부터 정상이다. 텔레그램 발송 경로는 &ldquo;알릴 일&quot;이 없어서 호출 자체가 되지 않았다(설계대로). 실제 발송은 다음 이벤트에서 확인하기로 했다.</p>
+<p>개선 방향은 분명하다. 새 셸 스크립트를 만들 때 쓰는 <strong>체크리스트</strong>(실행 권한, <code>set -u</code>와 환경 파일, 임포트 경로, 환경 파일 로딩 방식)를 문서화해 앞선 사례와 대조하게 하는 것이다.</p>
+<hr>
+<h2 id="4-같은-날-연구-쪽의-불일치">4. 같은 날, 연구 쪽의 불일치<a hidden class="anchor" aria-hidden="true" href="#4-같은-날-연구-쪽의-불일치">#</a></h2>
+<p>사용자가 연구 이력을 보고 질문했다. Phase 2까지 간 전략이 0건이라 &ldquo;단계 수&rdquo; 대신 <strong>같은 계열의 반복 기각</strong>으로 SSL 계열(두 회차)을 골라 분석했다. 대차대조표 항목은 이랬다. 신호 자체의 엣지가 있었고, 선택 효과와 집행 효과가 이를 깎았으며, 최종 값은 통과선 아래였다. 결론은 &ldquo;진입 개선만으로는 닫히지 않는다&quot;이고 재가동은 권하지 않는다. 아이디어 세 건은 이후 탐색 에이전트 인계용으로만 기록했다.</p>
+<h3 id="유니버스-티어-측정">유니버스 티어 측정<a hidden class="anchor" aria-hidden="true" href="#유니버스-티어-측정">#</a></h3>
+<p>거래대금 상위 종목이 손실 위험이 적을 것이라는 가설을 신호 없는 배리어(진입 신호 없이 무작위 시점에 같은 청산 규칙을 적용)로 측정했다. 상위 10종은 비용 대비 위험 단위당 비용이 가장 낮았지만 <strong>순 기대값이 가장 나빴고</strong> 변동성도 낮지 않았다. &ldquo;상위 종목이 손실 위험이 적다&quot;는 가설은 기각되었다. 한계는 메모에 명시했다. 생존 편향, 학습 구간 유니버스가 작은 점, 신호가 없는 측정이라는 점이다. 이 축을 정식 변수로 쓰려면 폐지 종목 복원 가능성 확인과 사전 등록된 재측정이 선행되어야 한다.</p>
+<h3 id="추정식이-두-개였다">추정식이 두 개였다<a hidden class="anchor" aria-hidden="true" href="#추정식이-두-개였다">#</a></h3>
+<p>더블 바텀 후보를 다시 검토하다가 같은 1,089건의 거래가 <strong>두 가지 추정식으로 부호가 달라지는</strong> 것을 발견했다. 평균들의 평균(구간별 평균을 먼저 구하는 방식)으로는 음수였고 t값은 -0.86이었다. 거래 단위 평균으로는 양수였고 t값은 +1.73이었다. 판정 단위를 어떻게 정하느냐에 따라 방향이 달라진다.</p>
+<p>영향을 받는 회차는 5회차 재집계 중 1건뿐이었고, 나머지 기각은 두 추정식 모두에서 견고했다. 사용자 승인으로 규칙을 확정했다. <strong>두 추정량을 병기하고 게이트는 더 비관적인 쪽을 따른다.</strong> 통계 문턱은 그대로이고 기존 판정도 바뀌지 않는다. 앞선 서술 한 줄(&ldquo;연구 단계는 가드가 꺼져 있다&rdquo;)이 두 회차에는 틀렸음도 같이 정정했다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>미배선 목록</td>
+					<td>문서의 표를 코드 검색으로 대조 후 5개 항목 진행</td>
+			</tr>
+			<tr>
+					<td>자동화</td>
+					<td>cron 점검 스크립트, 3회 실패 시 경고·중단, 개선 사항은 수동 검토</td>
+			</tr>
+			<tr>
+					<td>보고서</td>
+					<td>일일 리포트 생성기 분리, 웹 화면 신설</td>
+			</tr>
+			<tr>
+					<td>배포 버그</td>
+					<td>실행 권한, <code>set -u</code>와 <code>$</code>, 임포트 경로 (앞의 둘은 재발)</td>
+			</tr>
+			<tr>
+					<td>연구</td>
+					<td>티어 가설 기각, 판정 단위 추정식 병기</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 같은 버그가 재발한다는 것은 기록이 부족해서가 아니라 <strong>기록을 쓰는 시점에 기록이 보이지 않아서</strong>다. 해법을 결정 문서에 남기는 것만으로는 새 스크립트를 쓰는 손에 닿지 않는다. 체크리스트나 린터 규칙처럼 작업 흐름 안에서 자동으로 걸리는 장치가 필요하다. 그리고 같은 데이터에 추정식이 둘이면 둘 다 보여 주고 더 비관적인 쪽을 따르는 것이, 판정 단위를 정하는 가장 정직한 방법이다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (9) — 중복 체결 조사: 내가 쓴 &#39;체결 없음&#39; 기록이 틀렸다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

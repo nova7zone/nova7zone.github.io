@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Evan&#39;s Blog</title>
+
+<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/index.xml" title="rss">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="Evan&#39;s Blog">
+  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="website">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Evan&#39;s Blog">
+  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Evan's Blog",
+  "url": "https://nova7zone.github.io/",
+  "description": "AI(Claude Code)를 이용한 프로그램 개발 과정 기록",
+  "logo": "https://nova7zone.github.io/favicon.ico",
+  "sameAs": [
+      
+  ]
+}
+</script>
+	<meta name="generator" content="Hugo 0.169.0">
+</head>
+<body class="list" id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정
+    </h2>
+  </header>
+  <div class="entry-content"><p>OCI 서버 상태 점검 후 며칠 만에 paper 모드로 자동매매를 돌렸는데 매매가 한 건도 발생하지 않았다. 로그를 추적해 KOSPI 지수 일봉 조회가 개별종목용 엔드포인트를 잘못 사용하고 있던 구조적 버그를 찾아 수정한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-08T19:30:00+09:00'>2026년 6월 8일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정" href="https://nova7zone.github.io/posts/kospi-index-bugfix/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기
+    </h2>
+  </header>
+  <div class="entry-content"><p>일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-05T11:00:00+09:00'>2026년 6월 5일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기" href="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
+    </h2>
+  </header>
+  <div class="entry-content"><p>웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-04T10:00:00+09:00'>2026년 6월 4일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입" href="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공
+    </h2>
+  </header>
+  <div class="entry-content"><p>Claude Code 작업 방식을 체계화하기 위해 superpowers·Context7 플러그인을 도입하고, 클라우드 보안 목록과 서버 방화벽 설정을 거쳐 자동매매 웹서버를 외부에서 접속 가능하게 만든 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-02T15:30:00+09:00'>2026년 6월 2일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공" href="https://nova7zone.github.io/posts/superpowers-and-webserver-access/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone
+    </h2>
+  </header>
+  <div class="entry-content"><p>Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-02T11:00:00+09:00'>2026년 6월 2일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone" href="https://nova7zone.github.io/posts/oracle-server-initial-setup/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경
+    </h2>
+  </header>
+  <div class="entry-content"><p>Claude Code와 Github 연동으로 KIS 자동매매 프로그램을 1차 완성하고 ATR·시장국면 필터를 추가했다. 같은 구조로 Upbit 버전 개발에 착수하고, 여러 컴퓨터를 오가며 작업할 수 있도록 CLAUDE.md에 작업 시작/종료 절차를 정리한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-05-31T18:30:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경" href="https://nova7zone.github.io/posts/ai-trading-program-v1-complete/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화
+    </h2>
+  </header>
+  <div class="entry-content"><p>Claude Code의 클라우드 저장소 연동은 실패했지만, 로컬 프로젝트와 Git 동기화 배치 파일 4종을 조합해 여러 PC에서 이어서 작업할 수 있는 개발 환경을 구축한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-05-31T11:48:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화" href="https://nova7zone.github.io/posts/ai-trading-claude-code-setup/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (3) — Gemini 검토 결과, KIS API 확정, V4 프롬프트 완성
+    </h2>
+  </header>
+  <div class="entry-content"><p>Gemini가 발견한 키움증권/KIS 혼재 오류, 토큰 한도 문제, 비동기 미체결 처리 방식을 반영해 최종 V4 프롬프트를 완성한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-05-31T10:47:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (3) — Gemini 검토 결과, KIS API 확정, V4 프롬프트 완성" href="https://nova7zone.github.io/posts/ai-trading-kis-api/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성
+    </h2>
+  </header>
+  <div class="entry-content"><p>Claude로 시작해서 토큰이 부족하면 ChatGPT와 Gemini로 넘기는 다중 AI 협업 방식으로 자동매매 프롬프트를 완성한 과정. Claude Pro 가입 후 V3 프롬프트 실행까지 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-05-31T01:24:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성" href="https://nova7zone.github.io/posts/ai-trading-prompt-strategy/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속
+    </h2>
+  </header>
+  <div class="entry-content"><p>Oracle Cloud 인스턴스 생성 후 필수 초기 설정 — 고정 IP 할당, PuTTY SSH 접속, 가상메모리 4GB 추가, FileZilla SFTP 연결까지 순서대로 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-05-29T09:43:00+09:00'>2026년 5월 29일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속" href="https://nova7zone.github.io/posts/oracle-cloud-server-setup/"></a>
+</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="prev" href="https://nova7zone.github.io/page/8/">
+      «&nbsp;이전 페이지&nbsp;
+    </a>
+    <a class="next" href="https://nova7zone.github.io/page/10/">다음 페이지&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit (1) — 착수, 그리고 실측이 설계를 뒤집은 순간 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계">
+<meta name="description" content="국내주식 봇 kis-auto-trading의 core/strategies 분리 아키텍처를 그대로 승계해, Upbit 코인 자동매매 봇을 새로 시작했다. 그런데 착수 직전 실측한 Upbit API 응답 하나가 애초에 정해둔 기준봉 시각을 뒤집었다. 코드를 짜기 전에 가정을 검증하는 게 왜 중요한지, 그리고 그 검증 과정에서 base.py 이식이 어떻게 달라졌는지를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-kickoff-and-native-4h-candle/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-kickoff-and-native-4h-candle/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-kickoff-and-native-4h-candle/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit (1) — 착수, 그리고 실측이 설계를 뒤집은 순간">
+  <meta property="og:description" content="국내주식 봇 kis-auto-trading의 core/strategies 분리 아키텍처를 그대로 승계해, Upbit 코인 자동매매 봇을 새로 시작했다. 그런데 착수 직전 실측한 Upbit API 응답 하나가 애초에 정해둔 기준봉 시각을 뒤집었다. 코드를 짜기 전에 가정을 검증하는 게 왜 중요한지, 그리고 그 검증 과정에서 base.py 이식이 어떻게 달라졌는지를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-08T18:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-08T18:00:00+09:00">
+    <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit (1) — 착수, 그리고 실측이 설계를 뒤집은 순간">
+  <meta name="twitter:description" content="국내주식 봇 kis-auto-trading의 core/strategies 분리 아키텍처를 그대로 승계해, Upbit 코인 자동매매 봇을 새로 시작했다. 그런데 착수 직전 실측한 Upbit API 응답 하나가 애초에 정해둔 기준봉 시각을 뒤집었다. 코드를 짜기 전에 가정을 검증하는 게 왜 중요한지, 그리고 그 검증 과정에서 base.py 이식이 어떻게 달라졌는지를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · Upbit (1) — 착수, 그리고 실측이 설계를 뒤집은 순간",
+      "item": "https://nova7zone.github.io/posts/upbit-kickoff-and-native-4h-candle/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · Upbit (1) — 착수, 그리고 실측이 설계를 뒤집은 순간",
+  "name": "자동매매 Bot 전환 및 개발 · Upbit (1) — 착수, 그리고 실측이 설계를 뒤집은 순간",
+  "description": "국내주식 봇 kis-auto-trading의 core/strategies 분리 아키텍처를 그대로 승계해, Upbit 코인 자동매매 봇을 새로 시작했다. 그런데 착수 직전 실측한 Upbit API 응답 하나가 애초에 정해둔 기준봉 시각을 뒤집었다. 코드를 짜기 전에 가정을 검증하는 게 왜 중요한지, 그리고 그 검증 과정에서 base.py 이식이 어떻게 달라졌는지를 정리한다.",
+  "keywords": [
+    "설계"
+  ],
+  "articleBody": "작성일: 2026년 7월 8일\n최종 수정: 2026년 7월 8일\n분야: AI Trading, Software Architecture\n난이도: Intermediate\n상태: 0단계 완료, 1단계(core/api·core/data) 착수 전\n들어가며 이전 시리즈에서 국내주식 봇 kis-auto-trading을 core(전략 무관 인프라)와 strategies(전략 로직)로 분리해 다시 세운 이야기를 썼다. 이번 시리즈는 그 아키텍처를 들고 새 시장으로 건너간 이야기다 — Upbit 원화(KRW) 마켓 코인 자동매매 봇 upbit-auto-trading.\n같은 설계를 다른 시장에 그대로 옮기면 간단할 줄 알았다. 실제로는 착수 첫날부터 “당연히 이렇겠지\"라고 적어둔 가정 하나가 실측 한 번에 뒤집혔다. 그 이야기부터 해야 할 것 같다.\n1. 왜 새 저장소인가 기존 kis-auto-trading-bot(국내주식)과 그걸 다시 설계한 kis-auto-trading은 주식 시장을 전제로 한다 — 장 시작·마감이 있고, 휴장일이 있고, 하루 봉의 기준이 명확하다(장 마감 시각). 코인은 이 전제가 전부 깨진다. 24시간 무휴장이고, “하루\"라는 개념도 거래소가 임의로 정한 기준일 뿐이다.\n그래도 core/strategies 분리, 파이프라인 6단계 인터페이스(build_universe → build_pools → screen, reevaluate, evaluate_entry → evaluate_exit), import-linter로 강제하는 계층 경계 — 이 골격 자체는 시장이 달라져도 그대로 쓸 수 있는 부분이었다. 그래서 kis-auto-trading에서 확정한 ARCHITECTURE.md를 read-only 참조로 두고, 그 위에 Upbit 특유의 것만 새로 얹는 방식으로 착수했다.\n2. 실측이 설계를 뒤집었다 — 기준봉 시각 착수요청서 초안에는 기준봉을 06:00 KST로 적어뒀다. 국내주식 장 시작(09:00)에 맞춰 하루를 나누던 습관을 코인에도 그대로 옮긴, 별생각 없는 선택이었다.\n그런데 코드를 짜기 전에 실제로 Upbit 240분봉 API를 호출해봤다.\nGET /v1/candles/minutes/240?market=KRW-BTC 반환된 candle_date_time_kst 값을 늘어놓으니 09:00 / 05:00 / 01:00 / 21:00 … 이었다. 즉 Upbit의 4시간봉은 UTC 00:00 기준으로 정렬되어 있고, 그걸 KST로 환산하면 네이티브 경계가 01·05·09·13·17·21시다. 06:00은 이 경계 어디에도 없다.\n06:00을 고집했다면 60분봉을 모아서 4시간 단위로 다시 집계하는 계층을 따로 만들어야 했다. 그러면 결측 처리·경계 검증·타임존 버그가 그 집계기 안에서 또 하나씩 생긴다. 대신 기준봉을 05:00 KST로 바꾸면 이 경계와 정확히 일치한다 — 그러면 GET /v1/candles/minutes/240을 가공 없이 그대로 쓸 수 있다. 집계기 자체가 통째로 사라지는 것이다.\n그 자리에서 기준봉을 05:00으로 확정했다. 사이클도 05:05·09:05·13:05·17:05· 21:05·01:05(‘:05’는 API 반영 지연을 흡수하는 여유)로 다시 짰다. 코드를 한 줄도 쓰기 전에 API 응답 하나를 확인한 덕분에, 나중에 지표 계산이 다 끝난 뒤에야 “어? 봉 경계가 안 맞네\"를 발견하는 상황을 피했다. 가정은 코드를 짜기 전에 실측으로 깨는 게 제일 싸게 먹힌다 — 이번 프로젝트에서 가장 먼저 얻은 교훈이다.\n3. 승계 이식에서 마주친 편차 4건 파이프라인 인터페이스 정본 strategies/base.py는 kis-auto-trading의 ARCHITECTURE.md §3를 그대로 옮겨 적는 작업이라 쉬울 거라 생각했다. 실제로 초안을 원문과 한 줄씩 대조하니 편차가 네 군데 나왔다.\nreevaluate의 반환 타입 — 초안은 별도 타입을 썼는데, 원문은 ExitDecision을 그대로 반환하고 기본값은 “유지(hold)“였다. 진입 판단 반환 타입이 EntrySignal이어야 하는데 초안에서 누락돼 있었다. build_pools의 기본 구현 — 그룹 풀이 필요 없는 단순 전략은 전체 유니버스를 단일 그룹으로 묶는 기본 동작이 있어야 하는데, 초안엔 추상 메서드로만 있었다. 데이터 접근 경로 — 전략이 ctx.data(DataProvider)를 통해서만 캔들에 접근해야 하는 부분이 초안에서 흐릿했다. 넷 다 “일단 만들어보고 나중에 맞추면 되지\"로 넘길 수 있는 것들이었다. 그런데 이 인터페이스는 앞으로 v1·v2 전략과 core 양쪽이 계속 의존할 계약이라, 여기서 어긋난 채로 굳으면 나중에 고치는 비용이 훨씬 커진다. 그래서 원문 대조를 0단계의 완료 조건에 넣고, 네 건을 전부 고친 뒤에야 0단계를 닫았다.\n참고로 kis-auto-trading-bot(v3 실운영 원본)은 base.py 같은 계약 없이 전략이 서로 얽혀 있는 레거시 구조라, 이번 대조에는 쓸 수 없었다. ARCHITECTURE.md §3 쪽이 유일한 정본이었다.\n4. 하드런이 남긴 사소하지만 성가신 교훈들 설계·이식과 별개로, 이번 착수에서 환경 쪽으로 세 가지를 새로 배웠다. 전부 당장 큰 문제는 아니었지만, 방치하면 나중에 CI가 갑자기 빨갛게 변하는 종류의 것들이다.\nrequirements-dev.txt는 ASCII 전용으로. 한글 주석을 넣었더니 Windows 로케일(cp949)에서 pip가 그 파일을 디코딩하다 UnicodeDecodeError를 냈다. 주석은 영문으로만 쓴다. enum은 StrEnum이 아니라 (str, enum.Enum). StrEnum은 Python 3.11+ 전용인데, 검증 샌드박스가 3.10이라 호환이 안 됐다. 대신 ruff의 UP042 규칙을 ignore 처리했다. PowerShell에서 venv 삭제는 Remove-Item -Recurse -Force. cmd의 rmdir /s /q 감각으로 접근하면 안 된다. 이런 것들은 아키텍처 문서에는 절대 안 남는데, 실제로 손을 움직이면 꼭 한 번씩 걸린다. 그래서 이번엔 세션 기록(work-log.md)에 “하드런 교훈\"이라는 항목을 따로 만들어 남겨두기로 했다.\n정리 항목 결정 아키텍처 kis-auto-trading의 core/strategies 분리를 read-only 참조로 승계 기준봉 06:00(초안) → 05:00 KST로 변경 — 240분봉 네이티브 경계(01·05·09·13·17·21시)와 일치 확인 후 확정 집계기 불필요 — GET /v1/candles/minutes/240을 가공 없이 그대로 사용 base.py ARCHITECTURE.md §3 원문 대조 완료, 편차 4건 수정(reevaluate/EntrySignal/build_pools 기본구현/ctx.data) 강제 수단 import-linter 3계약 + pre-commit + CI(3.11/3.12 매트릭스) 환경 교훈 requirements-dev ASCII화, enum 3.10 호환, PowerShell venv 삭제 명령 차이 이번 편의 교훈은 하나로 요약된다. “당연히 이렇겠지\"로 적어둔 숫자는, 코드를 짜기 전에 실제 API 응답으로 한 번 확인하는 게 제일 싸게 먹힌다. 06:00이라는 숫자 하나를 그대로 밀어붙였다면, 존재할 필요가 없었던 집계 계층 하나를 만들고 검증하고 유지보수했을 것이다.\n0단계(repo 골격 + base.py + import-linter + CI)는 검증을 전부 통과하고 닫았다. 다음 글은 1단계 — core/api(JWT 서명·rate limiter·주문 API 래퍼)와 core/data(240분봉 수집·경계 검증·결측 보간)를 다루게 될 것 같다. 특히 Upbit의 rate limit이 그룹별로 다르게 걸려 있어서(order는 초당 8회로 유독 낮다) 그 토큰버킷을 어떻게 짰는지가 재미있는 대목이 될 것 같다.\n",
+  "wordCount" : "2686",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-08T18:00:00+09:00",
+  "dateModified": "2026-07-08T18:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-kickoff-and-native-4h-candle/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · Upbit (1) — 착수, 그리고 실측이 설계를 뒤집은 순간
+    </h1>
+    <div class="post-description">
+      국내주식 봇 kis-auto-trading의 core/strategies 분리 아키텍처를 그대로 승계해, Upbit 코인 자동매매 봇을 새로 시작했다. 그런데 착수 직전 실측한 Upbit API 응답 하나가 애초에 정해둔 기준봉 시각을 뒤집었다. 코드를 짜기 전에 가정을 검증하는 게 왜 중요한지, 그리고 그 검증 과정에서 base.py 이식이 어떻게 달라졌는지를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-08T18:00:00+09:00'>2026년 7월 8일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%99%9c-%ec%83%88-%ec%a0%80%ec%9e%a5%ec%86%8c%ec%9d%b8%ea%b0%80" aria-label="1. 왜 새 저장소인가">1. 왜 새 저장소인가</a></li>
+            <li>
+                <a href="#2-%ec%8b%a4%ec%b8%a1%ec%9d%b4-%ec%84%a4%ea%b3%84%eb%a5%bc-%eb%92%a4%ec%a7%91%ec%97%88%eb%8b%a4--%ea%b8%b0%ec%a4%80%eb%b4%89-%ec%8b%9c%ea%b0%81" aria-label="2. 실측이 설계를 뒤집었다 — 기준봉 시각">2. 실측이 설계를 뒤집었다 — 기준봉 시각</a></li>
+            <li>
+                <a href="#3-%ec%8a%b9%ea%b3%84-%ec%9d%b4%ec%8b%9d%ec%97%90%ec%84%9c-%eb%a7%88%ec%a3%bc%ec%b9%9c-%ed%8e%b8%ec%b0%a8-4%ea%b1%b4" aria-label="3. 승계 이식에서 마주친 편차 4건">3. 승계 이식에서 마주친 편차 4건</a></li>
+            <li>
+                <a href="#4-%ed%95%98%eb%93%9c%eb%9f%b0%ec%9d%b4-%eb%82%a8%ea%b8%b4-%ec%82%ac%ec%86%8c%ed%95%98%ec%a7%80%eb%a7%8c-%ec%84%b1%ea%b0%80%ec%8b%a0-%ea%b5%90%ed%9b%88%eb%93%a4" aria-label="4. 하드런이 남긴 사소하지만 성가신 교훈들">4. 하드런이 남긴 사소하지만 성가신 교훈들</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 8일<br>
+<strong>최종 수정</strong>: 2026년 7월 8일<br>
+<strong>분야</strong>: AI Trading, Software Architecture<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: 0단계 완료, 1단계(core/api·core/data) 착수 전</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>이전 시리즈에서 국내주식 봇 <code>kis-auto-trading</code>을 core(전략 무관 인프라)와
+strategies(전략 로직)로 분리해 다시 세운 이야기를 썼다. 이번 시리즈는 그
+아키텍처를 들고 새 시장으로 건너간 이야기다 — Upbit 원화(KRW) 마켓 코인
+자동매매 봇 <code>upbit-auto-trading</code>.</p>
+<p>같은 설계를 다른 시장에 그대로 옮기면 간단할 줄 알았다. 실제로는 착수 첫날부터
+&ldquo;당연히 이렇겠지&quot;라고 적어둔 가정 하나가 실측 한 번에 뒤집혔다. 그 이야기부터
+해야 할 것 같다.</p>
+<hr>
+<h2 id="1-왜-새-저장소인가">1. 왜 새 저장소인가<a hidden class="anchor" aria-hidden="true" href="#1-왜-새-저장소인가">#</a></h2>
+<p>기존 <code>kis-auto-trading-bot</code>(국내주식)과 그걸 다시 설계한 <code>kis-auto-trading</code>은
+주식 시장을 전제로 한다 — 장 시작·마감이 있고, 휴장일이 있고, 하루 봉의 기준이
+명확하다(장 마감 시각). 코인은 이 전제가 전부 깨진다. <strong>24시간 무휴장</strong>이고,
+&ldquo;하루&quot;라는 개념도 거래소가 임의로 정한 기준일 뿐이다.</p>
+<p>그래도 core/strategies 분리, 파이프라인 6단계 인터페이스(<code>build_universe → build_pools → screen</code>, <code>reevaluate</code>, <code>evaluate_entry → evaluate_exit</code>),
+import-linter로 강제하는 계층 경계 — 이 골격 자체는 시장이 달라져도 그대로
+쓸 수 있는 부분이었다. 그래서 <code>kis-auto-trading</code>에서 확정한 <code>ARCHITECTURE.md</code>를
+read-only 참조로 두고, 그 위에 Upbit 특유의 것만 새로 얹는 방식으로 착수했다.</p>
+<hr>
+<h2 id="2-실측이-설계를-뒤집었다--기준봉-시각">2. 실측이 설계를 뒤집었다 — 기준봉 시각<a hidden class="anchor" aria-hidden="true" href="#2-실측이-설계를-뒤집었다--기준봉-시각">#</a></h2>
+<p>착수요청서 초안에는 기준봉을 <strong>06:00 KST</strong>로 적어뒀다. 국내주식 장 시작(09:00)에
+맞춰 하루를 나누던 습관을 코인에도 그대로 옮긴, 별생각 없는 선택이었다.</p>
+<p>그런데 코드를 짜기 전에 실제로 Upbit 240분봉 API를 호출해봤다.</p>
+<pre tabindex="0"><code>GET /v1/candles/minutes/240?market=KRW-BTC
+</code></pre><p>반환된 <code>candle_date_time_kst</code> 값을 늘어놓으니 <code>09:00 / 05:00 / 01:00 / 21:00 …</code>
+이었다. 즉 Upbit의 4시간봉은 <strong>UTC 00:00 기준으로 정렬</strong>되어 있고, 그걸 KST로
+환산하면 네이티브 경계가 <strong>01·05·09·13·17·21시</strong>다. 06:00은 이 경계 어디에도
+없다.</p>
+<p>06:00을 고집했다면 60분봉을 모아서 4시간 단위로 다시 집계하는 계층을 따로
+만들어야 했다. 그러면 결측 처리·경계 검증·타임존 버그가 그 집계기 안에서 또
+하나씩 생긴다. 대신 기준봉을 <strong>05:00 KST</strong>로 바꾸면 이 경계와 정확히
+일치한다 — 그러면 <code>GET /v1/candles/minutes/240</code>을 가공 없이 그대로 쓸 수 있다.
+집계기 자체가 통째로 사라지는 것이다.</p>
+<p>그 자리에서 기준봉을 05:00으로 확정했다. 사이클도 <code>05:05·09:05·13:05·17:05· 21:05·01:05</code>(‘:05’는 API 반영 지연을 흡수하는 여유)로 다시 짰다. 코드를 한
+줄도 쓰기 전에 API 응답 하나를 확인한 덕분에, 나중에 지표 계산이 다 끝난
+뒤에야 &ldquo;어? 봉 경계가 안 맞네&quot;를 발견하는 상황을 피했다. <strong>가정은 코드를 짜기
+전에 실측으로 깨는 게 제일 싸게 먹힌다</strong> — 이번 프로젝트에서 가장 먼저 얻은
+교훈이다.</p>
+<hr>
+<h2 id="3-승계-이식에서-마주친-편차-4건">3. 승계 이식에서 마주친 편차 4건<a hidden class="anchor" aria-hidden="true" href="#3-승계-이식에서-마주친-편차-4건">#</a></h2>
+<p>파이프라인 인터페이스 정본 <code>strategies/base.py</code>는 <code>kis-auto-trading</code>의
+<code>ARCHITECTURE.md §3</code>를 그대로 옮겨 적는 작업이라 쉬울 거라 생각했다. 실제로
+초안을 원문과 한 줄씩 대조하니 편차가 네 군데 나왔다.</p>
+<ol>
+<li><code>reevaluate</code>의 반환 타입 — 초안은 별도 타입을 썼는데, 원문은 <code>ExitDecision</code>을
+그대로 반환하고 기본값은 &ldquo;유지(hold)&ldquo;였다.</li>
+<li>진입 판단 반환 타입이 <code>EntrySignal</code>이어야 하는데 초안에서 누락돼 있었다.</li>
+<li><code>build_pools</code>의 기본 구현 — 그룹 풀이 필요 없는 단순 전략은 전체 유니버스를
+단일 그룹으로 묶는 기본 동작이 있어야 하는데, 초안엔 추상 메서드로만 있었다.</li>
+<li>데이터 접근 경로 — 전략이 <code>ctx.data</code>(<code>DataProvider</code>)를 통해서만 캔들에
+접근해야 하는 부분이 초안에서 흐릿했다.</li>
+</ol>
+<p>넷 다 &ldquo;일단 만들어보고 나중에 맞추면 되지&quot;로 넘길 수 있는 것들이었다. 그런데
+이 인터페이스는 앞으로 v1·v2 전략과 core 양쪽이 계속 의존할 계약이라, 여기서
+어긋난 채로 굳으면 나중에 고치는 비용이 훨씬 커진다. 그래서 원문 대조를
+0단계의 완료 조건에 넣고, 네 건을 전부 고친 뒤에야 0단계를 닫았다.</p>
+<p>참고로 <code>kis-auto-trading-bot</code>(v3 실운영 원본)은 <code>base.py</code> 같은 계약 없이
+전략이 서로 얽혀 있는 레거시 구조라, 이번 대조에는 쓸 수 없었다.
+<code>ARCHITECTURE.md §3</code> 쪽이 유일한 정본이었다.</p>
+<hr>
+<h2 id="4-하드런이-남긴-사소하지만-성가신-교훈들">4. 하드런이 남긴 사소하지만 성가신 교훈들<a hidden class="anchor" aria-hidden="true" href="#4-하드런이-남긴-사소하지만-성가신-교훈들">#</a></h2>
+<p>설계·이식과 별개로, 이번 착수에서 환경 쪽으로 세 가지를 새로 배웠다. 전부
+당장 큰 문제는 아니었지만, 방치하면 나중에 CI가 갑자기 빨갛게 변하는 종류의
+것들이다.</p>
+<ul>
+<li><strong><code>requirements-dev.txt</code>는 ASCII 전용으로.</strong> 한글 주석을 넣었더니 Windows
+로케일(cp949)에서 pip가 그 파일을 디코딩하다 <code>UnicodeDecodeError</code>를 냈다.
+주석은 영문으로만 쓴다.</li>
+<li><strong>enum은 <code>StrEnum</code>이 아니라 <code>(str, enum.Enum)</code>.</strong> <code>StrEnum</code>은 Python 3.11+
+전용인데, 검증 샌드박스가 3.10이라 호환이 안 됐다. 대신 <code>ruff</code>의 <code>UP042</code>
+규칙을 ignore 처리했다.</li>
+<li><strong>PowerShell에서 venv 삭제는 <code>Remove-Item -Recurse -Force</code>.</strong> cmd의
+<code>rmdir /s /q</code> 감각으로 접근하면 안 된다.</li>
+</ul>
+<p>이런 것들은 아키텍처 문서에는 절대 안 남는데, 실제로 손을 움직이면 꼭
+한 번씩 걸린다. 그래서 이번엔 세션 기록(<code>work-log.md</code>)에 &ldquo;하드런 교훈&quot;이라는
+항목을 따로 만들어 남겨두기로 했다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>결정</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>아키텍처</td>
+					<td><code>kis-auto-trading</code>의 core/strategies 분리를 read-only 참조로 승계</td>
+			</tr>
+			<tr>
+					<td>기준봉</td>
+					<td>06:00(초안) → <strong>05:00 KST</strong>로 변경 — 240분봉 네이티브 경계(01·05·09·13·17·21시)와 일치 확인 후 확정</td>
+			</tr>
+			<tr>
+					<td>집계기</td>
+					<td>불필요 — <code>GET /v1/candles/minutes/240</code>을 가공 없이 그대로 사용</td>
+			</tr>
+			<tr>
+					<td>base.py</td>
+					<td><code>ARCHITECTURE.md §3</code> 원문 대조 완료, 편차 4건 수정(reevaluate/EntrySignal/build_pools 기본구현/ctx.data)</td>
+			</tr>
+			<tr>
+					<td>강제 수단</td>
+					<td>import-linter 3계약 + pre-commit + CI(3.11/3.12 매트릭스)</td>
+			</tr>
+			<tr>
+					<td>환경 교훈</td>
+					<td>requirements-dev ASCII화, enum 3.10 호환, PowerShell venv 삭제 명령 차이</td>
+			</tr>
+	</tbody>
+</table>
+<p>이번 편의 교훈은 하나로 요약된다. <strong>&ldquo;당연히 이렇겠지&quot;로 적어둔 숫자는, 코드를
+짜기 전에 실제 API 응답으로 한 번 확인하는 게 제일 싸게 먹힌다.</strong> 06:00이라는
+숫자 하나를 그대로 밀어붙였다면, 존재할 필요가 없었던 집계 계층 하나를
+만들고 검증하고 유지보수했을 것이다.</p>
+<p>0단계(repo 골격 + base.py + import-linter + CI)는 검증을 전부 통과하고
+닫았다. 다음 글은 1단계 — <code>core/api</code>(JWT 서명·rate limiter·주문 API 래퍼)와
+<code>core/data</code>(240분봉 수집·경계 검증·결측 보간)를 다루게 될 것 같다. 특히
+Upbit의 rate limit이 그룹별로 다르게 걸려 있어서(<code>order</code>는 초당 8회로 유독
+낮다) 그 토큰버킷을 어떻게 짰는지가 재미있는 대목이 될 것 같다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/missing-stock-names-and-premarket-schedule/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 코드 개발 (49) — 종목명이 비어 있던 진짜 원인, 그리고 사전 캐시 시각을 옮긴 뒤의 검증</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · KIS (3) — superpowers 플러그인을 통째로 도입하지 않은 이유</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

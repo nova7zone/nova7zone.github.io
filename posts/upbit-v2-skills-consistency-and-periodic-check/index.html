@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트 | Evan&#39;s Blog</title>
+<meta name="keywords" content="리뷰, 프롬프트, 설계, 버그수정">
+<meta name="description" content="에이전트가 따르는 스킬과 지침 문서가 코드·설정·다른 문서와 어긋나기 시작했다. 스킬을 실물과 대조하는 정합성 리뷰로 지적 약 25건을 찾고, 정의가 네 곳에서 다른 판정 기준을 정본 하나로 맞췄다. 점검에 쓰는 AI 사용량을 줄이려고 읽기 전용 점검 스크립트를 만든 과정과, 외부 AI의 개선 제안서를 실물과 대조해 대부분 불채택한 판단을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트">
+  <meta property="og:description" content="에이전트가 따르는 스킬과 지침 문서가 코드·설정·다른 문서와 어긋나기 시작했다. 스킬을 실물과 대조하는 정합성 리뷰로 지적 약 25건을 찾고, 정의가 네 곳에서 다른 판정 기준을 정본 하나로 맞췄다. 점검에 쓰는 AI 사용량을 줄이려고 읽기 전용 점검 스크립트를 만든 과정과, 외부 AI의 개선 제안서를 실물과 대조해 대부분 불채택한 판단을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-10-18T23:40:00+09:00">
+    <meta property="article:modified_time" content="2026-10-18T23:40:00+09:00">
+    <meta property="article:tag" content="리뷰">
+    <meta property="article:tag" content="프롬프트">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="버그수정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트">
+  <meta name="twitter:description" content="에이전트가 따르는 스킬과 지침 문서가 코드·설정·다른 문서와 어긋나기 시작했다. 스킬을 실물과 대조하는 정합성 리뷰로 지적 약 25건을 찾고, 정의가 네 곳에서 다른 판정 기준을 정본 하나로 맞췄다. 점검에 쓰는 AI 사용량을 줄이려고 읽기 전용 점검 스크립트를 만든 과정과, 외부 AI의 개선 제안서를 실물과 대조해 대부분 불채택한 판단을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트",
+  "name": "자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트",
+  "description": "에이전트가 따르는 스킬과 지침 문서가 코드·설정·다른 문서와 어긋나기 시작했다. 스킬을 실물과 대조하는 정합성 리뷰로 지적 약 25건을 찾고, 정의가 네 곳에서 다른 판정 기준을 정본 하나로 맞췄다. 점검에 쓰는 AI 사용량을 줄이려고 읽기 전용 점검 스크립트를 만든 과정과, 외부 AI의 개선 제안서를 실물과 대조해 대부분 불채택한 판단을 정리한다.",
+  "keywords": [
+    "리뷰", "프롬프트", "설계", "버그수정"
+  ],
+  "articleBody": "들어가며 운영이 안정되면서 문제의 위치가 코드에서 에이전트가 읽는 문서로 옮겨 갔다. 점검 스킬, 연구 에이전트 지침, 세션 시작·종료 절차 같은 문서다. 이 문서들은 코드와 달리 테스트가 없어서 설정값이 바뀌어도, 로그 이벤트 이름이 바뀌어도 조용히 낡는다. 10월 12일부터 18일까지, 그 낡음을 찾는 작업과 점검 자동화를 다룬다.\n1. 스킬을 실물과 대조한다 사용자가 정합성 리뷰를 요청했다. 대상은 세 묶음이었다.\n대상 대조 기준 결과 전략 연구 스킬·에이전트 4종·판정 기준 문서 백테스트 하니스 코드 지적 10건 (사실 7, 잠복 1, 설계 판단 1, 마이너 1) 세션 시작·종료·문서 동기화 스킬 검증 스크립트, CI, 규약 문서 지적 6건 서버 점검·캐너리 점검 스킬 설정값, 로그 이벤트, 코드 지적 9건 방법은 기계적이다. 스킬이 언급하는 로그 이벤트 40여 개를 코드에서 전수 검색했고(전부 존재), 링크와 앵커의 깨짐을 확인했다(0건). 서버는 읽기 전용으로 한 번만 조회했다. 모든 리뷰의 원칙은 먼저 보고만 하고 고치지 않는다였다. 사용자가 지시한 뒤에 고쳤다.\n대표적인 지적들은 이랬다.\n타입 검사 범위가 둘로 갈렸다. 검증 스크립트는 scripts 폴더를 포함하는데 CI와 규약 문서는 제외했다. 로컬에서는 통과하고 CI에서는 다르게 동작할 수 있다. 하나로 통일했다. 서버 점검 스킬의 낡은 수치. 배치 크기, 보관 기간, 틱 예산 같은 설정값을 문서에 숫자로 박아 두었다. 설정이 바뀌면 틀린다. 설정 파일을 가리키게 바꿨다. 항상 0인 grep. 요청 제한(429) 횟수를 로그에서 찾는 명령이 있었는데, 그것은 로그 이벤트가 아니라 카운터였다. 영원히 0이 나오는 점검은 안심을 주는 가짜 점검이다. 삭제했다. 작업 로그 양식이 정본과 실제가 달랐다. 정본을 문서 맨 위에 두고 이전 양식은 소급 변환하지 않는다고 명시했다. 변경 → 문서 매핑이 없었다. 문서 동기화 단계에 “어떤 코드 변경이 어떤 문서를 바꿔야 하는가” 표를 추가했다. 정의가 네 곳에서 달랐다 가장 무거운 지적은 연구 판정 기준 중 하나(R2)의 정의가 네 군데에서 서로 달랐다는 점이다. 어떤 문서는 “전 구간 신뢰구간 하한이 1.0 초과\"라 하고, 어떤 문서는 “전반과 후반 각각의 점추정 수익 팩터가 1.0 초과\"라 했다. 실제 운용은 후자였다.\n정본을 기준 문서의 해당 절 하나로 정하고 나머지 세 문서가 그 절을 가리키도록 고쳤다. 다만 여기서 중요한 단서가 있다. 문서의 한 문구가 바뀌는 것이므로 판정 기준 변경이 아니라 실제 운용 정의에 정렬하는 것임을 사용자에게 확인받아야 했다. 판정 기준을 조용히 바꾸는 일은 이 프로젝트에서 가장 피해야 할 일이다.\n같은 방식으로 후속 코드 수정도 했다. 고원 탐색 함수에 선택 인자(최고점 하한, 격자 끝 최고점 배제)를 추가했다. 기본값은 기존 동작이라 기존 호출에 영향이 없고 기준 문서가 새 값으로 호출하도록 명시했다(판정 강화, 소급 재판정 없음). 또 위험 설정과 공포 게이트 설정이 라이브는 한쪽을, 백테스트는 다른 쪽을 읽는 이중 출처 문제를 일치 테스트로 막았고, 백테스트 리포트에 설정 지문 줄을 추가했다.\n2. 날짜 표기 통일 사용자가 모바일 화면 캡처를 주면서 “모든 날짜·시간 표기를 2026-10-12T19:27:26 형식으로, 시간이 필요 없는 것은 2026-10-12로” 요청했다. 마이크로초가 붙은 것, 오프셋이 붙은 것, KST 접미사, MM-DD HH:MM 형식이 화면마다 섞여 있었다.\n표기 함수를 한 파일에 모으고(날짜·시간·셀 세 종류) 템플릿 11곳에 필터로 적용했다. 파이썬 쪽에서 문자열을 만드는 곳도 같은 형식으로 맞췄다. 배포 후에는 로그인된 브라우저로 화면 두 곳을 읽기 전용으로 확인해 잔존 형식 0건을 확인했다. 나머지 화면은 테스트로만 확인했다고 정직하게 적었다.\n3. 점검에 쓰는 AI 사용량을 줄이는 법 4시간마다 에이전트가 서버를 점검하는 데 비용이 들었다. 사용자는 이렇게 요청했다. 서버의 점검 스크립트 결과만 보고, 세부는 필요할 때만 확인하고, 이상이 있으면 수정 권고안을 검토하는 방향으로.\n이미 서버에는 상태 점검 cron이 있었다. 하지만 틱 초과, 로그 반복, 상태 불변식, 체결 흐름 신선도는 보지 않았다. 겹치지 않도록 별도의 읽기 전용 스크립트를 만들었다.\n규칙 F1~F15와 INFO 요약 설정 파일로 임계값 분리 테스트 24건 이 스크립트의 출력을 읽는 점검 스킬 + 모니터링 문서 시험은 서버의 임시 디렉터리에서 실데이터로 실행했고(결과 STATUS: OK), 서버 파일은 삭제했다 배포하자마자 오탐이 나왔다. F15(로그의 마지막 줄이 92분 전)가 발동했는데 cron은 정상이었다. 상태 점검 로그가 4시간 경계에만 쌓여서 90분 임계값과 맞지 않았다. 하트비트 파일을 도입했다. 점검 스크립트가 매 실행마다 파일을 갱신하고, 새 스크립트는 하트비트를 우선, 로그를 대체로 본다.\n4. 틱 초과와 반복 로그 점검이 잡은 문제가 두 개 있었다.\n틱 초과. 30분에 449건. 틱당 약 4초로 3초 예산을 넘었다. 직전 구간은 0건이었다. 같은 시각부터 대기 후보가 6건 생겼다. 원인은 미확인이었고 추정은 이랬다. 리스크 체크의 거래소 호출이 최소 손익비 검사보다 앞서 있어서 대기 후보마다 매 틱 반복된다. 우선 사용자 지시로 틱 간격을 3초에서 5초로 늘렸다. 원인 추정을 확정으로 쓰지 않고 “미확인\"이라고 적었다. 반복 로그. 최소 손익비 미달로 대기 중인 후보 하나가 매 틱 INFO를 남겨 30분에 1,200줄이 쌓였다(저널이 거의 1GB). 앞서 만든 반복 강등이 리스크 거부 경로에만 있고 이 분기에는 없었다. 새 사유일 때만 INFO, 반복은 DEBUG로 낮추는 회귀 테스트를 수정 전 실패 확인 후 추가했다. DB에는 중복 제거가 있어서 한 줄뿐이었고 노이즈는 저널에만 있었다. 5. 외부 AI의 제안서를 실물과 대조한다 사용자가 다른 AI 도구가 쓴 “전략 연구 에이전트 개선 제안서\"를 가져왔다. 같은 방식으로 저장소 실물과 대조했다. 결과는 이랬다.\n제안의 대부분(실현 가능성 산술, 미측정 게이트, 플라시보 매칭, 기각 원인 분류, 관찰 기반 탐색)은 이미 판정 기준 문서와 사전 등록 문서에 있었다. 불채택. 제안서에 사실 오류도 있었다. 보고서 44건 중 스모크 실패가 1건뿐이라는 점, 회차 폴더가 75개라는 점이다. 채택은 세 건이다. 후보 수 계약 통일(1개 이상이면 진행, 3~7개는 목표치), 수정 유형 분류 양식(구현 정정 / 가설 변경 / 변경 없이 기각), 보고서 양식에 기각 원인 코드·결정 단계·측정/미측정 게이트·재개방 조건 필드(최종 판정을 대체하지 않는 보조 표기). 판정 문턱과 봉인 구간 보호는 건드리지 않았다. 새 양식은 다음 회차부터 적용하고 기존 보고서는 소급 변환하지 않는다. 외부 제안을 받았을 때는 “좋은 제안인가\"보다 “우리가 이미 하고 있는가\"를 먼저 묻는다.\n정리 영역 결과 정합성 리뷰 스킬·지침 약 25건 지적, 고치기 전에 보고 판정 정의 네 곳에서 달랐던 R2를 정본 하나로, 기준 변경 아님을 확인 정기 점검 읽기 전용 스크립트(F1~F15)로 AI 사용량 감소 오탐 하트비트로 해소 외부 제안 실물 대조 후 대부분 불채택, 3건 채택 배운 점: 스킬과 지침은 코드와 같은 방식으로 낡지만 테스트가 없다. 그래서 주기적으로 실물과 대조해야 한다. 문서가 설정값을 숫자로 박아 두면 낡고, 설정 파일을 가리키면 낡지 않는다. 그리고 점검이 항상 통과하는 것은 안심이 아니라 점검이 죽었다는 신호일 수 있다. 항상 0이 나오는 grep은 지워야 한다.\n",
+  "wordCount" : "2836",
+  "inLanguage": "ko",
+  "datePublished": "2026-10-18T23:40:00+09:00",
+  "dateModified": "2026-10-18T23:40:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트
+    </h1>
+    <div class="post-description">
+      에이전트가 따르는 스킬과 지침 문서가 코드·설정·다른 문서와 어긋나기 시작했다. 스킬을 실물과 대조하는 정합성 리뷰로 지적 약 25건을 찾고, 정의가 네 곳에서 다른 판정 기준을 정본 하나로 맞췄다. 점검에 쓰는 AI 사용량을 줄이려고 읽기 전용 점검 스크립트를 만든 과정과, 외부 AI의 개선 제안서를 실물과 대조해 대부분 불채택한 판단을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-10-18T23:40:00+09:00'>2026년 10월 18일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%8a%a4%ed%82%ac%ec%9d%84-%ec%8b%a4%eb%ac%bc%ea%b3%bc-%eb%8c%80%ec%a1%b0%ed%95%9c%eb%8b%a4" aria-label="1. 스킬을 실물과 대조한다">1. 스킬을 실물과 대조한다</a><ul>
+                    
+            <li>
+                <a href="#%ec%a0%95%ec%9d%98%ea%b0%80-%eb%84%a4-%ea%b3%b3%ec%97%90%ec%84%9c-%eb%8b%ac%eb%9e%90%eb%8b%a4" aria-label="정의가 네 곳에서 달랐다">정의가 네 곳에서 달랐다</a></li></ul>
+            </li>
+            <li>
+                <a href="#2-%eb%82%a0%ec%a7%9c-%ed%91%9c%ea%b8%b0-%ed%86%b5%ec%9d%bc" aria-label="2. 날짜 표기 통일">2. 날짜 표기 통일</a></li>
+            <li>
+                <a href="#3-%ec%a0%90%ea%b2%80%ec%97%90-%ec%93%b0%eb%8a%94-ai-%ec%82%ac%ec%9a%a9%eb%9f%89%ec%9d%84-%ec%a4%84%ec%9d%b4%eb%8a%94-%eb%b2%95" aria-label="3. 점검에 쓰는 AI 사용량을 줄이는 법">3. 점검에 쓰는 AI 사용량을 줄이는 법</a></li>
+            <li>
+                <a href="#4-%ed%8b%b1-%ec%b4%88%ea%b3%bc%ec%99%80-%eb%b0%98%eb%b3%b5-%eb%a1%9c%ea%b7%b8" aria-label="4. 틱 초과와 반복 로그">4. 틱 초과와 반복 로그</a></li>
+            <li>
+                <a href="#5-%ec%99%b8%eb%b6%80-ai%ec%9d%98-%ec%a0%9c%ec%95%88%ec%84%9c%eb%a5%bc-%ec%8b%a4%eb%ac%bc%ea%b3%bc-%eb%8c%80%ec%a1%b0%ed%95%9c%eb%8b%a4" aria-label="5. 외부 AI의 제안서를 실물과 대조한다">5. 외부 AI의 제안서를 실물과 대조한다</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>운영이 안정되면서 문제의 위치가 코드에서 <strong>에이전트가 읽는 문서</strong>로 옮겨 갔다. 점검 스킬, 연구 에이전트 지침, 세션 시작·종료 절차 같은 문서다. 이 문서들은 코드와 달리 테스트가 없어서 설정값이 바뀌어도, 로그 이벤트 이름이 바뀌어도 조용히 낡는다. 10월 12일부터 18일까지, 그 낡음을 찾는 작업과 점검 자동화를 다룬다.</p>
+<hr>
+<h2 id="1-스킬을-실물과-대조한다">1. 스킬을 실물과 대조한다<a hidden class="anchor" aria-hidden="true" href="#1-스킬을-실물과-대조한다">#</a></h2>
+<p>사용자가 정합성 리뷰를 요청했다. 대상은 세 묶음이었다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>대상</th>
+					<th>대조 기준</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>전략 연구 스킬·에이전트 4종·판정 기준 문서</td>
+					<td>백테스트 하니스 코드</td>
+					<td>지적 10건 (사실 7, 잠복 1, 설계 판단 1, 마이너 1)</td>
+			</tr>
+			<tr>
+					<td>세션 시작·종료·문서 동기화 스킬</td>
+					<td>검증 스크립트, CI, 규약 문서</td>
+					<td>지적 6건</td>
+			</tr>
+			<tr>
+					<td>서버 점검·캐너리 점검 스킬</td>
+					<td>설정값, 로그 이벤트, 코드</td>
+					<td>지적 9건</td>
+			</tr>
+	</tbody>
+</table>
+<p>방법은 기계적이다. 스킬이 언급하는 <strong>로그 이벤트 40여 개를 코드에서 전수 검색</strong>했고(전부 존재), 링크와 앵커의 깨짐을 확인했다(0건). 서버는 읽기 전용으로 한 번만 조회했다. 모든 리뷰의 원칙은 <strong>먼저 보고만 하고 고치지 않는다</strong>였다. 사용자가 지시한 뒤에 고쳤다.</p>
+<p>대표적인 지적들은 이랬다.</p>
+<ul>
+<li><strong>타입 검사 범위가 둘로 갈렸다.</strong> 검증 스크립트는 <code>scripts</code> 폴더를 포함하는데 CI와 규약 문서는 제외했다. 로컬에서는 통과하고 CI에서는 다르게 동작할 수 있다. 하나로 통일했다.</li>
+<li><strong>서버 점검 스킬의 낡은 수치.</strong> 배치 크기, 보관 기간, 틱 예산 같은 설정값을 문서에 숫자로 박아 두었다. 설정이 바뀌면 틀린다. 설정 <strong>파일을 가리키게</strong> 바꿨다.</li>
+<li><strong>항상 0인 grep.</strong> 요청 제한(429) 횟수를 로그에서 찾는 명령이 있었는데, 그것은 로그 이벤트가 아니라 카운터였다. 영원히 0이 나오는 점검은 안심을 주는 가짜 점검이다. 삭제했다.</li>
+<li><strong>작업 로그 양식이 정본과 실제가 달랐다.</strong> 정본을 문서 맨 위에 두고 이전 양식은 소급 변환하지 않는다고 명시했다.</li>
+<li><strong>변경 → 문서 매핑이 없었다.</strong> 문서 동기화 단계에 &ldquo;어떤 코드 변경이 어떤 문서를 바꿔야 하는가&rdquo; 표를 추가했다.</li>
+</ul>
+<h3 id="정의가-네-곳에서-달랐다">정의가 네 곳에서 달랐다<a hidden class="anchor" aria-hidden="true" href="#정의가-네-곳에서-달랐다">#</a></h3>
+<p>가장 무거운 지적은 연구 판정 기준 중 하나(R2)의 정의가 <strong>네 군데에서 서로 달랐다</strong>는 점이다. 어떤 문서는 &ldquo;전 구간 신뢰구간 하한이 1.0 초과&quot;라 하고, 어떤 문서는 &ldquo;전반과 후반 각각의 점추정 수익 팩터가 1.0 초과&quot;라 했다. 실제 운용은 후자였다.</p>
+<p>정본을 기준 문서의 해당 절 하나로 정하고 나머지 세 문서가 그 절을 가리키도록 고쳤다. 다만 여기서 중요한 단서가 있다. 문서의 한 문구가 바뀌는 것이므로 <strong>판정 기준 변경이 아니라 실제 운용 정의에 정렬하는 것</strong>임을 사용자에게 확인받아야 했다. 판정 기준을 조용히 바꾸는 일은 이 프로젝트에서 가장 피해야 할 일이다.</p>
+<p>같은 방식으로 후속 코드 수정도 했다. 고원 탐색 함수에 선택 인자(최고점 하한, 격자 끝 최고점 배제)를 추가했다. 기본값은 기존 동작이라 기존 호출에 영향이 없고 기준 문서가 새 값으로 호출하도록 명시했다(판정 강화, 소급 재판정 없음). 또 위험 설정과 공포 게이트 설정이 <strong>라이브는 한쪽을, 백테스트는 다른 쪽을</strong> 읽는 이중 출처 문제를 일치 테스트로 막았고, 백테스트 리포트에 설정 지문 줄을 추가했다.</p>
+<hr>
+<h2 id="2-날짜-표기-통일">2. 날짜 표기 통일<a hidden class="anchor" aria-hidden="true" href="#2-날짜-표기-통일">#</a></h2>
+<p>사용자가 모바일 화면 캡처를 주면서 &ldquo;모든 날짜·시간 표기를 <code>2026-10-12T19:27:26</code> 형식으로, 시간이 필요 없는 것은 <code>2026-10-12</code>로&rdquo; 요청했다. 마이크로초가 붙은 것, 오프셋이 붙은 것, <code>KST</code> 접미사, <code>MM-DD HH:MM</code> 형식이 화면마다 섞여 있었다.</p>
+<p>표기 함수를 한 파일에 모으고(날짜·시간·셀 세 종류) 템플릿 11곳에 필터로 적용했다. 파이썬 쪽에서 문자열을 만드는 곳도 같은 형식으로 맞췄다. 배포 후에는 로그인된 브라우저로 화면 두 곳을 읽기 전용으로 확인해 잔존 형식 0건을 확인했다. 나머지 화면은 테스트로만 확인했다고 정직하게 적었다.</p>
+<hr>
+<h2 id="3-점검에-쓰는-ai-사용량을-줄이는-법">3. 점검에 쓰는 AI 사용량을 줄이는 법<a hidden class="anchor" aria-hidden="true" href="#3-점검에-쓰는-ai-사용량을-줄이는-법">#</a></h2>
+<p>4시간마다 에이전트가 서버를 점검하는 데 비용이 들었다. 사용자는 이렇게 요청했다. <strong>서버의 점검 스크립트 결과만 보고, 세부는 필요할 때만 확인하고, 이상이 있으면 수정 권고안을 검토하는 방향</strong>으로.</p>
+<p>이미 서버에는 상태 점검 cron이 있었다. 하지만 틱 초과, 로그 반복, 상태 불변식, 체결 흐름 신선도는 보지 않았다. 겹치지 않도록 <strong>별도의 읽기 전용 스크립트</strong>를 만들었다.</p>
+<ul>
+<li>규칙 F1~F15와 INFO 요약</li>
+<li>설정 파일로 임계값 분리</li>
+<li>테스트 24건</li>
+<li>이 스크립트의 출력을 읽는 점검 스킬 + 모니터링 문서</li>
+<li>시험은 서버의 임시 디렉터리에서 실데이터로 실행했고(결과 <code>STATUS: OK</code>), 서버 파일은 삭제했다</li>
+</ul>
+<p>배포하자마자 오탐이 나왔다. F15(로그의 마지막 줄이 92분 전)가 발동했는데 cron은 정상이었다. 상태 점검 로그가 4시간 경계에만 쌓여서 90분 임계값과 맞지 않았다. <strong>하트비트 파일</strong>을 도입했다. 점검 스크립트가 매 실행마다 파일을 갱신하고, 새 스크립트는 하트비트를 우선, 로그를 대체로 본다.</p>
+<hr>
+<h2 id="4-틱-초과와-반복-로그">4. 틱 초과와 반복 로그<a hidden class="anchor" aria-hidden="true" href="#4-틱-초과와-반복-로그">#</a></h2>
+<p>점검이 잡은 문제가 두 개 있었다.</p>
+<ul>
+<li><strong>틱 초과.</strong> 30분에 449건. 틱당 약 4초로 3초 예산을 넘었다. 직전 구간은 0건이었다. 같은 시각부터 대기 후보가 6건 생겼다. 원인은 미확인이었고 추정은 이랬다. 리스크 체크의 거래소 호출이 최소 손익비 검사보다 앞서 있어서 대기 후보마다 매 틱 반복된다. 우선 사용자 지시로 틱 간격을 3초에서 5초로 늘렸다. 원인 추정을 확정으로 쓰지 않고 &ldquo;미확인&quot;이라고 적었다.</li>
+<li><strong>반복 로그.</strong> 최소 손익비 미달로 대기 중인 후보 하나가 매 틱 INFO를 남겨 30분에 1,200줄이 쌓였다(저널이 거의 1GB). 앞서 만든 반복 강등이 리스크 거부 경로에만 있고 이 분기에는 없었다. 새 사유일 때만 INFO, 반복은 DEBUG로 낮추는 회귀 테스트를 수정 전 실패 확인 후 추가했다. DB에는 중복 제거가 있어서 한 줄뿐이었고 노이즈는 저널에만 있었다.</li>
+</ul>
+<hr>
+<h2 id="5-외부-ai의-제안서를-실물과-대조한다">5. 외부 AI의 제안서를 실물과 대조한다<a hidden class="anchor" aria-hidden="true" href="#5-외부-ai의-제안서를-실물과-대조한다">#</a></h2>
+<p>사용자가 다른 AI 도구가 쓴 &ldquo;전략 연구 에이전트 개선 제안서&quot;를 가져왔다. 같은 방식으로 <strong>저장소 실물과 대조</strong>했다. 결과는 이랬다.</p>
+<ul>
+<li>제안의 대부분(실현 가능성 산술, 미측정 게이트, 플라시보 매칭, 기각 원인 분류, 관찰 기반 탐색)은 이미 판정 기준 문서와 사전 등록 문서에 있었다. <strong>불채택.</strong></li>
+<li>제안서에 <strong>사실 오류</strong>도 있었다. 보고서 44건 중 스모크 실패가 1건뿐이라는 점, 회차 폴더가 75개라는 점이다.</li>
+<li>채택은 세 건이다. 후보 수 계약 통일(1개 이상이면 진행, 3~7개는 목표치), 수정 유형 분류 양식(구현 정정 / 가설 변경 / 변경 없이 기각), 보고서 양식에 기각 원인 코드·결정 단계·측정/미측정 게이트·재개방 조건 필드(최종 판정을 대체하지 않는 보조 표기).</li>
+</ul>
+<p>판정 문턱과 봉인 구간 보호는 건드리지 않았다. 새 양식은 다음 회차부터 적용하고 기존 보고서는 소급 변환하지 않는다. 외부 제안을 받았을 때는 &ldquo;좋은 제안인가&quot;보다 &ldquo;우리가 이미 하고 있는가&quot;를 먼저 묻는다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>정합성 리뷰</td>
+					<td>스킬·지침 약 25건 지적, 고치기 전에 보고</td>
+			</tr>
+			<tr>
+					<td>판정 정의</td>
+					<td>네 곳에서 달랐던 R2를 정본 하나로, 기준 변경 아님을 확인</td>
+			</tr>
+			<tr>
+					<td>정기 점검</td>
+					<td>읽기 전용 스크립트(F1~F15)로 AI 사용량 감소</td>
+			</tr>
+			<tr>
+					<td>오탐</td>
+					<td>하트비트로 해소</td>
+			</tr>
+			<tr>
+					<td>외부 제안</td>
+					<td>실물 대조 후 대부분 불채택, 3건 채택</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 스킬과 지침은 코드와 같은 방식으로 낡지만 테스트가 없다. 그래서 주기적으로 <strong>실물과 대조</strong>해야 한다. 문서가 설정값을 숫자로 박아 두면 낡고, 설정 파일을 가리키면 낡지 않는다. 그리고 점검이 항상 통과하는 것은 안심이 아니라 점검이 죽었다는 신호일 수 있다. 항상 0이 나오는 grep은 지워야 한다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/">프롬프트</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

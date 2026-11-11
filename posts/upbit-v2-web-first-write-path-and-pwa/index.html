@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA) | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포, 설정">
+<meta name="description" content="단순한 첫 캐너리가 검증하지 못한 실행 경로를 채우는 두 번째 캐너리를 만들고, 웹에서 전략을 켜고 끄는 첫 쓰기 기능을 붙였다. 설계 탐색 중 &#39;자리만 있고 배선이 안 된 줄 알았던&#39; 설정 변경 장치가 이미 구현되어 있음을 발견해 설계를 바꾼 일, 서버에서 설정 파일을 직접 고쳐 생긴 드리프트, 홈 화면 설치용 PWA까지 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)">
+  <meta property="og:description" content="단순한 첫 캐너리가 검증하지 못한 실행 경로를 채우는 두 번째 캐너리를 만들고, 웹에서 전략을 켜고 끄는 첫 쓰기 기능을 붙였다. 설계 탐색 중 &#39;자리만 있고 배선이 안 된 줄 알았던&#39; 설정 변경 장치가 이미 구현되어 있음을 발견해 설계를 바꾼 일, 서버에서 설정 파일을 직접 고쳐 생긴 드리프트, 홈 화면 설치용 PWA까지 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-09-26T15:00:00+09:00">
+    <meta property="article:modified_time" content="2026-09-26T15:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="설정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)">
+  <meta name="twitter:description" content="단순한 첫 캐너리가 검증하지 못한 실행 경로를 채우는 두 번째 캐너리를 만들고, 웹에서 전략을 켜고 끄는 첫 쓰기 기능을 붙였다. 설계 탐색 중 &#39;자리만 있고 배선이 안 된 줄 알았던&#39; 설정 변경 장치가 이미 구현되어 있음을 발견해 설계를 바꾼 일, 서버에서 설정 파일을 직접 고쳐 생긴 드리프트, 홈 화면 설치용 PWA까지 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)",
+  "name": "자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)",
+  "description": "단순한 첫 캐너리가 검증하지 못한 실행 경로를 채우는 두 번째 캐너리를 만들고, 웹에서 전략을 켜고 끄는 첫 쓰기 기능을 붙였다. 설계 탐색 중 '자리만 있고 배선이 안 된 줄 알았던' 설정 변경 장치가 이미 구현되어 있음을 발견해 설계를 바꾼 일, 서버에서 설정 파일을 직접 고쳐 생긴 드리프트, 홈 화면 설치용 PWA까지 정리한다.",
+  "keywords": [
+    "설계", "배포", "설정"
+  ],
+  "articleBody": "들어가며 첫 캐너리의 첫 완결 거래로 실주문 경로의 큰 줄기는 확인됐다. 그러나 사용자의 지적이 정확했다. “첫 캐너리는 매매 조건이 너무 단순하다.” 고정된 시장 하나, 지정가 IOC 매수, 손절과 시간 청산만 검증했다. 지표 기반 진입, 익절 청산(앞서 가격 버그를 고친 바로 그 경로), 동시에 여러 포지션 처리는 라이브로 실행된 적이 없었다. 9월 24일부터 26일까지의 기록이다.\n1. 두 번째 캐너리: 실행 인프라의 빈칸을 채운다 연구 분류 체계 전체가 봉인되어 있었으므로 이번에도 목적은 통계적 우위 검증이 아니라 실행 인프라 검증이다. 이 전제 때문에 백테스트 전후 대조 대상이 아니다. 기획(brainstorming)으로 순차 합의했다.\n별도 신규 캐너리로 만든다. 진입은 이동평균 골든크로스. 청산은 고정 가격 익절 + 손절. 유니버스는 고정 후보군(약 20종) 중 상위 10종. 전체 시장 열거는 데이터 제공자 계약 변경이 필요해서 범위 밖으로 뺐다. 최대 3개를 동시에 보유한다. 후보군은 서버에서 실측한 24시간 거래대금 순위에서 스테이블코인과 밈코인을 제외해 골랐다. 캐너리 진입 승인 로직이 단일 전략 하드코딩이었던 것은 전략별 최대 동시 보유 수 테이블로 일반화했다.\n테스트 파일 이름이 흥미로운 교훈을 남겼다. 같은 이름의 test_strategy.py가 두 군데 있었는데 tests/ 전체에 __init__.py가 없어서 pytest 모듈 이름이 충돌했다. 고유한 이름으로 바꿨다. 사소한 규약이지만 캐너리가 늘수록 반복될 문제다.\n2. 웹의 첫 쓰기 경로 사용자의 요청은 이랬다. 새 전략을 배포하면 웹에서 전략을 골라 켜고 끌 수 있게 하고, 끄면 이미 보유한 포지션은 원래 진입했던 전략의 규칙대로 계속 청산되게 해 달라. 지금 배포하면 첫 캐너리를 두 번째 캐너리로 교체해 달라.\nV2의 원칙은 “웹은 설정과 배분만 쓰고 주문은 하지 않는다“이다. 이 기능은 웹이 처음으로 상태를 바꾸는 쓰기 경로다.\n설계를 바꾸게 한 발견 탐색을 시작했을 때는 새 테이블 두 개(설정 버전, 감사 로그)가 필요하다고 판단했다. 그런데 코드를 열어 보니 이미 설정 버전 테이블과 감사 로그 테이블, 변경 대기열과 적용·롤백 함수가 구현되고 테스트까지 되어 있었고, 4시간 사이클의 8번째 단계가 매 사이클 변경 적용 함수를 실제로 호출하고 있었다. 로드맵 초기에 “자리만 있고 미배선\"으로 기록됐던 것이 어느새 완성되어 있었다.\n이 발견을 사용자에게 알리고, 새 테이블 두 개를 만들겠다던 앞선 선택 대신 기존 장치 재사용으로 방향을 바꿔 다시 승인받았다. 새로 만든 것은 얇았다.\n범위 이름 규칙(strategy_activation:)과 기본값(켜짐)을 정한 작은 모듈 사이클 함수에 entry_enabled 파라미터 추가. 5단계(포지션 유지)는 항상 실행하고, 6~7단계(후보 생성)만 조건부로 건너뛴다. 메인이 사이클마다 활성 여부 맵을 새로 읽어 전달 웹에 전략별 활성화 POST 엔드포인트(로그인 재사용, 대기열에 넣고 감사 기록)와 체크박스·저장 버튼 “끄면 신규 진입만 막고 보유 포지션은 계속 관리한다\"는 요구가 그대로 단계 구조에 맞았다. 포지션 유지 단계가 후보 생성 단계와 분리되어 있었기 때문이다. 테스트는 모듈 단위 7건, 사이클 게이팅 2건, 웹 엔드포인트 6건을 추가했다.\n에이전트는 로그인할 수 없다 배포 후 첫 캐너리를 비활성화해야 했는데, 웹 로그인 자격증명은 에이전트가 읽을 수 없게 설계되어 있다. 그래서 체크박스를 직접 클릭할 수 없었다. 대신 서버에서 웹 엔드포인트와 동일한 코드 경로를 1회 호출해 비활성화를 대기열에 넣었다. 감사 로그의 행위자 필드에 “ssh 수동(웹 로그인 자격증명 없음)“을 기록해 구분했고, 다음 로그인 때 사용자가 화면에서 직접 확인하고 조작할 수 있게 했다. 에이전트가 사람의 인증을 우회하지 않는다는 설계 원칙이 구현에 그대로 반영되었다.\n타이밍이 우연히 만든 정상 동작 배포 재시작이 09:00 경계를 막 넘긴 시점이라 데몬이 놓친 09:00 사이클을 즉시 따라잡았다. 이 캐치업 사이클에서 첫 캐너리 포지션이 정상 청산되고, 같은 사이클 안에서 새 포지션이 열렸다. 비활성화 적용(8단계)이 후보 생성(6~7단계)보다 뒤에 오기 때문이다. 토글과 무관한 원래 예정된 동작이며, 이 포지션이 그 캐너리의 마지막이 된다는 것을 정확히 예측하고 확인했다. 두 번째 캐너리도 같은 사이클에서 처음 라이브로 실행되었다(유니버스 10, 후보 0 — 골든크로스가 아직 없었으므로 정상).\n3. PWA: 안드로이드 홈 화면에 추가 사용자가 “대시보드를 안드로이드 앱으로 편하게 보고 싶다\"고 했다. 이미 폰 브라우저로 접속 가능하다는 것을 설명하고, 네이티브 앱과 PWA 매니페스트의 작업량 차이를 안내했다. 사용자는 PWA로 충분하다고 확인했고 “일단 추가만 하고 배포는 필요할 때 한꺼번에” 하라고 지시했다.\n매니페스트(이름, 시작 URL, display=standalone, 기존 CSS 색상 재사용) 아이콘 두 장은 별도 디자인 없이 라이브러리로 생성했다(사이트 강조색 원 + 텍스트) 헤드에 매니페스트 링크, 테마 색상, 파비콘 3줄 추가 서버 로직은 건드리지 않았다. 정적 파일과 템플릿뿐이다. 응답의 content-type과 상태 코드를 테스트 클라이언트로 직접 확인했다.\n4. 서버에서 직접 고친 설정 캐너리 실행 경로가 검증되고 익절 실측까지 끝나자 사용자가 포지션당 사이징을 올리라고 지시했다. 그런데 사용자가 서버에서 위험 설정 파일을 직접 먼저 고친 상태였다. 프로젝트 규칙은 “서버 직접 수정 금지\"다. 로컬 값을 맞춰 커밋해 git 드리프트를 해소했다. 근거 문서와 결정(D-138)도 갱신했다. 이 배포에 앞서 로컬 커밋만 되어 있던 PWA도 함께 서버에 반영되었다.\n그런데 배포 직후 상태 문서, 할 일 문서, 작업 로그가 갱신되지 않아 이틀간 “PWA 미배포\"로 낡은 채 남아 있었다. 9월 28일 세션에서야 뒤늦게 반영됐다. 배포 직후의 문서 갱신이 빠지면 다음 세션이 틀린 상태를 믿고 시작한다.\n정리 항목 결과 두 번째 캐너리 지표 진입, 익절 청산, 동시 다중 포지션을 라이브 검증 웹 쓰기 경로 기존 설정 변경 장치를 재사용, 신규 테이블 없음 인증 경계 에이전트는 로그인하지 않고 동일 코드 경로로 큐잉, 감사 로그에 구분 PWA 정적 파일 3종, 서버 로직 무변경 드리프트 서버 직접 수정분을 로컬에 맞춰 커밋 배운 점: 새 기능을 설계하기 전에 코드를 읽는 비용은 작고, 이미 있는 것을 다시 만드는 비용은 크다. “자리만 있고 미배선\"이라는 문서의 서술은 몇 주 사이에 사실이 아니게 될 수 있다. 그리고 쓰기 기능을 붙일 때는 기능 자체보다 누가 그 쓰기를 했는지가 감사 기록에 구분되어 남는가가 더 중요하다.\n",
+  "wordCount" : "2563",
+  "inLanguage": "ko",
+  "datePublished": "2026-09-26T15:00:00+09:00",
+  "dateModified": "2026-09-26T15:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)
+    </h1>
+    <div class="post-description">
+      단순한 첫 캐너리가 검증하지 못한 실행 경로를 채우는 두 번째 캐너리를 만들고, 웹에서 전략을 켜고 끄는 첫 쓰기 기능을 붙였다. 설계 탐색 중 &#39;자리만 있고 배선이 안 된 줄 알았던&#39; 설정 변경 장치가 이미 구현되어 있음을 발견해 설계를 바꾼 일, 서버에서 설정 파일을 직접 고쳐 생긴 드리프트, 홈 화면 설치용 PWA까지 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-09-26T15:00:00+09:00'>2026년 9월 26일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%eb%91%90-%eb%b2%88%ec%a7%b8-%ec%ba%90%eb%84%88%eb%a6%ac-%ec%8b%a4%ed%96%89-%ec%9d%b8%ed%94%84%eb%9d%bc%ec%9d%98-%eb%b9%88%ec%b9%b8%ec%9d%84-%ec%b1%84%ec%9a%b4%eb%8b%a4" aria-label="1. 두 번째 캐너리: 실행 인프라의 빈칸을 채운다">1. 두 번째 캐너리: 실행 인프라의 빈칸을 채운다</a></li>
+            <li>
+                <a href="#2-%ec%9b%b9%ec%9d%98-%ec%b2%ab-%ec%93%b0%ea%b8%b0-%ea%b2%bd%eb%a1%9c" aria-label="2. 웹의 첫 쓰기 경로">2. 웹의 첫 쓰기 경로</a><ul>
+                    
+            <li>
+                <a href="#%ec%84%a4%ea%b3%84%eb%a5%bc-%eb%b0%94%ea%be%b8%ea%b2%8c-%ed%95%9c-%eb%b0%9c%ea%b2%ac" aria-label="설계를 바꾸게 한 발견">설계를 바꾸게 한 발견</a></li>
+            <li>
+                <a href="#%ec%97%90%ec%9d%b4%ec%a0%84%ed%8a%b8%eb%8a%94-%eb%a1%9c%ea%b7%b8%ec%9d%b8%ed%95%a0-%ec%88%98-%ec%97%86%eb%8b%a4" aria-label="에이전트는 로그인할 수 없다">에이전트는 로그인할 수 없다</a></li>
+            <li>
+                <a href="#%ed%83%80%ec%9d%b4%eb%b0%8d%ec%9d%b4-%ec%9a%b0%ec%97%b0%ed%9e%88-%eb%a7%8c%eb%93%a0-%ec%a0%95%ec%83%81-%eb%8f%99%ec%9e%91" aria-label="타이밍이 우연히 만든 정상 동작">타이밍이 우연히 만든 정상 동작</a></li></ul>
+            </li>
+            <li>
+                <a href="#3-pwa-%ec%95%88%eb%93%9c%eb%a1%9c%ec%9d%b4%eb%93%9c-%ed%99%88-%ed%99%94%eb%a9%b4%ec%97%90-%ec%b6%94%ea%b0%80" aria-label="3. PWA: 안드로이드 홈 화면에 추가">3. PWA: 안드로이드 홈 화면에 추가</a></li>
+            <li>
+                <a href="#4-%ec%84%9c%eb%b2%84%ec%97%90%ec%84%9c-%ec%a7%81%ec%a0%91-%ea%b3%a0%ec%b9%9c-%ec%84%a4%ec%a0%95" aria-label="4. 서버에서 직접 고친 설정">4. 서버에서 직접 고친 설정</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>첫 캐너리의 첫 완결 거래로 실주문 경로의 큰 줄기는 확인됐다. 그러나 사용자의 지적이 정확했다. &ldquo;첫 캐너리는 매매 조건이 너무 단순하다.&rdquo; 고정된 시장 하나, 지정가 IOC 매수, 손절과 시간 청산만 검증했다. 지표 기반 진입, 익절 청산(앞서 가격 버그를 고친 바로 그 경로), 동시에 여러 포지션 처리는 라이브로 실행된 적이 없었다. 9월 24일부터 26일까지의 기록이다.</p>
+<hr>
+<h2 id="1-두-번째-캐너리-실행-인프라의-빈칸을-채운다">1. 두 번째 캐너리: 실행 인프라의 빈칸을 채운다<a hidden class="anchor" aria-hidden="true" href="#1-두-번째-캐너리-실행-인프라의-빈칸을-채운다">#</a></h2>
+<p>연구 분류 체계 전체가 봉인되어 있었으므로 이번에도 목적은 통계적 우위 검증이 아니라 <strong>실행 인프라 검증</strong>이다. 이 전제 때문에 백테스트 전후 대조 대상이 아니다. 기획(brainstorming)으로 순차 합의했다.</p>
+<ul>
+<li>별도 신규 캐너리로 만든다.</li>
+<li>진입은 이동평균 골든크로스.</li>
+<li>청산은 고정 가격 익절 + 손절.</li>
+<li>유니버스는 고정 후보군(약 20종) 중 상위 10종. 전체 시장 열거는 데이터 제공자 계약 변경이 필요해서 범위 밖으로 뺐다.</li>
+<li>최대 3개를 동시에 보유한다.</li>
+</ul>
+<p>후보군은 서버에서 실측한 24시간 거래대금 순위에서 스테이블코인과 밈코인을 제외해 골랐다. 캐너리 진입 승인 로직이 단일 전략 하드코딩이었던 것은 <strong>전략별 최대 동시 보유 수 테이블</strong>로 일반화했다.</p>
+<p>테스트 파일 이름이 흥미로운 교훈을 남겼다. 같은 이름의 <code>test_strategy.py</code>가 두 군데 있었는데 <code>tests/</code> 전체에 <code>__init__.py</code>가 없어서 pytest 모듈 이름이 충돌했다. 고유한 이름으로 바꿨다. 사소한 규약이지만 캐너리가 늘수록 반복될 문제다.</p>
+<hr>
+<h2 id="2-웹의-첫-쓰기-경로">2. 웹의 첫 쓰기 경로<a hidden class="anchor" aria-hidden="true" href="#2-웹의-첫-쓰기-경로">#</a></h2>
+<p>사용자의 요청은 이랬다. 새 전략을 배포하면 웹에서 전략을 골라 <strong>켜고 끌 수</strong> 있게 하고, 끄면 이미 보유한 포지션은 원래 진입했던 전략의 규칙대로 계속 청산되게 해 달라. 지금 배포하면 첫 캐너리를 두 번째 캐너리로 교체해 달라.</p>
+<p>V2의 원칙은 &ldquo;웹은 설정과 배분만 쓰고 <strong>주문은 하지 않는다</strong>&ldquo;이다. 이 기능은 웹이 처음으로 상태를 바꾸는 쓰기 경로다.</p>
+<h3 id="설계를-바꾸게-한-발견">설계를 바꾸게 한 발견<a hidden class="anchor" aria-hidden="true" href="#설계를-바꾸게-한-발견">#</a></h3>
+<p>탐색을 시작했을 때는 새 테이블 두 개(설정 버전, 감사 로그)가 필요하다고 판단했다. 그런데 코드를 열어 보니 이미 <strong>설정 버전 테이블과 감사 로그 테이블, 변경 대기열과 적용·롤백 함수가 구현되고 테스트까지 되어 있었고</strong>, 4시간 사이클의 8번째 단계가 매 사이클 변경 적용 함수를 실제로 호출하고 있었다. 로드맵 초기에 &ldquo;자리만 있고 미배선&quot;으로 기록됐던 것이 어느새 완성되어 있었다.</p>
+<p>이 발견을 사용자에게 알리고, 새 테이블 두 개를 만들겠다던 앞선 선택 대신 <strong>기존 장치 재사용</strong>으로 방향을 바꿔 다시 승인받았다. 새로 만든 것은 얇았다.</p>
+<ul>
+<li>범위 이름 규칙(<code>strategy_activation:&lt;id&gt;</code>)과 기본값(켜짐)을 정한 작은 모듈</li>
+<li>사이클 함수에 <code>entry_enabled</code> 파라미터 추가. 5단계(포지션 유지)는 항상 실행하고, 6~7단계(후보 생성)만 조건부로 건너뛴다.</li>
+<li>메인이 사이클마다 활성 여부 맵을 새로 읽어 전달</li>
+<li>웹에 전략별 활성화 POST 엔드포인트(로그인 재사용, 대기열에 넣고 감사 기록)와 체크박스·저장 버튼</li>
+</ul>
+<p>&ldquo;끄면 신규 진입만 막고 보유 포지션은 계속 관리한다&quot;는 요구가 그대로 단계 구조에 맞았다. 포지션 유지 단계가 후보 생성 단계와 분리되어 있었기 때문이다. 테스트는 모듈 단위 7건, 사이클 게이팅 2건, 웹 엔드포인트 6건을 추가했다.</p>
+<h3 id="에이전트는-로그인할-수-없다">에이전트는 로그인할 수 없다<a hidden class="anchor" aria-hidden="true" href="#에이전트는-로그인할-수-없다">#</a></h3>
+<p>배포 후 첫 캐너리를 비활성화해야 했는데, 웹 로그인 자격증명은 에이전트가 읽을 수 없게 설계되어 있다. 그래서 체크박스를 직접 클릭할 수 없었다. 대신 서버에서 웹 엔드포인트와 <strong>동일한 코드 경로</strong>를 1회 호출해 비활성화를 대기열에 넣었다. 감사 로그의 행위자 필드에 &ldquo;ssh 수동(웹 로그인 자격증명 없음)&ldquo;을 기록해 구분했고, 다음 로그인 때 사용자가 화면에서 직접 확인하고 조작할 수 있게 했다. 에이전트가 사람의 인증을 우회하지 않는다는 설계 원칙이 구현에 그대로 반영되었다.</p>
+<h3 id="타이밍이-우연히-만든-정상-동작">타이밍이 우연히 만든 정상 동작<a hidden class="anchor" aria-hidden="true" href="#타이밍이-우연히-만든-정상-동작">#</a></h3>
+<p>배포 재시작이 09:00 경계를 막 넘긴 시점이라 데몬이 놓친 09:00 사이클을 즉시 따라잡았다. 이 캐치업 사이클에서 첫 캐너리 포지션이 정상 청산되고, <strong>같은 사이클 안에서</strong> 새 포지션이 열렸다. 비활성화 적용(8단계)이 후보 생성(6~7단계)보다 뒤에 오기 때문이다. 토글과 무관한 원래 예정된 동작이며, 이 포지션이 그 캐너리의 마지막이 된다는 것을 정확히 예측하고 확인했다. 두 번째 캐너리도 같은 사이클에서 처음 라이브로 실행되었다(유니버스 10, 후보 0 — 골든크로스가 아직 없었으므로 정상).</p>
+<hr>
+<h2 id="3-pwa-안드로이드-홈-화면에-추가">3. PWA: 안드로이드 홈 화면에 추가<a hidden class="anchor" aria-hidden="true" href="#3-pwa-안드로이드-홈-화면에-추가">#</a></h2>
+<p>사용자가 &ldquo;대시보드를 안드로이드 앱으로 편하게 보고 싶다&quot;고 했다. 이미 폰 브라우저로 접속 가능하다는 것을 설명하고, 네이티브 앱과 PWA 매니페스트의 작업량 차이를 안내했다. 사용자는 PWA로 충분하다고 확인했고 &ldquo;일단 추가만 하고 배포는 필요할 때 한꺼번에&rdquo; 하라고 지시했다.</p>
+<ul>
+<li>매니페스트(이름, 시작 URL, <code>display=standalone</code>, 기존 CSS 색상 재사용)</li>
+<li>아이콘 두 장은 별도 디자인 없이 라이브러리로 생성했다(사이트 강조색 원 + 텍스트)</li>
+<li>헤드에 매니페스트 링크, 테마 색상, 파비콘 3줄 추가</li>
+</ul>
+<p>서버 로직은 건드리지 않았다. 정적 파일과 템플릿뿐이다. 응답의 content-type과 상태 코드를 테스트 클라이언트로 직접 확인했다.</p>
+<hr>
+<h2 id="4-서버에서-직접-고친-설정">4. 서버에서 직접 고친 설정<a hidden class="anchor" aria-hidden="true" href="#4-서버에서-직접-고친-설정">#</a></h2>
+<p>캐너리 실행 경로가 검증되고 익절 실측까지 끝나자 사용자가 포지션당 사이징을 올리라고 지시했다. 그런데 사용자가 <strong>서버에서 위험 설정 파일을 직접 먼저 고친</strong> 상태였다. 프로젝트 규칙은 &ldquo;서버 직접 수정 금지&quot;다. 로컬 값을 맞춰 커밋해 git 드리프트를 해소했다. 근거 문서와 결정(D-138)도 갱신했다. 이 배포에 앞서 로컬 커밋만 되어 있던 PWA도 함께 서버에 반영되었다.</p>
+<p>그런데 배포 직후 상태 문서, 할 일 문서, 작업 로그가 갱신되지 않아 이틀간 &ldquo;PWA 미배포&quot;로 낡은 채 남아 있었다. 9월 28일 세션에서야 뒤늦게 반영됐다. 배포 직후의 문서 갱신이 빠지면 다음 세션이 틀린 상태를 믿고 시작한다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>두 번째 캐너리</td>
+					<td>지표 진입, 익절 청산, 동시 다중 포지션을 라이브 검증</td>
+			</tr>
+			<tr>
+					<td>웹 쓰기 경로</td>
+					<td>기존 설정 변경 장치를 재사용, 신규 테이블 없음</td>
+			</tr>
+			<tr>
+					<td>인증 경계</td>
+					<td>에이전트는 로그인하지 않고 동일 코드 경로로 큐잉, 감사 로그에 구분</td>
+			</tr>
+			<tr>
+					<td>PWA</td>
+					<td>정적 파일 3종, 서버 로직 무변경</td>
+			</tr>
+			<tr>
+					<td>드리프트</td>
+					<td>서버 직접 수정분을 로컬에 맞춰 커밋</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 새 기능을 설계하기 전에 코드를 읽는 비용은 작고, 이미 있는 것을 다시 만드는 비용은 크다. &ldquo;자리만 있고 미배선&quot;이라는 문서의 서술은 몇 주 사이에 사실이 아니게 될 수 있다. 그리고 쓰기 기능을 붙일 때는 기능 자체보다 <strong>누가 그 쓰기를 했는지가 감사 기록에 구분되어 남는가</strong>가 더 중요하다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (9) — 중복 체결 조사: 내가 쓴 &#39;체결 없음&#39; 기록이 틀렸다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-canary-first-live-orders-bug-chain/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (7) — 인프라 검증용 캐너리의 첫 실주문이 드러낸 버그 연쇄</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

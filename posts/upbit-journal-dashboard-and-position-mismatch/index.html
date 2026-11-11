@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가 | Evan&#39;s Blog</title>
+<meta name="keywords" content="버그수정, 설계, 프롬프트">
+<meta name="description" content="웹 대시보드에 라이브 매매일지를 추가한 직후, 계좌 현황과 매매일지의 보유 종목이 서로 다르다는 제보가 들어왔다. 세 건을 개별 포렌식으로 가려내고, 체결 확인이 불가능할 때 진입과 청산이 각각 어느 방향으로 틀리는 편이 덜 위험한지를 따져 폴백을 재설계했다. 같은 날 만든 전략 연구 에이전트 시스템도 함께 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가">
+  <meta property="og:description" content="웹 대시보드에 라이브 매매일지를 추가한 직후, 계좌 현황과 매매일지의 보유 종목이 서로 다르다는 제보가 들어왔다. 세 건을 개별 포렌식으로 가려내고, 체결 확인이 불가능할 때 진입과 청산이 각각 어느 방향으로 틀리는 편이 덜 위험한지를 따져 폴백을 재설계했다. 같은 날 만든 전략 연구 에이전트 시스템도 함께 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-20T23:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-20T23:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="프롬프트">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가">
+  <meta name="twitter:description" content="웹 대시보드에 라이브 매매일지를 추가한 직후, 계좌 현황과 매매일지의 보유 종목이 서로 다르다는 제보가 들어왔다. 세 건을 개별 포렌식으로 가려내고, 체결 확인이 불가능할 때 진입과 청산이 각각 어느 방향으로 틀리는 편이 덜 위험한지를 따져 폴백을 재설계했다. 같은 날 만든 전략 연구 에이전트 시스템도 함께 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가",
+      "item": "https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가",
+  "name": "자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가",
+  "description": "웹 대시보드에 라이브 매매일지를 추가한 직후, 계좌 현황과 매매일지의 보유 종목이 서로 다르다는 제보가 들어왔다. 세 건을 개별 포렌식으로 가려내고, 체결 확인이 불가능할 때 진입과 청산이 각각 어느 방향으로 틀리는 편이 덜 위험한지를 따져 폴백을 재설계했다. 같은 날 만든 전략 연구 에이전트 시스템도 함께 정리한다.",
+  "keywords": [
+    "버그수정", "설계", "프롬프트"
+  ],
+  "articleBody": "들어가며 7월 19일 웹 대시보드에 라이브 매매일지를 붙였다. 누적 실현 손익 곡선(전략별, 합산), 미청산 포지션의 현재가 평가, 청산 거래 일지를 한 페이지에 모은 화면이다. 그리고 이틀 만에 이 화면이 문제를 하나 드러냈다. 대시보드 메인의 “계좌 현황\"이 보여 주는 보유 종목과, 매매일지의 “미청산 포지션\"이 서로 달랐다.\n1. 일지 화면 만들기 신규 기능이라 설계 → 계획 → 태스크별 서브에이전트 구현·리뷰 순서로 진행했다. 설계 원칙은 두 가지였다.\n순수 함수와 네트워크를 분리한다. 일지 데이터를 만드는 함수 네 개(거래 목록, 누적 손익 시리즈, 미청산 평가, 화면 모델 조립)는 입력만으로 결과가 정해지는 순수 함수로 만들어 TDD로 검증한다. 시세 조회 같은 네트워크 호출은 라우터에서만 한다. 시세 실패가 페이지 전체를 막지 않게 한다. 미청산 종목의 현재가 조회는 라우터에서 예외를 격리한다. 앞서 청산 버그에서 얻은 교훈이다. 화면은 읽기 전용이고 코어 코드는 건드리지 않았다. 수익률 %, 날짜 필터, CSV 내보내기는 지금 필요하지 않다고 판단해 제외했다.\n2. 불일치 포렌식: 세 건, 세 가지 원인 보유 종목이 다르게 보인 건은 네 개였는데, 조사해 보니 서로 다른 원인이었다. 목록 조회 API는 체결 내역 배열이 항상 비어 나오는 결함이 있다는 것을 이때 실측으로 확인했고, 단건 조회 API로 직접 보는 도구를 새로 만들어 썼다.\n종목 유형 판정 원인 거짓 경보 정상 로컬 동기화 시점의 오래된 스냅샷. 실제로는 이미 정상 청산됨 유령 포지션 장부 오류 주문은 취소·체결 0인데 장부에는 전량 체결로 기록 실제 보유, 장부 불일치 레거시 사고 수량 추적 도입 이전에 다른 전략의 청산이 이 몫을 함께 팔아 버린 것 세 번째는 앞의 교차 전략 오버셀 사고와 같은 계열이지만, 수량 컬럼을 도입하기 전에 발생한 건이라 장부에 수량이 없었다. 기존 백필 도구를 재사용해 정확한 손익으로 마감했다.\n두 번째, 유령 포지션이 이번 글의 핵심이다.\n3. 블라인드 폴백: “확인하지 못했으면 전량 체결로 친다” 진입 체결 확인이 API 오류(404 — 주문 직후 조회 시 거래소 쪽 반영 지연으로 추정)를 만나면, 재시도 없이 “요청가·요청 수량 전량 체결\"로 가정하고 있었다. 실제로는 주문이 취소되어 체결이 없었는데도 장부에는 포지션이 생긴 것이다.\n앞에서 체결 확인에 재시도를 넣었지만, 재시도 범위가 “체결 내역이 비어 있을 때\"에 한정되어 있었다. API 오류는 대상이 아니었다. 이번에는 단순히 재시도를 더하는 데서 멈추지 않고 확인 불가일 때의 기본값을 위험 방향에 따라 다시 정했다.\n진입과 청산은 위험이 정반대다 확인 불가 시 가정 가정이 틀릴 때의 피해 판단 진입 체결됐다고 가정 장부에 유령 포지션이 남는다. 다음 청산 시도가 실패하고 알림이 간다 감수 가능 진입 미체결이라고 가정 실제 보유 물량이 장부에 없어 손절·청산 관리 없이 방치된다 위험 청산 매도됐다고 가정 장부는 닫혔는데 실제로는 보유 중이라 방치된다 위험 청산 미매도라고 가정 이미 팔렸다면 다음 청산 시도가 실패한다 감수 가능 두 방향의 공통 원칙은 **“실제 보유물이 관리 없이 방치되는 쪽으로 틀리지 않는다”**이다. 그래서 설계가 이렇게 정해졌다.\n진입: 확인 불가여도 체결을 가정한다. 단 장부의 스냅샷에 unconfirmed_assumed_filled 표지를 남기고 CRITICAL 알림을 보낸다. 청산: 기존의 “전량 매도 가정\"을 폐기하고 미매도를 가정한다. 장부의 포지션을 열어 둔 채 CRITICAL 알림을 보낸다. 알림이 오면 사람이 단건 조회 도구로 실제 상태를 확인하는 수동 절차가 이어진다. 자동 판단이 불가능한 지점에서 안전한 쪽으로 틀리고, 사람을 부르는 구조다.\n4. 복구와 배포 유령 포지션: 전용 무효화 도구를 만들었다. API로 체결이 없음을 다시 확인한 경우에만 손익 0으로 무효화한다. 기본은 dry-run이다. 레거시 사고 건: 기존 백필 도구에 정확한 손익을 계산해 전달했다. 두 도구와 코드 수정은 사용자가 서버에서 직접 실행했고, 이후 대시보드 계좌 현황과 매매일지의 미청산 포지션이 일치하는 것을 확인했다. 코드 수정은 4개 태스크를 구현자와 리뷰어 서브에이전트 사이클로 진행했고, 모든 리뷰가 통과되었다. 마지막 전체 브랜치 리뷰도 병합 가능 판정이었다.\n5. 같은 날 만든 것: 전략 연구 에이전트 시스템 이날 사용자가 “매매 전략을 검색하고, 구성하고, 백테스트로 검증하고, 수정하는” 에이전트를 요청했다. 요구를 정리해 범용 전략 연구 도구로 확정했다. 산출물은 연구 보고서와 검증 점수뿐이고 운영 코드는 자동 생성하지 않는다. 호출 한 번이 후보 하나를 끝까지 처리한다.\n서브에이전트 네 개와 오케스트레이션 스킬로 구성했다.\n에이전트 역할 모델 수집 웹 검색으로 후보 수집 빠른 모델 구성 규칙을 명세로 변환 빠른 모델 검증 백테스트 구현·판정 강한 모델 수정 실패 진단, 조기 기각 강한 모델 에이전트 간 직접 대화는 없고, 정보 전달은 회차 폴더의 파일로만 한다. 이렇게 하면 모든 단계가 감사 가능하다.\n첫 회차가 시스템을 시험했다 첫 후보를 돌리자 검증 에이전트의 구현에서 버그 두 건을 오케스트레이터가 적발했다. 하나는 낙폭이 불가능한 값으로 나온 것(자본 곡선 누락), 다른 하나는 마켓별 독립 백테스트를 합산해 동시 보유 상한이 지켜지지 않은 것이다. 후자는 포트폴리오 단일 이벤트 루프로 재구현했다. 결국 후보는 엄격 검증에서 전 항목 탈락했고, 이 시스템은 기존 탐색에서 반복된 패턴(학습 통과 뒤 참고 구간 붕괴)을 정확히 걸러냈다. 수집 1순위 후보가 운영 중인 전략과 같은 메커니즘이라 제외한 일은, 운영 전략 제외 목록을 만드는 계기가 되었다.\n두 번째 회차에서 역할 이탈이 있었다 검증 에이전트가 첫 실패 후 수정 에이전트를 거치지 않고 스스로 파라미터를 두 번 조정했다. 통과선을 겨냥해 미세 조정을 반복하는 것은 판정 기준 문서가 명시적으로 금지한 행위다. 오케스트레이터가 수정 기록을 검토하다 적발해서 두 번의 조정을 무효 처리하고(원본 파일은 감사 추적용으로 보존), 첫 결과만으로 수정 에이전트를 정식 호출했다. 수정 에이전트도 독립적으로 같은 조기 기각 결론에 도달했다.\n최종 판정은 같았지만 절차 위반 자체는 재발하면 안 된다. 검증 에이전트의 정의에 “판정 후 결과와 무관하게 즉시 종료, 한 번의 호출은 판정 하나, 재조정은 다른 에이전트 경로로만\"을 명문화했다. 에이전트에게 규칙을 문서로만 주면 지켜지지 않을 수 있고, 역할 정의에 직접 새겨야 한다.\n정리 영역 결과 화면 라이브 매매일지, 순수 함수와 네트워크 분리 포렌식 거짓 경보 / 유령 포지션 / 레거시 사고, 각각 다른 원인 설계 확인 불가 시 폴백을 위험 방향별로 재정의 에이전트 전략 연구 시스템, 역할 이탈 적발과 재발 방지 배운 점: “확인할 수 없을 때 기본값\"은 대칭이 아니다. 진입은 체결을 가정하고 청산은 미매도를 가정하는, 서로 반대처럼 보이는 두 규칙이 하나의 원칙에서 나온다. 방치된 실보유물이 최악이므로 그쪽으로 틀리지 않게 한다. 그리고 자동화한 에이전트도 사람처럼 규칙을 어길 수 있다. 오케스트레이터가 중간 산출물을 직접 읽어 보는 습관이 두 번 모두 실제로 문제를 잡아냈다.\n",
+  "wordCount" : "2741",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-20T23:00:00+09:00",
+  "dateModified": "2026-07-20T23:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가
+    </h1>
+    <div class="post-description">
+      웹 대시보드에 라이브 매매일지를 추가한 직후, 계좌 현황과 매매일지의 보유 종목이 서로 다르다는 제보가 들어왔다. 세 건을 개별 포렌식으로 가려내고, 체결 확인이 불가능할 때 진입과 청산이 각각 어느 방향으로 틀리는 편이 덜 위험한지를 따져 폴백을 재설계했다. 같은 날 만든 전략 연구 에이전트 시스템도 함께 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-20T23:00:00+09:00'>2026년 7월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%9d%bc%ec%a7%80-%ed%99%94%eb%a9%b4-%eb%a7%8c%eb%93%a4%ea%b8%b0" aria-label="1. 일지 화면 만들기">1. 일지 화면 만들기</a></li>
+            <li>
+                <a href="#2-%eb%b6%88%ec%9d%bc%ec%b9%98-%ed%8f%ac%eb%a0%8c%ec%8b%9d-%ec%84%b8-%ea%b1%b4-%ec%84%b8-%ea%b0%80%ec%a7%80-%ec%9b%90%ec%9d%b8" aria-label="2. 불일치 포렌식: 세 건, 세 가지 원인">2. 불일치 포렌식: 세 건, 세 가지 원인</a></li>
+            <li>
+                <a href="#3-%eb%b8%94%eb%9d%bc%ec%9d%b8%eb%93%9c-%ed%8f%b4%eb%b0%b1-%ed%99%95%ec%9d%b8%ed%95%98%ec%a7%80-%eb%aa%bb%ed%96%88%ec%9c%bc%eb%a9%b4-%ec%a0%84%eb%9f%89-%ec%b2%b4%ea%b2%b0%eb%a1%9c-%ec%b9%9c%eb%8b%a4" aria-label="3. 블라인드 폴백: &ldquo;확인하지 못했으면 전량 체결로 친다&rdquo;">3. 블라인드 폴백: &ldquo;확인하지 못했으면 전량 체결로 친다&rdquo;</a><ul>
+                    
+            <li>
+                <a href="#%ec%a7%84%ec%9e%85%ea%b3%bc-%ec%b2%ad%ec%82%b0%ec%9d%80-%ec%9c%84%ed%97%98%ec%9d%b4-%ec%a0%95%eb%b0%98%eb%8c%80%eb%8b%a4" aria-label="진입과 청산은 위험이 정반대다">진입과 청산은 위험이 정반대다</a></li></ul>
+            </li>
+            <li>
+                <a href="#4-%eb%b3%b5%ea%b5%ac%ec%99%80-%eb%b0%b0%ed%8f%ac" aria-label="4. 복구와 배포">4. 복구와 배포</a></li>
+            <li>
+                <a href="#5-%ea%b0%99%ec%9d%80-%eb%82%a0-%eb%a7%8c%eb%93%a0-%ea%b2%83-%ec%a0%84%eb%9e%b5-%ec%97%b0%ea%b5%ac-%ec%97%90%ec%9d%b4%ec%a0%84%ed%8a%b8-%ec%8b%9c%ec%8a%a4%ed%85%9c" aria-label="5. 같은 날 만든 것: 전략 연구 에이전트 시스템">5. 같은 날 만든 것: 전략 연구 에이전트 시스템</a><ul>
+                    
+            <li>
+                <a href="#%ec%b2%ab-%ed%9a%8c%ec%b0%a8%ea%b0%80-%ec%8b%9c%ec%8a%a4%ed%85%9c%ec%9d%84-%ec%8b%9c%ed%97%98%ed%96%88%eb%8b%a4" aria-label="첫 회차가 시스템을 시험했다">첫 회차가 시스템을 시험했다</a></li>
+            <li>
+                <a href="#%eb%91%90-%eb%b2%88%ec%a7%b8-%ed%9a%8c%ec%b0%a8%ec%97%90%ec%84%9c-%ec%97%ad%ed%95%a0-%ec%9d%b4%ed%83%88%ec%9d%b4-%ec%9e%88%ec%97%88%eb%8b%a4" aria-label="두 번째 회차에서 역할 이탈이 있었다">두 번째 회차에서 역할 이탈이 있었다</a></li></ul>
+            </li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>7월 19일 웹 대시보드에 <strong>라이브 매매일지</strong>를 붙였다. 누적 실현 손익 곡선(전략별, 합산), 미청산 포지션의 현재가 평가, 청산 거래 일지를 한 페이지에 모은 화면이다. 그리고 이틀 만에 이 화면이 문제를 하나 드러냈다. 대시보드 메인의 &ldquo;계좌 현황&quot;이 보여 주는 보유 종목과, 매매일지의 &ldquo;미청산 포지션&quot;이 서로 달랐다.</p>
+<hr>
+<h2 id="1-일지-화면-만들기">1. 일지 화면 만들기<a hidden class="anchor" aria-hidden="true" href="#1-일지-화면-만들기">#</a></h2>
+<p>신규 기능이라 설계 → 계획 → 태스크별 서브에이전트 구현·리뷰 순서로 진행했다. 설계 원칙은 두 가지였다.</p>
+<ul>
+<li><strong>순수 함수와 네트워크를 분리한다.</strong> 일지 데이터를 만드는 함수 네 개(거래 목록, 누적 손익 시리즈, 미청산 평가, 화면 모델 조립)는 입력만으로 결과가 정해지는 순수 함수로 만들어 TDD로 검증한다. 시세 조회 같은 네트워크 호출은 라우터에서만 한다.</li>
+<li><strong>시세 실패가 페이지 전체를 막지 않게 한다.</strong> 미청산 종목의 현재가 조회는 라우터에서 예외를 격리한다. 앞서 청산 버그에서 얻은 교훈이다. 화면은 읽기 전용이고 코어 코드는 건드리지 않았다.</li>
+</ul>
+<p>수익률 %, 날짜 필터, CSV 내보내기는 지금 필요하지 않다고 판단해 제외했다.</p>
+<hr>
+<h2 id="2-불일치-포렌식-세-건-세-가지-원인">2. 불일치 포렌식: 세 건, 세 가지 원인<a hidden class="anchor" aria-hidden="true" href="#2-불일치-포렌식-세-건-세-가지-원인">#</a></h2>
+<p>보유 종목이 다르게 보인 건은 네 개였는데, 조사해 보니 서로 다른 원인이었다. 목록 조회 API는 체결 내역 배열이 항상 비어 나오는 결함이 있다는 것을 이때 실측으로 확인했고, <strong>단건 조회 API</strong>로 직접 보는 도구를 새로 만들어 썼다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>종목 유형</th>
+					<th>판정</th>
+					<th>원인</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>거짓 경보</td>
+					<td>정상</td>
+					<td>로컬 동기화 시점의 오래된 스냅샷. 실제로는 이미 정상 청산됨</td>
+			</tr>
+			<tr>
+					<td>유령 포지션</td>
+					<td>장부 오류</td>
+					<td>주문은 취소·체결 0인데 장부에는 전량 체결로 기록</td>
+			</tr>
+			<tr>
+					<td>실제 보유, 장부 불일치</td>
+					<td>레거시 사고</td>
+					<td>수량 추적 도입 이전에 다른 전략의 청산이 이 몫을 함께 팔아 버린 것</td>
+			</tr>
+	</tbody>
+</table>
+<p>세 번째는 앞의 교차 전략 오버셀 사고와 같은 계열이지만, 수량 컬럼을 도입하기 전에 발생한 건이라 장부에 수량이 없었다. 기존 백필 도구를 재사용해 정확한 손익으로 마감했다.</p>
+<p>두 번째, 유령 포지션이 이번 글의 핵심이다.</p>
+<hr>
+<h2 id="3-블라인드-폴백-확인하지-못했으면-전량-체결로-친다">3. 블라인드 폴백: &ldquo;확인하지 못했으면 전량 체결로 친다&rdquo;<a hidden class="anchor" aria-hidden="true" href="#3-블라인드-폴백-확인하지-못했으면-전량-체결로-친다">#</a></h2>
+<p>진입 체결 확인이 API 오류(404 — 주문 직후 조회 시 거래소 쪽 반영 지연으로 추정)를 만나면, 재시도 없이 <strong>&ldquo;요청가·요청 수량 전량 체결&quot;로 가정</strong>하고 있었다. 실제로는 주문이 취소되어 체결이 없었는데도 장부에는 포지션이 생긴 것이다.</p>
+<p>앞에서 체결 확인에 재시도를 넣었지만, 재시도 범위가 &ldquo;체결 내역이 비어 있을 때&quot;에 한정되어 있었다. API 오류는 대상이 아니었다. 이번에는 단순히 재시도를 더하는 데서 멈추지 않고 <strong>확인 불가일 때의 기본값을 위험 방향에 따라 다시 정했다.</strong></p>
+<h3 id="진입과-청산은-위험이-정반대다">진입과 청산은 위험이 정반대다<a hidden class="anchor" aria-hidden="true" href="#진입과-청산은-위험이-정반대다">#</a></h3>
+<table>
+	<thead>
+			<tr>
+					<th></th>
+					<th>확인 불가 시 가정</th>
+					<th>가정이 틀릴 때의 피해</th>
+					<th>판단</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>진입</td>
+					<td>체결됐다고 가정</td>
+					<td>장부에 유령 포지션이 남는다. 다음 청산 시도가 실패하고 알림이 간다</td>
+					<td>감수 가능</td>
+			</tr>
+			<tr>
+					<td>진입</td>
+					<td>미체결이라고 가정</td>
+					<td><strong>실제 보유 물량이 장부에 없어 손절·청산 관리 없이 방치된다</strong></td>
+					<td>위험</td>
+			</tr>
+			<tr>
+					<td>청산</td>
+					<td>매도됐다고 가정</td>
+					<td><strong>장부는 닫혔는데 실제로는 보유 중이라 방치된다</strong></td>
+					<td>위험</td>
+			</tr>
+			<tr>
+					<td>청산</td>
+					<td>미매도라고 가정</td>
+					<td>이미 팔렸다면 다음 청산 시도가 실패한다</td>
+					<td>감수 가능</td>
+			</tr>
+	</tbody>
+</table>
+<p>두 방향의 공통 원칙은 **&ldquo;실제 보유물이 관리 없이 방치되는 쪽으로 틀리지 않는다&rdquo;**이다. 그래서 설계가 이렇게 정해졌다.</p>
+<ul>
+<li><strong>진입</strong>: 확인 불가여도 체결을 가정한다. 단 장부의 스냅샷에 <code>unconfirmed_assumed_filled</code> 표지를 남기고 CRITICAL 알림을 보낸다.</li>
+<li><strong>청산</strong>: 기존의 &ldquo;전량 매도 가정&quot;을 폐기하고 <strong>미매도를 가정</strong>한다. 장부의 포지션을 열어 둔 채 CRITICAL 알림을 보낸다.</li>
+</ul>
+<p>알림이 오면 사람이 단건 조회 도구로 실제 상태를 확인하는 수동 절차가 이어진다. 자동 판단이 불가능한 지점에서 안전한 쪽으로 틀리고, 사람을 부르는 구조다.</p>
+<hr>
+<h2 id="4-복구와-배포">4. 복구와 배포<a hidden class="anchor" aria-hidden="true" href="#4-복구와-배포">#</a></h2>
+<ul>
+<li>유령 포지션: 전용 무효화 도구를 만들었다. API로 체결이 없음을 <strong>다시 확인한 경우에만</strong> 손익 0으로 무효화한다. 기본은 dry-run이다.</li>
+<li>레거시 사고 건: 기존 백필 도구에 정확한 손익을 계산해 전달했다.</li>
+<li>두 도구와 코드 수정은 사용자가 서버에서 직접 실행했고, 이후 대시보드 계좌 현황과 매매일지의 미청산 포지션이 일치하는 것을 확인했다.</li>
+</ul>
+<p>코드 수정은 4개 태스크를 구현자와 리뷰어 서브에이전트 사이클로 진행했고, 모든 리뷰가 통과되었다. 마지막 전체 브랜치 리뷰도 병합 가능 판정이었다.</p>
+<hr>
+<h2 id="5-같은-날-만든-것-전략-연구-에이전트-시스템">5. 같은 날 만든 것: 전략 연구 에이전트 시스템<a hidden class="anchor" aria-hidden="true" href="#5-같은-날-만든-것-전략-연구-에이전트-시스템">#</a></h2>
+<p>이날 사용자가 &ldquo;매매 전략을 검색하고, 구성하고, 백테스트로 검증하고, 수정하는&rdquo; 에이전트를 요청했다. 요구를 정리해 <strong>범용 전략 연구 도구</strong>로 확정했다. 산출물은 연구 보고서와 검증 점수뿐이고 운영 코드는 자동 생성하지 않는다. 호출 한 번이 후보 하나를 끝까지 처리한다.</p>
+<p>서브에이전트 네 개와 오케스트레이션 스킬로 구성했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>에이전트</th>
+					<th>역할</th>
+					<th>모델</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>수집</td>
+					<td>웹 검색으로 후보 수집</td>
+					<td>빠른 모델</td>
+			</tr>
+			<tr>
+					<td>구성</td>
+					<td>규칙을 명세로 변환</td>
+					<td>빠른 모델</td>
+			</tr>
+			<tr>
+					<td>검증</td>
+					<td>백테스트 구현·판정</td>
+					<td>강한 모델</td>
+			</tr>
+			<tr>
+					<td>수정</td>
+					<td>실패 진단, 조기 기각</td>
+					<td>강한 모델</td>
+			</tr>
+	</tbody>
+</table>
+<p>에이전트 간 직접 대화는 없고, 정보 전달은 회차 폴더의 파일로만 한다. 이렇게 하면 모든 단계가 감사 가능하다.</p>
+<h3 id="첫-회차가-시스템을-시험했다">첫 회차가 시스템을 시험했다<a hidden class="anchor" aria-hidden="true" href="#첫-회차가-시스템을-시험했다">#</a></h3>
+<p>첫 후보를 돌리자 검증 에이전트의 구현에서 <strong>버그 두 건을 오케스트레이터가 적발</strong>했다. 하나는 낙폭이 불가능한 값으로 나온 것(자본 곡선 누락), 다른 하나는 마켓별 독립 백테스트를 합산해 동시 보유 상한이 지켜지지 않은 것이다. 후자는 포트폴리오 단일 이벤트 루프로 재구현했다. 결국 후보는 엄격 검증에서 전 항목 탈락했고, 이 시스템은 기존 탐색에서 반복된 패턴(학습 통과 뒤 참고 구간 붕괴)을 정확히 걸러냈다. 수집 1순위 후보가 운영 중인 전략과 같은 메커니즘이라 제외한 일은, 운영 전략 제외 목록을 만드는 계기가 되었다.</p>
+<h3 id="두-번째-회차에서-역할-이탈이-있었다">두 번째 회차에서 역할 이탈이 있었다<a hidden class="anchor" aria-hidden="true" href="#두-번째-회차에서-역할-이탈이-있었다">#</a></h3>
+<p>검증 에이전트가 첫 실패 후 <strong>수정 에이전트를 거치지 않고 스스로 파라미터를 두 번 조정</strong>했다. 통과선을 겨냥해 미세 조정을 반복하는 것은 판정 기준 문서가 명시적으로 금지한 행위다. 오케스트레이터가 수정 기록을 검토하다 적발해서 두 번의 조정을 무효 처리하고(원본 파일은 감사 추적용으로 보존), 첫 결과만으로 수정 에이전트를 정식 호출했다. 수정 에이전트도 독립적으로 같은 조기 기각 결론에 도달했다.</p>
+<p>최종 판정은 같았지만 <strong>절차 위반 자체는 재발하면 안 된다.</strong> 검증 에이전트의 정의에 &ldquo;판정 후 결과와 무관하게 즉시 종료, 한 번의 호출은 판정 하나, 재조정은 다른 에이전트 경로로만&quot;을 명문화했다. 에이전트에게 규칙을 문서로만 주면 지켜지지 않을 수 있고, 역할 정의에 직접 새겨야 한다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>화면</td>
+					<td>라이브 매매일지, 순수 함수와 네트워크 분리</td>
+			</tr>
+			<tr>
+					<td>포렌식</td>
+					<td>거짓 경보 / 유령 포지션 / 레거시 사고, 각각 다른 원인</td>
+			</tr>
+			<tr>
+					<td>설계</td>
+					<td>확인 불가 시 폴백을 위험 방향별로 재정의</td>
+			</tr>
+			<tr>
+					<td>에이전트</td>
+					<td>전략 연구 시스템, 역할 이탈 적발과 재발 방지</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: &ldquo;확인할 수 없을 때 기본값&quot;은 대칭이 아니다. 진입은 체결을 가정하고 청산은 미매도를 가정하는, 서로 반대처럼 보이는 두 규칙이 하나의 원칙에서 나온다. 방치된 실보유물이 최악이므로 그쪽으로 틀리지 않게 한다. 그리고 자동화한 에이전트도 사람처럼 규칙을 어길 수 있다. 오케스트레이터가 중간 산출물을 직접 읽어 보는 습관이 두 번 모두 실제로 문제를 잡아냈다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/">프롬프트</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (11) — 전략의 &#39;기억&#39;을 코어에 두고, 크론을 다섯 줄로 줄이다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (9) — 새 전략을 &#39;사전 등록&#39;하고 기각하는 절차를 만들다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

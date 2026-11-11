@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포, 버그수정">
+<meta name="description" content="봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다">
+  <meta property="og:description" content="봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-08-19T18:00:00+09:00">
+    <meta property="article:modified_time" content="2026-08-19T18:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="버그수정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다">
+  <meta name="twitter:description" content="봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다",
+  "name": "자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다",
+  "description": "봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.",
+  "keywords": [
+    "설계", "배포", "버그수정"
+  ],
+  "articleBody": "들어가며 연구 8회차까지 봉(candle) 기반 후보는 거의 소진되었다. 탐색 에이전트의 결론은 “막힌 것을 뚫는 길은 문헌이 아니라 새 데이터“였다. 사용자는 체결 흐름(어느 쪽이 공격적으로 사고팔았는지 부호가 붙은 체결 기록)을 상시 기록하는 인프라를 만들기로 확정했다. 과거 체결 흐름은 구할 수 없으므로 지금부터 쌓아야 나중에 쓸 수 있다.\n1. 설계: 입자, 범위, 위치를 정한다 기획(brainstorming) 질문 세 개로 설계를 확정했다.\n질문 결정 저장 입자 1분 집계 버킷 (틱 원본은 저장하지 않는다) 수집 범위 전체 원화 마켓 유니버스 실행 위치 기존 데몬에 통합 (별도 프로세스를 만들지 않는다) 거래소의 체결 틱 조회는 초당 10회 제한이 있다. 그래서 종목을 순환하며 배치로 조회한다(틱당 15종목, 전체 한 바퀴 약 37초). 각 종목은 sequential_id를 커서로 저장해 유실 없이 이어받는다.\n2. 구현 계획에서 설계 가정이 깨졌다 구현 계획을 쓰는 동안 실제로 설치된 SDK의 소스를 열어 보았다. 설계 문서의 핵심 가정은 “커서가 앞으로 이어지는 forward-continuation“이었는데, 실제 커서는 뒤로 거슬러 가는(backward) 방식이었다. 이 가정으로 구현했다면 누락 구간을 메우는 알고리즘 전체가 틀렸을 것이다.\n같은 시점에 규약 위반도 하나 정정했다. 매 틱 로그를 남기는 것은 로깅 규약에 어긋나서 DEBUG로 내렸다.\n교훈은 단순하다. 설계 단계의 외부 API 가정은 구현 전에 소스나 실측으로 한 번 더 확인한다. 설계 승인은 가정이 맞다는 보증이 아니다.\n3. 서브에이전트로 8개 태스크, 그리고 최종 리뷰 구현은 8개 태스크를 TDD로 서브에이전트에게 맡겼다.\nDB 스키마 클라이언트의 체결 틱 조회와 데이터 타입 순수 함수 (버킷 집계, 배치 회전) 저장소 계층 수집 오케스트레이션 (증분 폴링, 누락 구간 메우기) 설정 틱 루프 배선 메인 실배선 태스크별 리뷰는 모두 통과했다. 마지막 태스크는 세션 사용량 한도로 구현 에이전트가 중간에 멈췄고, 두 번째 에이전트가 이어받아 끝냈다(코드 결함이 아니라는 것을 재검토로 확인했다).\n최종 브랜치 리뷰가 잡은 것 가장 강한 모델로 한 번 더 전체를 리뷰했더니 태스크별 리뷰가 놓친 것이 나왔다.\n치명(Critical): 1분 집계 테이블이 무제한으로 증가한다. 배포 직전 서버 상태(디스크가 이미 부족했던 이력)와 연결 지어 발견했다. 보관 기간 정리 로직이 필요했다. 중요(Important) 3건: 요청 제한 수치의 문서·코드 불일치, 418(차단)과 인증 예외가 삼켜지는 것, 비원자적 쓰기로 크래시 시 이중 집계가 될 수 있는 것. 전부 하나의 수정 묶음으로 고치고 범위를 좁힌 재검토로 깨끗함을 확인했다. 신규 테스트는 45건이다. 이 결정과 구현 중 정정 5건, 리뷰 정정 4건을 모두 결정 문서에 기록했다.\n4. 같은 날의 실제 사고: 디스크 91% 설계 승인 직후 사용자가 서버 디스크 사용량이 91%라고 알려 왔다. 원인은 백업 폴더(수 GB)였다. 이미 30일 기준의 보관 정책이 있었지만, 배포 테스트를 하루에 여러 번 돌린 날에는 중복 백업이 쌓였고 30일이 지나기 전까지 무한히 늘어나는 구조였다. 시간 기준의 보관 정책은 쓰기 빈도가 높은 날에 무력하다.\n데이터 본체(살아 있는 DB와 WAL 보조 파일)는 절대 지우면 안 된다고 먼저 안내했다. 정리 대상은 백업 폴더뿐이다. 사용자 요청으로 보관 정책을 DB별 최신 N개 유지(개수 기준, 기본 3, 환경 변수로 조정)로 바꿨다. 합성 파일로 삭제 대상 목록만 출력해서 로직을 확인했다. 배포 후 여유 공간이 4.3GB에서 9.6GB로 회복되었고, 배포 자체가 만든 신규 백업에도 정책이 정상 동작했다.\n5. 배포 후 실측 검증과 점검 스킬 데이터는 배포되어야 쌓인다. 배포 후 확인 절차를 매번 말로 설명하지 않도록 점검 스킬(server-check)을 만들었다. 절차는 헬스체크 → 서비스 로그의 필수 이벤트와 CRITICAL 확인 → 시장 DB를 로컬로 가져와 수집 테이블 실측 → 이상 시 조정표 → 요약 보고 순서다.\n이 스킬로 처음 서버 접속을 실제로 실행했다. 접속 설정이 의외로 오래 걸렸다(약 한 시간). 막힌 지점 세 곳은 서비스 관리자 권한, 파일 권한, 셸 변수 보간이었고, 그 뒤에도 Git Bash의 ssh가 Windows 네이티브 에이전트를 읽지 못하고 설정의 IdentitiesOnly가 에이전트 키 사용을 막는 문제가 있었다. 네이티브 ssh를 전체 경로로 호출하는 방식으로 우회했고, 같은 시행착오를 반복하지 않도록 이 내용을 저장소 문서(스킬 §0)에 명시했다. 개인 메모리가 아니라 커밋된 문서에 둔 이유는 다른 머신에서도 바로 참고할 수 있게 하기 위해서다.\n실측 결과:\n헬스체크 전 항목 통과, CRITICAL 0건 전체 유니버스 283종목 중 283종목 정상 수집 (커서 전부 1분 이내 갱신) 마켓별 수집 실패 0건, 저유동성 마켓의 누락 미복구 1건은 설계대로의 정상 동작 배포 후 약 31시간 데이터로 실제 증가율을 재서 보관 기간을 30일에서 180일로 상향했다(하루 약 10MB 증가, 180일이어도 디스크의 20% 이하). 보수적으로 잡은 숫자는 실측으로 고친다.\n6. 같은 날, 연구 방향 상담 세 건 데이터를 기다리는 동안 연구 방향 상담이 있었다. 모두 코드 변경 없이 근거 문서로 답했다.\n“유동성과 무관한 다른 전략은 가능한가” → 분류 9개 전체가 봉인되었거나 문헌·데이터가 소진된 상태. 닫힌 고리다. “봉인 정책을 완화할 수 있는가” → 봉인 횟수 기준에 별도 유도 근거는 없고 초기 판단값이다. 그러나 결과가 안 나온다고 규칙을 푸는 것은 사후 스누핑과 구분되지 않는다. 실행하지 않았다. “볼린저+스토캐스틱+RSI 과매도 확인 매수” → 같은 메커니즘이 이미 두 번 시도되어 기각되었다. 지표 AND 대신 가중 점수화는 희소성 문제만 피할 뿐 메커니즘은 같아서 봉인이 그대로 적용된다. 봉인이 풀릴 때 참고할 아이디어로만 기록했다. 정리 항목 내용 목적 봉 데이터로는 안 나오는 후보를 새 데이터로 설계 정정 커서 방향 가정이 반대였음을 SDK 소스로 발견 리뷰 최종 리뷰가 디스크 무제한 증가·예외 삼킴·비원자 쓰기를 포착 운영 백업 정책을 시간 기준에서 개수 기준으로 검증 283/283 종목 수집, 보관 180일로 상향 배운 점: 새 데이터 수집 인프라는 코드가 아니라 쌓이는 시간이 비용이다. 그러므로 배포가 늦어지는 만큼 데이터가 사라진다. 그래서 리뷰를 강하게 하고(디스크, 예외, 원자성), 배포 후 곧바로 실측으로 확인하는 것이 중요했다. 그리고 규칙을 풀어 달라는 요청에는 “풀면 사후 스누핑과 구분되지 않는다\"는 이유를 문서 근거로 설명하는 것이 가장 정직한 답이었다.\n",
+  "wordCount" : "2540",
+  "inLanguage": "ko",
+  "datePublished": "2026-08-19T18:00:00+09:00",
+  "dateModified": "2026-08-19T18:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다
+    </h1>
+    <div class="post-description">
+      봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-08-19T18:00:00+09:00'>2026년 8월 19일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%84%a4%ea%b3%84-%ec%9e%85%ec%9e%90-%eb%b2%94%ec%9c%84-%ec%9c%84%ec%b9%98%eb%a5%bc-%ec%a0%95%ed%95%9c%eb%8b%a4" aria-label="1. 설계: 입자, 범위, 위치를 정한다">1. 설계: 입자, 범위, 위치를 정한다</a></li>
+            <li>
+                <a href="#2-%ea%b5%ac%ed%98%84-%ea%b3%84%ed%9a%8d%ec%97%90%ec%84%9c-%ec%84%a4%ea%b3%84-%ea%b0%80%ec%a0%95%ec%9d%b4-%ea%b9%a8%ec%a1%8c%eb%8b%a4" aria-label="2. 구현 계획에서 설계 가정이 깨졌다">2. 구현 계획에서 설계 가정이 깨졌다</a></li>
+            <li>
+                <a href="#3-%ec%84%9c%eb%b8%8c%ec%97%90%ec%9d%b4%ec%a0%84%ed%8a%b8%eb%a1%9c-8%ea%b0%9c-%ed%83%9c%ec%8a%a4%ed%81%ac-%ea%b7%b8%eb%a6%ac%ea%b3%a0-%ec%b5%9c%ec%a2%85-%eb%a6%ac%eb%b7%b0" aria-label="3. 서브에이전트로 8개 태스크, 그리고 최종 리뷰">3. 서브에이전트로 8개 태스크, 그리고 최종 리뷰</a><ul>
+                    
+            <li>
+                <a href="#%ec%b5%9c%ec%a2%85-%eb%b8%8c%eb%9e%9c%ec%b9%98-%eb%a6%ac%eb%b7%b0%ea%b0%80-%ec%9e%a1%ec%9d%80-%ea%b2%83" aria-label="최종 브랜치 리뷰가 잡은 것">최종 브랜치 리뷰가 잡은 것</a></li></ul>
+            </li>
+            <li>
+                <a href="#4-%ea%b0%99%ec%9d%80-%eb%82%a0%ec%9d%98-%ec%8b%a4%ec%a0%9c-%ec%82%ac%ea%b3%a0-%eb%94%94%ec%8a%a4%ed%81%ac-91" aria-label="4. 같은 날의 실제 사고: 디스크 91%">4. 같은 날의 실제 사고: 디스크 91%</a></li>
+            <li>
+                <a href="#5-%eb%b0%b0%ed%8f%ac-%ed%9b%84-%ec%8b%a4%ec%b8%a1-%ea%b2%80%ec%a6%9d%ea%b3%bc-%ec%a0%90%ea%b2%80-%ec%8a%a4%ed%82%ac" aria-label="5. 배포 후 실측 검증과 점검 스킬">5. 배포 후 실측 검증과 점검 스킬</a></li>
+            <li>
+                <a href="#6-%ea%b0%99%ec%9d%80-%eb%82%a0-%ec%97%b0%ea%b5%ac-%eb%b0%a9%ed%96%a5-%ec%83%81%eb%8b%b4-%ec%84%b8-%ea%b1%b4" aria-label="6. 같은 날, 연구 방향 상담 세 건">6. 같은 날, 연구 방향 상담 세 건</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>연구 8회차까지 봉(candle) 기반 후보는 거의 소진되었다. 탐색 에이전트의 결론은 &ldquo;막힌 것을 뚫는 길은 문헌이 아니라 <strong>새 데이터</strong>&ldquo;였다. 사용자는 체결 흐름(어느 쪽이 공격적으로 사고팔았는지 부호가 붙은 체결 기록)을 상시 기록하는 인프라를 만들기로 확정했다. 과거 체결 흐름은 구할 수 없으므로 <strong>지금부터 쌓아야</strong> 나중에 쓸 수 있다.</p>
+<hr>
+<h2 id="1-설계-입자-범위-위치를-정한다">1. 설계: 입자, 범위, 위치를 정한다<a hidden class="anchor" aria-hidden="true" href="#1-설계-입자-범위-위치를-정한다">#</a></h2>
+<p>기획(brainstorming) 질문 세 개로 설계를 확정했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>질문</th>
+					<th>결정</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>저장 입자</td>
+					<td>1분 집계 버킷 (틱 원본은 저장하지 않는다)</td>
+			</tr>
+			<tr>
+					<td>수집 범위</td>
+					<td>전체 원화 마켓 유니버스</td>
+			</tr>
+			<tr>
+					<td>실행 위치</td>
+					<td>기존 데몬에 통합 (별도 프로세스를 만들지 않는다)</td>
+			</tr>
+	</tbody>
+</table>
+<p>거래소의 체결 틱 조회는 초당 10회 제한이 있다. 그래서 종목을 순환하며 배치로 조회한다(틱당 15종목, 전체 한 바퀴 약 37초). 각 종목은 <code>sequential_id</code>를 커서로 저장해 <strong>유실 없이 이어받는다.</strong></p>
+<hr>
+<h2 id="2-구현-계획에서-설계-가정이-깨졌다">2. 구현 계획에서 설계 가정이 깨졌다<a hidden class="anchor" aria-hidden="true" href="#2-구현-계획에서-설계-가정이-깨졌다">#</a></h2>
+<p>구현 계획을 쓰는 동안 실제로 설치된 SDK의 소스를 열어 보았다. 설계 문서의 핵심 가정은 &ldquo;커서가 앞으로 이어지는 <strong>forward-continuation</strong>&ldquo;이었는데, 실제 커서는 <strong>뒤로 거슬러 가는(backward)</strong> 방식이었다. 이 가정으로 구현했다면 누락 구간을 메우는 알고리즘 전체가 틀렸을 것이다.</p>
+<p>같은 시점에 규약 위반도 하나 정정했다. 매 틱 로그를 남기는 것은 로깅 규약에 어긋나서 DEBUG로 내렸다.</p>
+<p>교훈은 단순하다. 설계 단계의 외부 API 가정은 <strong>구현 전에 소스나 실측으로 한 번 더 확인한다.</strong> 설계 승인은 가정이 맞다는 보증이 아니다.</p>
+<hr>
+<h2 id="3-서브에이전트로-8개-태스크-그리고-최종-리뷰">3. 서브에이전트로 8개 태스크, 그리고 최종 리뷰<a hidden class="anchor" aria-hidden="true" href="#3-서브에이전트로-8개-태스크-그리고-최종-리뷰">#</a></h2>
+<p>구현은 8개 태스크를 TDD로 서브에이전트에게 맡겼다.</p>
+<ol>
+<li>DB 스키마</li>
+<li>클라이언트의 체결 틱 조회와 데이터 타입</li>
+<li>순수 함수 (버킷 집계, 배치 회전)</li>
+<li>저장소 계층</li>
+<li>수집 오케스트레이션 (증분 폴링, 누락 구간 메우기)</li>
+<li>설정</li>
+<li>틱 루프 배선</li>
+<li>메인 실배선</li>
+</ol>
+<p>태스크별 리뷰는 모두 통과했다. 마지막 태스크는 세션 사용량 한도로 구현 에이전트가 중간에 멈췄고, 두 번째 에이전트가 이어받아 끝냈다(코드 결함이 아니라는 것을 재검토로 확인했다).</p>
+<h3 id="최종-브랜치-리뷰가-잡은-것">최종 브랜치 리뷰가 잡은 것<a hidden class="anchor" aria-hidden="true" href="#최종-브랜치-리뷰가-잡은-것">#</a></h3>
+<p>가장 강한 모델로 한 번 더 전체를 리뷰했더니 태스크별 리뷰가 놓친 것이 나왔다.</p>
+<ul>
+<li><strong>치명(Critical)</strong>: 1분 집계 테이블이 <strong>무제한으로 증가</strong>한다. 배포 직전 서버 상태(디스크가 이미 부족했던 이력)와 연결 지어 발견했다. 보관 기간 정리 로직이 필요했다.</li>
+<li>중요(Important) 3건: 요청 제한 수치의 문서·코드 불일치, 418(차단)과 인증 예외가 삼켜지는 것, <strong>비원자적 쓰기</strong>로 크래시 시 이중 집계가 될 수 있는 것.</li>
+</ul>
+<p>전부 하나의 수정 묶음으로 고치고 범위를 좁힌 재검토로 깨끗함을 확인했다. 신규 테스트는 45건이다. 이 결정과 구현 중 정정 5건, 리뷰 정정 4건을 모두 결정 문서에 기록했다.</p>
+<hr>
+<h2 id="4-같은-날의-실제-사고-디스크-91">4. 같은 날의 실제 사고: 디스크 91%<a hidden class="anchor" aria-hidden="true" href="#4-같은-날의-실제-사고-디스크-91">#</a></h2>
+<p>설계 승인 직후 사용자가 서버 디스크 사용량이 91%라고 알려 왔다. 원인은 백업 폴더(수 GB)였다. 이미 30일 기준의 보관 정책이 있었지만, 배포 테스트를 하루에 여러 번 돌린 날에는 중복 백업이 쌓였고 <strong>30일이 지나기 전까지 무한히 늘어나는</strong> 구조였다. 시간 기준의 보관 정책은 쓰기 빈도가 높은 날에 무력하다.</p>
+<p>데이터 본체(살아 있는 DB와 WAL 보조 파일)는 절대 지우면 안 된다고 먼저 안내했다. 정리 대상은 백업 폴더뿐이다. 사용자 요청으로 보관 정책을 <strong>DB별 최신 N개 유지</strong>(개수 기준, 기본 3, 환경 변수로 조정)로 바꿨다. 합성 파일로 삭제 대상 목록만 출력해서 로직을 확인했다. 배포 후 여유 공간이 4.3GB에서 9.6GB로 회복되었고, 배포 자체가 만든 신규 백업에도 정책이 정상 동작했다.</p>
+<hr>
+<h2 id="5-배포-후-실측-검증과-점검-스킬">5. 배포 후 실측 검증과 점검 스킬<a hidden class="anchor" aria-hidden="true" href="#5-배포-후-실측-검증과-점검-스킬">#</a></h2>
+<p>데이터는 배포되어야 쌓인다. 배포 후 확인 절차를 매번 말로 설명하지 않도록 <strong>점검 스킬</strong>(<code>server-check</code>)을 만들었다. 절차는 헬스체크 → 서비스 로그의 필수 이벤트와 CRITICAL 확인 → 시장 DB를 로컬로 가져와 수집 테이블 실측 → 이상 시 조정표 → 요약 보고 순서다.</p>
+<p>이 스킬로 처음 서버 접속을 실제로 실행했다. 접속 설정이 의외로 오래 걸렸다(약 한 시간). 막힌 지점 세 곳은 서비스 관리자 권한, 파일 권한, 셸 변수 보간이었고, 그 뒤에도 Git Bash의 ssh가 Windows 네이티브 에이전트를 읽지 못하고 설정의 <code>IdentitiesOnly</code>가 에이전트 키 사용을 막는 문제가 있었다. 네이티브 ssh를 전체 경로로 호출하는 방식으로 우회했고, 같은 시행착오를 반복하지 않도록 이 내용을 <strong>저장소 문서(스킬 §0)에 명시</strong>했다. 개인 메모리가 아니라 커밋된 문서에 둔 이유는 다른 머신에서도 바로 참고할 수 있게 하기 위해서다.</p>
+<p>실측 결과:</p>
+<ul>
+<li>헬스체크 전 항목 통과, CRITICAL 0건</li>
+<li>전체 유니버스 <strong>283종목 중 283종목</strong> 정상 수집 (커서 전부 1분 이내 갱신)</li>
+<li>마켓별 수집 실패 0건, 저유동성 마켓의 누락 미복구 1건은 설계대로의 정상 동작</li>
+</ul>
+<p>배포 후 약 31시간 데이터로 실제 증가율을 재서 <strong>보관 기간을 30일에서 180일로</strong> 상향했다(하루 약 10MB 증가, 180일이어도 디스크의 20% 이하). 보수적으로 잡은 숫자는 실측으로 고친다.</p>
+<hr>
+<h2 id="6-같은-날-연구-방향-상담-세-건">6. 같은 날, 연구 방향 상담 세 건<a hidden class="anchor" aria-hidden="true" href="#6-같은-날-연구-방향-상담-세-건">#</a></h2>
+<p>데이터를 기다리는 동안 연구 방향 상담이 있었다. 모두 코드 변경 없이 근거 문서로 답했다.</p>
+<ol>
+<li>&ldquo;유동성과 무관한 다른 전략은 가능한가&rdquo; → 분류 9개 전체가 봉인되었거나 문헌·데이터가 소진된 상태. 닫힌 고리다.</li>
+<li>&ldquo;봉인 정책을 완화할 수 있는가&rdquo; → 봉인 횟수 기준에 별도 유도 근거는 없고 초기 판단값이다. 그러나 결과가 안 나온다고 규칙을 푸는 것은 사후 스누핑과 구분되지 않는다. 실행하지 않았다.</li>
+<li>&ldquo;볼린저+스토캐스틱+RSI 과매도 확인 매수&rdquo; → 같은 메커니즘이 이미 두 번 시도되어 기각되었다. 지표 AND 대신 가중 점수화는 희소성 문제만 피할 뿐 메커니즘은 같아서 봉인이 그대로 적용된다. 봉인이 풀릴 때 참고할 아이디어로만 기록했다.</li>
+</ol>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>목적</td>
+					<td>봉 데이터로는 안 나오는 후보를 새 데이터로</td>
+			</tr>
+			<tr>
+					<td>설계 정정</td>
+					<td>커서 방향 가정이 반대였음을 SDK 소스로 발견</td>
+			</tr>
+			<tr>
+					<td>리뷰</td>
+					<td>최종 리뷰가 디스크 무제한 증가·예외 삼킴·비원자 쓰기를 포착</td>
+			</tr>
+			<tr>
+					<td>운영</td>
+					<td>백업 정책을 시간 기준에서 개수 기준으로</td>
+			</tr>
+			<tr>
+					<td>검증</td>
+					<td>283/283 종목 수집, 보관 180일로 상향</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 새 데이터 수집 인프라는 코드가 아니라 <strong>쌓이는 시간</strong>이 비용이다. 그러므로 배포가 늦어지는 만큼 데이터가 사라진다. 그래서 리뷰를 강하게 하고(디스크, 예외, 원자성), 배포 후 곧바로 실측으로 확인하는 것이 중요했다. 그리고 규칙을 풀어 달라는 요청에는 &ldquo;풀면 사후 스누핑과 구분되지 않는다&quot;는 이유를 문서 근거로 설명하는 것이 가장 정직한 답이었다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-9-to-25/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (4) — 연구 9~25회차: 기각의 공장에서 배운 것들</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

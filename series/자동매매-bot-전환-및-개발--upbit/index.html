@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit | Evan&#39;s Blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-bot-%EC%A0%84%ED%99%98-%EB%B0%8F-%EA%B0%9C%EB%B0%9C--upbit/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-bot-%EC%A0%84%ED%99%98-%EB%B0%8F-%EA%B0%9C%EB%B0%9C--upbit/index.xml" title="rss">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-bot-%EC%A0%84%ED%99%98-%EB%B0%8F-%EA%B0%9C%EB%B0%9C--upbit/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-bot-%EC%A0%84%ED%99%98-%EB%B0%8F-%EA%B0%9C%EB%B0%9C--upbit/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit">
+  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="website">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit">
+  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+
+</head>
+<body class="list" id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+<header class="page-header"><nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/series/">Series</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+  <h1>
+    자동매매 Bot 전환 및 개발 · Upbit
+  </h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다
+    </h2>
+  </header>
+  <div class="entry-content"><p>실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 &#39;파라미터가 아니라 시장 국면&#39;이라고 결론 낸 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-08-03T23:00:00+09:00'>2026년 8월 3일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다" href="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기
+    </h2>
+  </header>
+  <div class="entry-content"><p>15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-27T23:00:00+09:00'>2026년 7월 27일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기" href="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (11) — 전략의 &#39;기억&#39;을 코어에 두고, 크론을 다섯 줄로 줄이다
+    </h2>
+  </header>
+  <div class="entry-content"><p>4단계 청산 상태머신을 가진 전략을 붙이려니, 15분마다 새 프로세스로 도는 구조에서 포지션 상태를 다음 사이클로 넘길 방법이 없었다. 범용 상태 영속 메커니즘을 코어에 만든 설계 판단, 서브에이전트가 엉뚱한 브랜치에 커밋한 사고의 복구, 그리고 전략×단계 조합마다 한 줄씩이던 크론을 단계당 한 줄로 바꾼 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-23T23:00:00+09:00'>2026년 7월 23일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (11) — 전략의 &#39;기억&#39;을 코어에 두고, 크론을 다섯 줄로 줄이다" href="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가
+    </h2>
+  </header>
+  <div class="entry-content"><p>웹 대시보드에 라이브 매매일지를 추가한 직후, 계좌 현황과 매매일지의 보유 종목이 서로 다르다는 제보가 들어왔다. 세 건을 개별 포렌식으로 가려내고, 체결 확인이 불가능할 때 진입과 청산이 각각 어느 방향으로 틀리는 편이 덜 위험한지를 따져 폴백을 재설계했다. 같은 날 만든 전략 연구 에이전트 시스템도 함께 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-20T23:00:00+09:00'>2026년 7월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가" href="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (9) — 새 전략을 &#39;사전 등록&#39;하고 기각하는 절차를 만들다
+    </h2>
+  </header>
+  <div class="entry-content"><p>새 전략 후보를 계속 시도하고 계속 기각하면서, 좋아 보이는 값을 찾는 재최적화의 함정을 구조적으로 막는 절차(사전 등록, PBO, 복수 구간 게이트, 봉인 구간)를 갖추게 된 과정. 같은 코드로 재현하자 뒤집힌 파일럿 후보 사례와, 결과를 보고도 최적화 루프를 만들지 않기로 한 판단을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-18T23:00:00+09:00'>2026년 7월 18일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (9) — 새 전략을 &#39;사전 등록&#39;하고 기각하는 절차를 만들다" href="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (8) — 한 전략이 다른 전략의 물량까지 팔아 버린 사고
+    </h2>
+  </header>
+  <div class="entry-content"><p>청산이 확인되지 않는 이상 징후를 조사했더니, 두 전략이 같은 코인을 들고 있을 때 먼저 청산하는 쪽이 상대 물량까지 통째로 팔고 있었다. 계좌 잔고를 공유하는 거래소 구조에서 &#39;내 수량&#39;을 장부에 기록하지 않았던 설계 결함을 찾고, 마이그레이션·복구 도구·중복 매수 정리까지 마무리한 과정.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-16T23:00:00+09:00'>2026년 7월 16일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (8) — 한 전략이 다른 전략의 물량까지 팔아 버린 사고" href="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법
+    </h2>
+  </header>
+  <div class="entry-content"><p>실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-15T23:00:00+09:00'>2026년 7월 15일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법" href="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (6) — 15시간 동안 조용히 멈춘 크론과 전략별 자금 배분
+    </h2>
+  </header>
+  <div class="entry-content"><p>거래가 안 된 이유를 로그로 추적했더니 &#39;종목이 없어서&#39;가 아니라 크론 래퍼가 파이썬이 뜨기도 전에 죽고 있었다. 앱 로그와 알림이 닿지 못하는 사각지대를 독립 감시 프로세스로 메운 과정과, 두 전략에 자금을 나누는 배분 구조를 새로 만든 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-14T23:00:00+09:00'>2026년 7월 14일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (6) — 15시간 동안 조용히 멈춘 크론과 전략별 자금 배분" href="https://nova7zone.github.io/posts/upbit-silent-cron-halt-and-fund-allocation/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (5) — 실거래 개시 전 운영 공백을 메우고, 개시 후 첫 로그를 점검하다
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트 기준을 통과하지 못한 채 소액 실거래를 시작하기까지 이틀. 전략 코드가 아니라 운영 공백(손실 한도, 실체결가, 로깅, 락, 알림, cron 환경)을 감사해 메우고, 개시 직후 서버 로그에서 배포 스크립트의 오탐과 실제 버그를 가려낸 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-13T23:00:00+09:00'>2026년 7월 13일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (5) — 실거래 개시 전 운영 공백을 메우고, 개시 후 첫 로그를 점검하다" href="https://nova7zone.github.io/posts/upbit-live-readiness-gaps-and-post-launch-check/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-11T23:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진" href="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/"></a>
+</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-bot-%EC%A0%84%ED%99%98-%EB%B0%8F-%EA%B0%9C%EB%B0%9C--upbit/page/2/">다음 페이지&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

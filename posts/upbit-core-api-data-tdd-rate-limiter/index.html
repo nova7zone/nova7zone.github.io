@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계">
+<meta name="description" content="지난 편에서 확정한 05:00 KST 기준봉 위에, 이번엔 실제로 Upbit와 통신하는 코드를 만들 차례였다. JWT 서명, 그룹마다 다른 rate limit, 무체결 구간의 캔들 결측까지 — 전부 테스트를 먼저 쓰고 실패를 확인한 뒤에 구현했다. 그 과정에서 &#34;시간에 의존하는 코드를 어떻게 테스트하나&#34;라는 흔한 질문에 부딪혔고, 답을 찾았다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기">
+  <meta property="og:description" content="지난 편에서 확정한 05:00 KST 기준봉 위에, 이번엔 실제로 Upbit와 통신하는 코드를 만들 차례였다. JWT 서명, 그룹마다 다른 rate limit, 무체결 구간의 캔들 결측까지 — 전부 테스트를 먼저 쓰고 실패를 확인한 뒤에 구현했다. 그 과정에서 &#34;시간에 의존하는 코드를 어떻게 테스트하나&#34;라는 흔한 질문에 부딪혔고, 답을 찾았다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-10T19:30:00+09:00">
+    <meta property="article:modified_time" content="2026-07-10T19:30:00+09:00">
+    <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기">
+  <meta name="twitter:description" content="지난 편에서 확정한 05:00 KST 기준봉 위에, 이번엔 실제로 Upbit와 통신하는 코드를 만들 차례였다. JWT 서명, 그룹마다 다른 rate limit, 무체결 구간의 캔들 결측까지 — 전부 테스트를 먼저 쓰고 실패를 확인한 뒤에 구현했다. 그 과정에서 &#34;시간에 의존하는 코드를 어떻게 테스트하나&#34;라는 흔한 질문에 부딪혔고, 답을 찾았다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기",
+      "item": "https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기",
+  "name": "자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기",
+  "description": "지난 편에서 확정한 05:00 KST 기준봉 위에, 이번엔 실제로 Upbit와 통신하는 코드를 만들 차례였다. JWT 서명, 그룹마다 다른 rate limit, 무체결 구간의 캔들 결측까지 — 전부 테스트를 먼저 쓰고 실패를 확인한 뒤에 구현했다. 그 과정에서 \"시간에 의존하는 코드를 어떻게 테스트하나\"라는 흔한 질문에 부딪혔고, 답을 찾았다.",
+  "keywords": [
+    "설계"
+  ],
+  "articleBody": "작성일: 2026년 7월 10일\n최종 수정: 2026년 7월 10일\n분야: AI Trading, Software Architecture\n난이도: Intermediate\n상태: 착수요청서 §11 1단계(core/api·core/data) 완료\n들어가며 지난 글에서 기준봉을 05:00 KST로 확정하고 strategies/base.py 인터페이스를 정리한 뒤 0단계를 닫았다. 이번엔 실제로 코드를 짜는 차례다 — Upbit와 통신하는 core/api, 그리고 캔들을 다루는 core/data. TDD 규칙(테스트를 먼저 쓰고, 실패하는 걸 지켜보고, 최소한의 코드로 통과시킨다)을 전 구간에서 지켰는데, 그 과정에서 예상 못한 질문 하나를 만났다. “1초에 몇 번까지만 호출하라\"는 rate limiter 로직을, 진짜로 1초씩 기다리지 않고 테스트에서 어떻게 검증하지?\n1. JWT 서명 — 공식 예제를 그대로 따라야 했던 이유 Upbit 인증은 매 요청마다 access_key+nonce(UUID)를 JWT로 서명해서 Authorization 헤더에 싣는 방식이다. 국내주식 kis-auto-trading의 발급형 OAuth2 토큰 캐시 방식과는 다르다 — 매 요청을 서명하니 캐시할 토큰 자체가 없다.\n쿼리 파라미터가 있는 요청(예: 페어 목록 조회)은 SHA512로 해시한 query_hash도 같이 실어야 하는데, 이 해시를 만드는 방식이 까다롭다. 그냥 urlencode만 쓰면 안 되고, Upbit 공식 예제처럼 unquote(urlencode(query, doseq=True))로 만들어야 한다. markets=[...] 같은 배열형 파라미터를 서버 쪽 검증 로직과 똑같은 방식으로 인코딩해야 해시가 일치하기 때문이다 — 표준 인코딩만 믿고 갔다면 배열 파라미터가 있는 요청에서만 골라서 인증이 실패하는, 원인 찾기 성가신 버그가 됐을 것이다.\n2. rate limiter — “몇 초 기다렸다\"를 테스트에서 어떻게 확인하나 Upbit는 엔드포인트 그룹마다 rate limit이 다르다. 시세 조회(캔들·현재가·호가)는 초당 10회, 계좌·주문 조회는 초당 30회인데, 주문 생성만 초당 8회로 유독 낮다. 그룹별로 독립된 토큰버킷을 만들어야 했다.\n문제는 테스트였다. “토큰이 없으면 1초 기다린다\"는 로직을 실제로 1초씩 기다리면서 검증하면 테스트 몇 개만 돌려도 실행 시간이 눈에 띄게 늘어난다. 그래서 RateLimiter가 진짜 시계(time.monotonic/time.sleep) 대신 “시계 함수\"와 “대기 함수\"를 주입받게 만들었다. 테스트에서는 실제로 시간이 흐르지 않는 가짜 시계를 넣어준다 — sleep()이 호출되면 그 가짜 시계의 시각을 호출된 초만큼 앞으로 돌려버리는 식이다. 그러면 “토큰이 없어서 0.1초 기다렸다\"는 동작을 실시간 대기 없이, 그것도 정확히 몇 초를 기다렸는지까지 검증할 수 있다.\n이 패턴 하나로 429(초당 한도 초과 — 버킷을 비우고 다음 초까지 대기)와 418(누적 차단 — 운영 사고로 취급해 CRITICAL 로그를 남기게 했다) 처리까지 실시간 대기 없이 전부 테스트했다.\n3. 캔들 계층 — 없는 데이터를 “없다\"고 두면 안 되는 이유 Upbit는 거래가 없는 구간의 캔들을 아예 만들지 않는다. 거래량이 적은 페어는 4시간봉 하나가 통째로 비어있을 수 있다는 뜻이다. 그런데 지표 계산(이동평균 등)은 연속된 시간축을 전제로 한다 — 봉 하나가 비면 그다음 계산이 전부 밀리거나 틀어진다.\n그래서 core/data가 이 결측을 직전 종가로 채운다(OHLC 전부 그 값, 거래량은 0). 이때 조용히 채우지 않고 매 슬롯마다 WARNING 로그를 남기도록 했다 — 나중에 “왜 이 페어 지표가 이상하지\"를 디버깅할 때, 로그만 보고 결측 보간 때문인지 바로 알 수 있어야 하기 때문이다. 그리고 Upbit의 4시간봉 경계(KST 01·05·09·13·17· 21시, 지난 편에서 실측한 값)를 벗어나는 캔들이 들어오면 즉시 에러를 내게 했다 — Upbit가 봉 정렬 정책을 조용히 바꾸는 사고를 조기에 잡기 위해서다.\n4. DataProvider 확정 — “잠정\"이라고 적어뒀던 타입을 마침내 채우다 지난 편에서 base.py의 DataProvider 인터페이스를 만들 때 Candle 타입을 느슨한 딕셔너리(Mapping[str, Any])로 남기고 “core/data 확정 시 전용 타입으로 교체 예정\"이라는 주석을 달아뒀다. 이번에 core/data가 실제로 만들어지면서 그 약속을 지켰다 — Upbit 캔들 응답 스키마를 그대로 반영한 CandleDict TypedDict로 구체화했다. 그리고 candles/ticker/orderbook 세 메서드를 다 구현하는 UpbitDataProvider를 만들어서, DataProvider Protocol을 완전히 만족하는지 isinstance()로 검사하는 테스트까지 추가했다(Protocol에 @runtime_checkable을 붙이면 이게 가능해진다).\n인터페이스를 먼저 “잠정” 상태로 열어두고, 실제 구현이 나온 시점에 구체 타입으로 조이는 순서가, 처음부터 완벽한 타입을 맞추려다 구현 세부사항을 억지로 끼워맞추는 것보다 훨씬 자연스러웠다.\n정리 항목 내용 core/api jwt_auth(서명) · rate_limiter(그룹별 토큰버킷) · upbit_api(시세/주문/자산 래퍼) core/data candles(경계검증+결측보간) · provider(DataProvider 확정 구현) rate limit candle/ticker/orderbook/market=10/s, default=30/s, order=8/s(가장 낮음) 테스트 전략 TDD RED-GREEN 전 구간, rate limiter는 가짜 시계로 실시간 대기 없이 검증 검증 결과 pytest 61 passed, lint-imports 0 broken, 레지스트리 스모크 통과 이번 편의 교훈은 하나로 요약된다. 시간에 의존하는 로직은 “시간\"을 주입 가능한 값으로 만들어두면, 실제로 기다리지 않고도 정확하게 테스트할 수 있다. time.sleep을 코드 안에 직접 박아두었다면, 이 rate limiter의 429/418 분기는 평생 눈으로 로그만 보고 “아마 맞겠지\"로 넘어갔을 것이다.\n로컬에서 전부 초록불을 켠 다음, 실제 OCI A1 서버에 올리고 진짜 Upbit 계좌에 연결하는 과정에서 삽질을 두 번 했다 — 하나는 GitHub private 저장소 인증, 하나는 Upbit 특유의 “포켓” 구조 때문에 생긴 것. 다음 글은 그 이야기다.\n",
+  "wordCount" : "2310",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-10T19:30:00+09:00",
+  "dateModified": "2026-07-10T19:30:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기
+    </h1>
+    <div class="post-description">
+      지난 편에서 확정한 05:00 KST 기준봉 위에, 이번엔 실제로 Upbit와 통신하는 코드를 만들 차례였다. JWT 서명, 그룹마다 다른 rate limit, 무체결 구간의 캔들 결측까지 — 전부 테스트를 먼저 쓰고 실패를 확인한 뒤에 구현했다. 그 과정에서 &#34;시간에 의존하는 코드를 어떻게 테스트하나&#34;라는 흔한 질문에 부딪혔고, 답을 찾았다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-10T19:30:00+09:00'>2026년 7월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-jwt-%ec%84%9c%eb%aa%85--%ea%b3%b5%ec%8b%9d-%ec%98%88%ec%a0%9c%eb%a5%bc-%ea%b7%b8%eb%8c%80%eb%a1%9c-%eb%94%b0%eb%9d%bc%ec%95%bc-%ed%96%88%eb%8d%98-%ec%9d%b4%ec%9c%a0" aria-label="1. JWT 서명 — 공식 예제를 그대로 따라야 했던 이유">1. JWT 서명 — 공식 예제를 그대로 따라야 했던 이유</a></li>
+            <li>
+                <a href="#2-rate-limiter--%eb%aa%87-%ec%b4%88-%ea%b8%b0%eb%8b%a4%eb%a0%b8%eb%8b%a4%eb%a5%bc-%ed%85%8c%ec%8a%a4%ed%8a%b8%ec%97%90%ec%84%9c-%ec%96%b4%eb%96%bb%ea%b2%8c-%ed%99%95%ec%9d%b8%ed%95%98%eb%82%98" aria-label="2. rate limiter — &ldquo;몇 초 기다렸다&quot;를 테스트에서 어떻게 확인하나">2. rate limiter — &ldquo;몇 초 기다렸다&quot;를 테스트에서 어떻게 확인하나</a></li>
+            <li>
+                <a href="#3-%ec%ba%94%eb%93%a4-%ea%b3%84%ec%b8%b5--%ec%97%86%eb%8a%94-%eb%8d%b0%ec%9d%b4%ed%84%b0%eb%a5%bc-%ec%97%86%eb%8b%a4%ea%b3%a0-%eb%91%90%eb%a9%b4-%ec%95%88-%eb%90%98%eb%8a%94-%ec%9d%b4%ec%9c%a0" aria-label="3. 캔들 계층 — 없는 데이터를 &ldquo;없다&quot;고 두면 안 되는 이유">3. 캔들 계층 — 없는 데이터를 &ldquo;없다&quot;고 두면 안 되는 이유</a></li>
+            <li>
+                <a href="#4-dataprovider-%ed%99%95%ec%a0%95--%ec%9e%a0%ec%a0%95%ec%9d%b4%eb%9d%bc%ea%b3%a0-%ec%a0%81%ec%96%b4%eb%92%80%eb%8d%98-%ed%83%80%ec%9e%85%ec%9d%84-%eb%a7%88%ec%b9%a8%eb%82%b4-%ec%b1%84%ec%9a%b0%eb%8b%a4" aria-label="4. DataProvider 확정 — &ldquo;잠정&quot;이라고 적어뒀던 타입을 마침내 채우다">4. DataProvider 확정 — &ldquo;잠정&quot;이라고 적어뒀던 타입을 마침내 채우다</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 10일<br>
+<strong>최종 수정</strong>: 2026년 7월 10일<br>
+<strong>분야</strong>: AI Trading, Software Architecture<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: 착수요청서 §11 1단계(core/api·core/data) 완료</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>지난 글에서 기준봉을 05:00 KST로 확정하고 <code>strategies/base.py</code> 인터페이스를
+정리한 뒤 0단계를 닫았다. 이번엔 실제로 코드를 짜는 차례다 — Upbit와 통신하는
+<code>core/api</code>, 그리고 캔들을 다루는 <code>core/data</code>. TDD 규칙(테스트를 먼저 쓰고,
+실패하는 걸 지켜보고, 최소한의 코드로 통과시킨다)을 전 구간에서 지켰는데, 그
+과정에서 예상 못한 질문 하나를 만났다. &ldquo;1초에 몇 번까지만 호출하라&quot;는 rate
+limiter 로직을, 진짜로 1초씩 기다리지 않고 테스트에서 어떻게 검증하지?</p>
+<hr>
+<h2 id="1-jwt-서명--공식-예제를-그대로-따라야-했던-이유">1. JWT 서명 — 공식 예제를 그대로 따라야 했던 이유<a hidden class="anchor" aria-hidden="true" href="#1-jwt-서명--공식-예제를-그대로-따라야-했던-이유">#</a></h2>
+<p>Upbit 인증은 매 요청마다 <code>access_key</code>+<code>nonce</code>(UUID)를 JWT로 서명해서
+<code>Authorization</code> 헤더에 싣는 방식이다. 국내주식 kis-auto-trading의 발급형
+OAuth2 토큰 캐시 방식과는 다르다 — 매 요청을 서명하니 캐시할 토큰 자체가
+없다.</p>
+<p>쿼리 파라미터가 있는 요청(예: 페어 목록 조회)은 SHA512로 해시한 <code>query_hash</code>도
+같이 실어야 하는데, 이 해시를 만드는 방식이 까다롭다. 그냥 <code>urlencode</code>만 쓰면
+안 되고, Upbit 공식 예제처럼 <code>unquote(urlencode(query, doseq=True))</code>로 만들어야
+한다. <code>markets=[...]</code> 같은 배열형 파라미터를 서버 쪽 검증 로직과 똑같은 방식으로
+인코딩해야 해시가 일치하기 때문이다 — 표준 인코딩만 믿고 갔다면 배열 파라미터가
+있는 요청에서만 골라서 인증이 실패하는, 원인 찾기 성가신 버그가 됐을 것이다.</p>
+<hr>
+<h2 id="2-rate-limiter--몇-초-기다렸다를-테스트에서-어떻게-확인하나">2. rate limiter — &ldquo;몇 초 기다렸다&quot;를 테스트에서 어떻게 확인하나<a hidden class="anchor" aria-hidden="true" href="#2-rate-limiter--몇-초-기다렸다를-테스트에서-어떻게-확인하나">#</a></h2>
+<p>Upbit는 엔드포인트 그룹마다 rate limit이 다르다. 시세 조회(캔들·현재가·호가)는
+초당 10회, 계좌·주문 조회는 초당 30회인데, <strong>주문 생성만 초당 8회로 유독
+낮다.</strong> 그룹별로 독립된 토큰버킷을 만들어야 했다.</p>
+<p>문제는 테스트였다. &ldquo;토큰이 없으면 1초 기다린다&quot;는 로직을 실제로 1초씩
+기다리면서 검증하면 테스트 몇 개만 돌려도 실행 시간이 눈에 띄게 늘어난다. 그래서
+<code>RateLimiter</code>가 진짜 시계(<code>time.monotonic</code>/<code>time.sleep</code>) 대신 &ldquo;시계 함수&quot;와
+&ldquo;대기 함수&quot;를 주입받게 만들었다. 테스트에서는 실제로 시간이 흐르지 않는 가짜
+시계를 넣어준다 — <code>sleep()</code>이 호출되면 그 가짜 시계의 시각을 호출된 초만큼
+앞으로 돌려버리는 식이다. 그러면 &ldquo;토큰이 없어서 0.1초 기다렸다&quot;는 동작을
+실시간 대기 없이, 그것도 정확히 몇 초를 기다렸는지까지 검증할 수 있다.</p>
+<p>이 패턴 하나로 429(초당 한도 초과 — 버킷을 비우고 다음 초까지 대기)와
+418(누적 차단 — 운영 사고로 취급해 CRITICAL 로그를 남기게 했다) 처리까지
+실시간 대기 없이 전부 테스트했다.</p>
+<hr>
+<h2 id="3-캔들-계층--없는-데이터를-없다고-두면-안-되는-이유">3. 캔들 계층 — 없는 데이터를 &ldquo;없다&quot;고 두면 안 되는 이유<a hidden class="anchor" aria-hidden="true" href="#3-캔들-계층--없는-데이터를-없다고-두면-안-되는-이유">#</a></h2>
+<p>Upbit는 거래가 없는 구간의 캔들을 아예 만들지 않는다. 거래량이 적은 페어는
+4시간봉 하나가 통째로 비어있을 수 있다는 뜻이다. 그런데 지표 계산(이동평균 등)은
+연속된 시간축을 전제로 한다 — 봉 하나가 비면 그다음 계산이 전부 밀리거나
+틀어진다.</p>
+<p>그래서 <code>core/data</code>가 이 결측을 직전 종가로 채운다(OHLC 전부 그 값, 거래량은
+0). 이때 조용히 채우지 않고 매 슬롯마다 WARNING 로그를 남기도록 했다 — 나중에
+&ldquo;왜 이 페어 지표가 이상하지&quot;를 디버깅할 때, 로그만 보고 결측 보간 때문인지 바로
+알 수 있어야 하기 때문이다. 그리고 Upbit의 4시간봉 경계(KST 01·05·09·13·17·
+21시, 지난 편에서 실측한 값)를 벗어나는 캔들이 들어오면 즉시 에러를 내게
+했다 — Upbit가 봉 정렬 정책을 조용히 바꾸는 사고를 조기에 잡기 위해서다.</p>
+<hr>
+<h2 id="4-dataprovider-확정--잠정이라고-적어뒀던-타입을-마침내-채우다">4. DataProvider 확정 — &ldquo;잠정&quot;이라고 적어뒀던 타입을 마침내 채우다<a hidden class="anchor" aria-hidden="true" href="#4-dataprovider-확정--잠정이라고-적어뒀던-타입을-마침내-채우다">#</a></h2>
+<p>지난 편에서 <code>base.py</code>의 <code>DataProvider</code> 인터페이스를 만들 때 <code>Candle</code> 타입을
+느슨한 딕셔너리(<code>Mapping[str, Any]</code>)로 남기고 &ldquo;core/data 확정 시 전용 타입으로
+교체 예정&quot;이라는 주석을 달아뒀다. 이번에 <code>core/data</code>가 실제로 만들어지면서 그
+약속을 지켰다 — Upbit 캔들 응답 스키마를 그대로 반영한 <code>CandleDict</code> TypedDict로
+구체화했다. 그리고 candles/ticker/orderbook 세 메서드를 다 구현하는
+<code>UpbitDataProvider</code>를 만들어서, <code>DataProvider</code> Protocol을 완전히 만족하는지
+<code>isinstance()</code>로 검사하는 테스트까지 추가했다(Protocol에
+<code>@runtime_checkable</code>을 붙이면 이게 가능해진다).</p>
+<p>인터페이스를 먼저 &ldquo;잠정&rdquo; 상태로 열어두고, 실제 구현이 나온 시점에 구체 타입으로
+조이는 순서가, 처음부터 완벽한 타입을 맞추려다 구현 세부사항을 억지로 끼워맞추는
+것보다 훨씬 자연스러웠다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>core/api</td>
+					<td>jwt_auth(서명) · rate_limiter(그룹별 토큰버킷) · upbit_api(시세/주문/자산 래퍼)</td>
+			</tr>
+			<tr>
+					<td>core/data</td>
+					<td>candles(경계검증+결측보간) · provider(DataProvider 확정 구현)</td>
+			</tr>
+			<tr>
+					<td>rate limit</td>
+					<td>candle/ticker/orderbook/market=10/s, default=30/s, <strong>order=8/s</strong>(가장 낮음)</td>
+			</tr>
+			<tr>
+					<td>테스트 전략</td>
+					<td>TDD RED-GREEN 전 구간, rate limiter는 가짜 시계로 실시간 대기 없이 검증</td>
+			</tr>
+			<tr>
+					<td>검증 결과</td>
+					<td>pytest 61 passed, lint-imports 0 broken, 레지스트리 스모크 통과</td>
+			</tr>
+	</tbody>
+</table>
+<p>이번 편의 교훈은 하나로 요약된다. <strong>시간에 의존하는 로직은 &ldquo;시간&quot;을 주입
+가능한 값으로 만들어두면, 실제로 기다리지 않고도 정확하게 테스트할 수 있다.</strong>
+<code>time.sleep</code>을 코드 안에 직접 박아두었다면, 이 rate limiter의 429/418 분기는
+평생 눈으로 로그만 보고 &ldquo;아마 맞겠지&quot;로 넘어갔을 것이다.</p>
+<p>로컬에서 전부 초록불을 켠 다음, 실제 OCI A1 서버에 올리고 진짜 Upbit 계좌에
+연결하는 과정에서 삽질을 두 번 했다 — 하나는 GitHub private 저장소 인증,
+하나는 Upbit 특유의 &ldquo;포켓&rdquo; 구조 때문에 생긴 것. 다음 글은 그 이야기다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-server-deploy-github-auth-pocket/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (3) — 서버에 올리며 겪은 두 번의 삽질</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

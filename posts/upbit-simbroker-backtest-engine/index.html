@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포">
+<meta name="description" content="백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진">
+  <meta property="og:description" content="백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-11T23:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-11T23:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진">
+  <meta name="twitter:description" content="백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진",
+      "item": "https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진",
+  "name": "자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진",
+  "description": "백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.",
+  "keywords": [
+    "설계", "배포"
+  ],
+  "articleBody": "들어가며 전략 이식이 끝나자 다음 단계는 백테스트였다. 실거래로 넘어가기 전에 “이 전략이 과거 데이터에서 어떻게 움직이는가\"를 확인해야 한다. 그런데 백테스트 코드를 따로 만들면 늘 같은 문제가 생긴다. 백테스트에서 검증한 코드와 실제로 도는 코드가 달라진다. 기존 KIS 쪽에서 “same-code” 원칙(검증과 운영이 같은 코드를 쓴다)을 세워 두었기 때문에, 이번에도 그 원칙을 그대로 승계했다.\n규모가 커서 바로 코드를 쓰지 않고 먼저 계획을 세웠다. 저장소 구조(레지스트리, 리스크, 설정)를 한 번 훑어 사실관계를 확인하고, 설계 초안을 만든 뒤 직접 검토·수정해 최종 계획을 확정했다. 그리고 엔진 골격(1단계)과 실데이터 수집·실행 스크립트(2단계)를 나누어 만들었다.\n1. 핵심 발견: 새로 만들 게 거의 없었다 운영 스케줄러의 단계 실행 함수는 이미 필요한 의존성(계좌 조회, 포지션 조회, 가격 조회, 주문 등)을 주입받는 구조로 일반화되어 있었다. 그렇다면 리플레이 엔진은 사이클 로직을 다시 구현할 필요가 없다. 가짜 증권사로 채운 의존성 묶음을 만들어서 같은 실행 함수를 시간 순서대로 반복 호출하면 된다.\n이 판단으로 설계가 단순해졌다.\n백테스트 전용 진입·청산 로직: 없음 (운영 코드 재사용) 새로 만드는 것: 가짜 증권사 쪽 부품들과 시간을 흘려보내는 드라이버 계좌·포지션·가격 조회 팩토리가 비공개(언더스코어) 함수였는데, 백테스트가 재사용할 공유 유틸리티로 이름만 공개로 바꿨다. 동작은 바꾸지 않은 순수한 이름 변경이다.\n2. 만든 부품 (TDD, 테스트 먼저) 부품 역할 인메모리 원장 거래소의 계좌 응답과 같은 모양으로 잔고를 흉내 낸다 가짜 주문 API 진입은 주문가(+슬리피지)로 체결, 청산은 운영과 같은 시세 원천을 콜백으로 받아 체결 데이터 제공자 과거 캔들을 운영의 캔들 제공자 인터페이스로 감싸 경계 검증과 빈 구간 채우기를 재사용 공포 게이트 재생 기존 순수 함수를 그대로 써서 게이트를 조립, 지수 조회에서 미래 항목은 제외 드라이버 리플레이 루프 오케스트레이션 리포트 수익 팩터, 낙폭, 승률, 국면별 분리 집계 청산 체결가를 운영과 같은 시세 원천에서 가져오게 한 이유가 있다. 원장의 잔고와 레지스트리의 손익 계산이 서로 다른 가격을 쓰면 두 숫자가 어긋난다. 운영에서 이미 겪은 종류의 불일치라서 처음부터 같은 출처로 묶었다.\n미래 데이터 누수 방지 가장 신경 쓴 부분은 룩어헤드(미래를 미리 보는 오류)였다. 새 4시간 창이 열린 시점에는 그 봉의 시가만 알 수 있다. 그래서 가장 최근 캔들은 “새 창의 시가\"만으로 합성하고, 고가·저가·종가는 숨긴다. 진입 판단이 아직 닫히지 않은 봉의 값을 보지 못하게 하는 장치다.\n봉 안에서의 손절 판정은 보수적으로 했다. 보유 포지션 전체를 저가 기준으로 먼저 확인하고, 살아남은 것만 고가 기준으로 다시 확인한다. 같은 봉 안에서 고가와 저가 중 무엇이 먼저였는지 알 수 없을 때, 불리한 쪽부터 가정하는 방식이다.\n3. import 규칙 검사기가 잡아낸 것 이 프로젝트는 의존 방향을 import 규칙 검사기로 강제한다. 코어는 전략 폴더를 import하면 안 된다. 드라이버는 전략 객체가 필요하지만, 호출자가 주입하게 하면 import 없이 해결된다.\n처음에는 타입 힌트만 쓰려고 TYPE_CHECKING 가드 안에서 전략 타입을 import했다. 실행 시점에는 import되지 않으니 괜찮다고 생각했다. 그런데 검사기는 조건부 import도 정적 분석 대상으로 보고 위반으로 잡았다. 실제로 실행해서 확인한 사실이다. 결국 타입 힌트를 Any로 바꿔 해소했다.\n작업 초반에는 반대 방향의 예방도 했다. 본격적으로 쓰기 전에 빈 스텁 파일로 “백테스트 → 스케줄러 → 전략” 같은 간접 경로가 기존 예외 설정으로 억제되는지 먼저 돌려 봤다. 구조 규칙은 코드를 다 쓴 뒤보다 뼈대 단계에서 확인하는 편이 되돌릴 일이 적다.\n4. 2단계: 실데이터 수집과 실행 스크립트 엔진이 있어도 먹일 데이터가 없으면 소용이 없다.\n과거 캔들 수집 모듈: 거래소 API의 to 파라미터로 한 페이지씩 과거로 거슬러 올라가며 다년치 4시간봉을 모은다. 페이지 경계의 캔들이 중복 조회되지 않게 한 봉 앞에서 끊고, 페이지마다 경계 검증을, 전체 수집 후 빈 구간 채우기를 적용한다. 로컬 JSON 캐시를 두어 같은 구간을 다시 받지 않는다. 운영 경로(최신 N개 조회)는 건드리지 않고 별도 모듈로 분리했다. 실행 스크립트: 실제 전략을 import해 드라이버를 조립하는 최상위 진입점이다. 저장소 루트에 두어서 import 규칙의 검사 범위 밖에 놓고, 코어가 전략을 모른다는 1단계 설계를 지켰다. 조립 로직은 main()에서 분리해 네트워크 없이 배선만 단위 테스트한다. 마켓 목록을 직접 지정하면 생존 편향이 생길 수 있다는 점은 사용 설명에 명시했다. 공포 게이트의 기여도를 보는 옵션도 넣었다. 게이트를 켠 실행과 변동성 단독 실행을 두 번 돌려 차이를 비교하는 단순한 방식이다. 개별 후보를 반사실로 재현하는 복잡한 구현은 하지 않았다. 정리 단계 결과 1단계 운영 실행 경로에 가짜 증권사를 끼우는 리플레이 엔진, 신규 테스트 29건 2단계 과거 캔들 수집·캐시, 실행 스크립트, 신규 테스트 9건 배운 점: 백테스트 엔진을 만들 때 가장 값진 결정은 “무엇을 새로 만들까\"가 아니라 “무엇을 만들지 않을까\"였다. 운영 코드가 이미 의존성 주입 구조라서 엔진은 얇은 어댑터 몇 개로 끝났고, 검증과 운영이 같은 코드를 쓴다는 보장도 구조적으로 얻었다. 그리고 구조 규칙 검사는 조건부 import까지 본다는 것을 기억해 둘 만하다. 다음 글에서는 이 엔진으로 첫 전략을 실제로 재생해 보고 엔진 자체의 버그를 발견한 이야기를 다룬다.\n",
+  "wordCount" : "2135",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-11T23:00:00+09:00",
+  "dateModified": "2026-07-11T23:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진
+    </h1>
+    <div class="post-description">
+      백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-11T23:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ed%95%b5%ec%8b%ac-%eb%b0%9c%ea%b2%ac-%ec%83%88%eb%a1%9c-%eb%a7%8c%eb%93%a4-%ea%b2%8c-%ea%b1%b0%ec%9d%98-%ec%97%86%ec%97%88%eb%8b%a4" aria-label="1. 핵심 발견: 새로 만들 게 거의 없었다">1. 핵심 발견: 새로 만들 게 거의 없었다</a></li>
+            <li>
+                <a href="#2-%eb%a7%8c%eb%93%a0-%eb%b6%80%ed%92%88-tdd-%ed%85%8c%ec%8a%a4%ed%8a%b8-%eb%a8%bc%ec%a0%80" aria-label="2. 만든 부품 (TDD, 테스트 먼저)">2. 만든 부품 (TDD, 테스트 먼저)</a><ul>
+                    
+            <li>
+                <a href="#%eb%af%b8%eb%9e%98-%eb%8d%b0%ec%9d%b4%ed%84%b0-%eb%88%84%ec%88%98-%eb%b0%a9%ec%a7%80" aria-label="미래 데이터 누수 방지">미래 데이터 누수 방지</a></li></ul>
+            </li>
+            <li>
+                <a href="#3-import-%ea%b7%9c%ec%b9%99-%ea%b2%80%ec%82%ac%ea%b8%b0%ea%b0%80-%ec%9e%a1%ec%95%84%eb%82%b8-%ea%b2%83" aria-label="3. import 규칙 검사기가 잡아낸 것">3. import 규칙 검사기가 잡아낸 것</a></li>
+            <li>
+                <a href="#4-2%eb%8b%a8%ea%b3%84-%ec%8b%a4%eb%8d%b0%ec%9d%b4%ed%84%b0-%ec%88%98%ec%a7%91%ea%b3%bc-%ec%8b%a4%ed%96%89-%ec%8a%a4%ed%81%ac%eb%a6%bd%ed%8a%b8" aria-label="4. 2단계: 실데이터 수집과 실행 스크립트">4. 2단계: 실데이터 수집과 실행 스크립트</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>전략 이식이 끝나자 다음 단계는 백테스트였다. 실거래로 넘어가기 전에 &ldquo;이 전략이 과거 데이터에서 어떻게 움직이는가&quot;를 확인해야 한다. 그런데 백테스트 코드를 따로 만들면 늘 같은 문제가 생긴다. <strong>백테스트에서 검증한 코드와 실제로 도는 코드가 달라진다.</strong> 기존 KIS 쪽에서 &ldquo;same-code&rdquo; 원칙(검증과 운영이 같은 코드를 쓴다)을 세워 두었기 때문에, 이번에도 그 원칙을 그대로 승계했다.</p>
+<p>규모가 커서 바로 코드를 쓰지 않고 먼저 계획을 세웠다. 저장소 구조(레지스트리, 리스크, 설정)를 한 번 훑어 사실관계를 확인하고, 설계 초안을 만든 뒤 직접 검토·수정해 최종 계획을 확정했다. 그리고 엔진 골격(1단계)과 실데이터 수집·실행 스크립트(2단계)를 나누어 만들었다.</p>
+<hr>
+<h2 id="1-핵심-발견-새로-만들-게-거의-없었다">1. 핵심 발견: 새로 만들 게 거의 없었다<a hidden class="anchor" aria-hidden="true" href="#1-핵심-발견-새로-만들-게-거의-없었다">#</a></h2>
+<p>운영 스케줄러의 단계 실행 함수는 이미 필요한 의존성(계좌 조회, 포지션 조회, 가격 조회, 주문 등)을 <strong>주입받는 구조</strong>로 일반화되어 있었다. 그렇다면 리플레이 엔진은 사이클 로직을 다시 구현할 필요가 없다. 가짜 증권사로 채운 의존성 묶음을 만들어서 같은 실행 함수를 시간 순서대로 반복 호출하면 된다.</p>
+<p>이 판단으로 설계가 단순해졌다.</p>
+<ul>
+<li>백테스트 전용 진입·청산 로직: <strong>없음</strong> (운영 코드 재사용)</li>
+<li>새로 만드는 것: 가짜 증권사 쪽 부품들과 시간을 흘려보내는 드라이버</li>
+</ul>
+<p>계좌·포지션·가격 조회 팩토리가 비공개(언더스코어) 함수였는데, 백테스트가 재사용할 공유 유틸리티로 이름만 공개로 바꿨다. 동작은 바꾸지 않은 순수한 이름 변경이다.</p>
+<hr>
+<h2 id="2-만든-부품-tdd-테스트-먼저">2. 만든 부품 (TDD, 테스트 먼저)<a hidden class="anchor" aria-hidden="true" href="#2-만든-부품-tdd-테스트-먼저">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>부품</th>
+					<th>역할</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>인메모리 원장</td>
+					<td>거래소의 계좌 응답과 같은 모양으로 잔고를 흉내 낸다</td>
+			</tr>
+			<tr>
+					<td>가짜 주문 API</td>
+					<td>진입은 주문가(+슬리피지)로 체결, 청산은 운영과 같은 시세 원천을 콜백으로 받아 체결</td>
+			</tr>
+			<tr>
+					<td>데이터 제공자</td>
+					<td>과거 캔들을 운영의 캔들 제공자 인터페이스로 감싸 경계 검증과 빈 구간 채우기를 재사용</td>
+			</tr>
+			<tr>
+					<td>공포 게이트 재생</td>
+					<td>기존 순수 함수를 그대로 써서 게이트를 조립, 지수 조회에서 미래 항목은 제외</td>
+			</tr>
+			<tr>
+					<td>드라이버</td>
+					<td>리플레이 루프 오케스트레이션</td>
+			</tr>
+			<tr>
+					<td>리포트</td>
+					<td>수익 팩터, 낙폭, 승률, 국면별 분리 집계</td>
+			</tr>
+	</tbody>
+</table>
+<p>청산 체결가를 운영과 같은 시세 원천에서 가져오게 한 이유가 있다. 원장의 잔고와 레지스트리의 손익 계산이 서로 다른 가격을 쓰면 두 숫자가 어긋난다. 운영에서 이미 겪은 종류의 불일치라서 처음부터 같은 출처로 묶었다.</p>
+<h3 id="미래-데이터-누수-방지">미래 데이터 누수 방지<a hidden class="anchor" aria-hidden="true" href="#미래-데이터-누수-방지">#</a></h3>
+<p>가장 신경 쓴 부분은 룩어헤드(미래를 미리 보는 오류)였다. 새 4시간 창이 열린 시점에는 그 봉의 <strong>시가만</strong> 알 수 있다. 그래서 가장 최근 캔들은 &ldquo;새 창의 시가&quot;만으로 합성하고, 고가·저가·종가는 숨긴다. 진입 판단이 아직 닫히지 않은 봉의 값을 보지 못하게 하는 장치다.</p>
+<p>봉 안에서의 손절 판정은 보수적으로 했다. 보유 포지션 전체를 저가 기준으로 먼저 확인하고, 살아남은 것만 고가 기준으로 다시 확인한다. 같은 봉 안에서 고가와 저가 중 무엇이 먼저였는지 알 수 없을 때, 불리한 쪽부터 가정하는 방식이다.</p>
+<hr>
+<h2 id="3-import-규칙-검사기가-잡아낸-것">3. import 규칙 검사기가 잡아낸 것<a hidden class="anchor" aria-hidden="true" href="#3-import-규칙-검사기가-잡아낸-것">#</a></h2>
+<p>이 프로젝트는 의존 방향을 import 규칙 검사기로 강제한다. 코어는 전략 폴더를 import하면 안 된다. 드라이버는 전략 객체가 필요하지만, 호출자가 주입하게 하면 import 없이 해결된다.</p>
+<p>처음에는 타입 힌트만 쓰려고 <code>TYPE_CHECKING</code> 가드 안에서 전략 타입을 import했다. 실행 시점에는 import되지 않으니 괜찮다고 생각했다. 그런데 검사기는 <strong>조건부 import도 정적 분석 대상</strong>으로 보고 위반으로 잡았다. 실제로 실행해서 확인한 사실이다. 결국 타입 힌트를 <code>Any</code>로 바꿔 해소했다.</p>
+<p>작업 초반에는 반대 방향의 예방도 했다. 본격적으로 쓰기 전에 빈 스텁 파일로 &ldquo;백테스트 → 스케줄러 → 전략&rdquo; 같은 간접 경로가 기존 예외 설정으로 억제되는지 먼저 돌려 봤다. 구조 규칙은 코드를 다 쓴 뒤보다 <strong>뼈대 단계에서 확인</strong>하는 편이 되돌릴 일이 적다.</p>
+<hr>
+<h2 id="4-2단계-실데이터-수집과-실행-스크립트">4. 2단계: 실데이터 수집과 실행 스크립트<a hidden class="anchor" aria-hidden="true" href="#4-2단계-실데이터-수집과-실행-스크립트">#</a></h2>
+<p>엔진이 있어도 먹일 데이터가 없으면 소용이 없다.</p>
+<ul>
+<li><strong>과거 캔들 수집 모듈</strong>: 거래소 API의 <code>to</code> 파라미터로 한 페이지씩 과거로 거슬러 올라가며 다년치 4시간봉을 모은다. 페이지 경계의 캔들이 중복 조회되지 않게 한 봉 앞에서 끊고, 페이지마다 경계 검증을, 전체 수집 후 빈 구간 채우기를 적용한다. 로컬 JSON 캐시를 두어 같은 구간을 다시 받지 않는다. 운영 경로(최신 N개 조회)는 건드리지 않고 별도 모듈로 분리했다.</li>
+<li><strong>실행 스크립트</strong>: 실제 전략을 import해 드라이버를 조립하는 최상위 진입점이다. 저장소 루트에 두어서 import 규칙의 검사 범위 밖에 놓고, 코어가 전략을 모른다는 1단계 설계를 지켰다. 조립 로직은 <code>main()</code>에서 분리해 네트워크 없이 배선만 단위 테스트한다. 마켓 목록을 직접 지정하면 생존 편향이 생길 수 있다는 점은 사용 설명에 명시했다.</li>
+<li>공포 게이트의 기여도를 보는 옵션도 넣었다. 게이트를 켠 실행과 변동성 단독 실행을 두 번 돌려 차이를 비교하는 단순한 방식이다. 개별 후보를 반사실로 재현하는 복잡한 구현은 하지 않았다.</li>
+</ul>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>단계</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1단계</td>
+					<td>운영 실행 경로에 가짜 증권사를 끼우는 리플레이 엔진, 신규 테스트 29건</td>
+			</tr>
+			<tr>
+					<td>2단계</td>
+					<td>과거 캔들 수집·캐시, 실행 스크립트, 신규 테스트 9건</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 백테스트 엔진을 만들 때 가장 값진 결정은 &ldquo;무엇을 새로 만들까&quot;가 아니라 &ldquo;무엇을 만들지 않을까&quot;였다. 운영 코드가 이미 의존성 주입 구조라서 엔진은 얇은 어댑터 몇 개로 끝났고, 검증과 운영이 같은 코드를 쓴다는 보장도 구조적으로 얻었다. 그리고 구조 규칙 검사는 조건부 import까지 본다는 것을 기억해 둘 만하다. 다음 글에서는 이 엔진으로 첫 전략을 실제로 재생해 보고 엔진 자체의 버그를 발견한 이야기를 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-live-readiness-gaps-and-post-launch-check/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (5) — 실거래 개시 전 운영 공백을 메우고, 개시 후 첫 로그를 점검하다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

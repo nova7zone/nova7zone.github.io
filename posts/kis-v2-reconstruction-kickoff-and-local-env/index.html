@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설정, 설계">
+<meta name="description" content="기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축">
+  <meta property="og:description" content="기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-07T10:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-07T10:00:00+09:00">
+    <meta property="article:tag" content="설정">
+    <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축">
+  <meta name="twitter:description" content="기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축",
+      "item": "https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축",
+  "name": "자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축",
+  "description": "기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code + Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.",
+  "keywords": [
+    "설정", "설계"
+  ],
+  "articleBody": "작성일: 2026년 7월 7일 최종 수정: 2026년 7월 7일 분야: AI Trading, DevOps 난이도: Beginner ~ Intermediate 상태: In Progress\n들어가며 kis-auto-trading-bot(기존 저장소)은 v0.7.1까지 잘 굴러가고 있었다. 문제는 코드가 아니라 구조였다. strategy_v3가 strategy_v2의 position_registry·daily_reeval·fear_filter 같은 내부 모듈을 그대로 가져다 썼고, v3를 붙이려고 v2 파일을 직접 고쳐야 했다. 공유 코어 계층이 따로 없다 보니 먼저 만든 전략이 사실상 코어 노릇을 하고 있었던 셈이다. 다음에 v4를 붙이면 이 문제가 한 번 더 반복될 게 뻔했다.\n그래서 전략 무관 인프라(core/)와 전략 로직(strategies/)을 명시적으로 분리한 새 저장소 kis-auto-trading을 시작하기로 했다. 기존 저장소는 계속 운영하면서, 이 저장소에서 병행 구축하고 검증되면 전환하는 방식이다. 설계 문서(ARCHITECTURE·CORE_EXTRACTION_MAP·BACKTEST_VALIDATION 등)와 골격, 프로젝트 스킬 4종은 이미 준비돼 있었다.\n오늘은 코드를 한 줄도 짜지 않았다. 대신 로컬 개발 환경부터 다졌다 — 사소해 보이지만, 이런 걸 나중으로 미루면 항상 코드 문제보다 디버깅하기 성가신 방식으로 발목을 잡는다.\n왜 dev container 밖으로 나왔나 지금까지 코드 생성은 전부 dev container(python:3.11-bookworm 이미지) 안에서 했다. 이번엔 VS Code + Claude Code 플러그인으로 로컬 Windows에서 컨테이너 없이 바로 작업할 수 있는 환경을 병행 구성하기로 했다. devcontainer.json은 그대로 두고, 로컬 환경은 별도로 갖추는 방향이다.\n문제는 로컬 Windows에는 지금까지 아무것도 없었다는 것 — Python도, git 초기화도, VS Code 설정도. 이걸 한 번에 처리하는 setup_local_env.bat을 만들었다.\nsetup_local_env.bat — 세 번 고쳐 쓴 배치 파일 첫 버전은 한글 주석 + chcp 65001 + 여러 줄짜리 괄호 블록(if (...), for ... do (...)) 조합으로 짰다가 그대로 터졌다. cmd.exe가 명령어 토큰을 엉뚱하게 쪼개서 errorlevel, python -m 같은 멀쩡한 줄까지 “내부 또는 외부 명령이 아닙니다” 에러를 냈다. 한글을 전부 영문으로 바꾸고 다시 돌렸더니 이번엔 다른 지점에서 - 은(는) 예상되지 않았습니다 에러가 났다 — 원인은 한글이 아니라 여러 줄에 걸친 괄호 블록 자체였다. 결국 모든 분기를 if ... goto label 한 줄짜리로만 쓰고 :label로 흐름을 나누는 flat goto 스타일로 전면 재작성하고서야 안정됐다.\nPython 버전 탐지도 한 번에 되지 않았다. py -0로 확인해보니 PATH의 기본 python은 3.14.5였고, 3.11.15는 uv(Astral)로 설치돼 있었다 — py 런처에 Astral\\CPython3.11.15라는 회사 태그로 등록돼 있어서 py -3.11 단축 호출로는 못 찾았다. 게다가 이 신형 py 런처는 해당 버전이 없을 때 “No runtime installed” 메시지를 찍으면서도 종료 코드는 0을 반환해서, errorlevel 기반 감지 로직이 조용히 오탐했다(3.11을 못 찾았는데 찾았다고 착각). 최종적으로는 uv 설치 경로(%APPDATA%\\uv\\python\\cpython-3.11*-windows-x86_64-none\\python.exe)를 직접 찾는 방식을 우선으로 두고, py -3.11은 출력 텍스트를 findstr로 검증하는 보조 수단으로만 남겼다.\n마지막 함정은 requirements-dev.txt였다. 이 파일의 한글 주석과 em-dash(—)가 Windows(cp949 로케일)에서 pip 24.0의 auto_decode를 UnicodeDecodeError로 깨뜨렸다 — devcontainer는 Linux UTF-8 로케일이라 지금까지 아무도 이 버그를 못 봤다. 주석을 전부 ASCII로 바꾸고서야 해결됐다. 운영 환경과 로케일이 다른 곳에서 처음 셋업할 때만 드러나는 종류의 버그였다.\n세 번의 삽질 끝에 setup_local_env.bat 하나로 git init·venv·pip install -r requirements-dev.txt·pre-commit install·.vscode 설정 생성·검증(lint-imports/pytest/import 스모크)까지 멱등하게(재실행해도 안전하게) 처리하게 됐다. venv는 최종적으로 Python 3.11.15로 맞췄다 — 운영 OCI 서버가 3.11.0rc1(정식 릴리스가 아닌 release candidate)이라는 것도 이번에 처음 확인했는데, rc1 자체를 다시 받긴 어려우니 3.11 계열 안정판으로 맞추고 OCI 업그레이드는 별도 과제로 미뤄뒀다.\n.claude/settings.json — 권한 규칙 세팅 Claude Code 플러그인의 권한을 프로젝트 단위로 고정해뒀다. 매매 봇 저장소라 시크릿 유출·의도치 않은 파괴적 명령에 특히 보수적으로 잡았다.\nallow (조회성, 항상 통과): git status/diff/log/show/branch, pytest, lint-imports, pre-commit run, pip list/show/freeze ask (매번 확인): git add/commit/push, pip install, python -m venv, 그리고 runner.py 실행 — 이건 나중에 실제 주문을 넣는 진입점이 될 거라 자동 허용하지 않기로 했다 deny (차단): .env/secrets//*.key/*.pem 읽기, curl/wget(네트워크 유출 경로), git push --force*, rm -rf * 세션 브릿지가 파일을 잘라 보여준 소동 문서 몇 개를 정리하던 중 git diff --stat이 손도 안 댄 파일들(README.md, ARCHITECTURE.md 등)까지 원본보다 훨씬 작게 나오고, .gitignore 끝에는 null 바이트까지 붙어 보였다. 처음엔 실제 데이터 손실을 의심해서 작업을 멈췄다. 로컬 PowerShell에서 Get-Content -Raw로 길이를 재고 Select-String으로 파일 앞뒤 마커 문자열이 다 남아있는지 직접 확인시켜보니, 실제 디스크 파일은 전부 멀쩡했다 — 잘려 보인 건 원격 작업 세션의 읽기 브릿지가 캐시 과정에서 파일을 불완전하게 돌려준 것뿐이었다.\n교훈은 단순하다: 의심스러운 diff를 보면 겁먹고 바로 “복구\"에 들어가지 말고, 항상 로컬에서 직접 한 번 더 확인할 것. 자동화된 복구 시도가 오히려 진짜 손상을 만들 수 있다.\n문서 규약 추가 작업 중 산출물을 정리할 곳도 정했다. docs/development/build-docs/(코드리뷰·분석 등 1회성 산출물), work-log.md(세션별 기록), next-tasks.md(다음 할 일, 완료 항목은 [x]로 표시), blog-drafts/(이 글처럼 블로그 초안). 프로젝트 스킬(doc-sync, kis-trading-dev)에도 work-log.md뿐 아니라 next-tasks.md도 매 세션 종료 시 함께 갱신하도록 절차를 반영해뒀다 — 안 그러면 next-tasks.md만 금방 낡은 문서가 될 게 뻔했다.\n정리 항목 내용 새 저장소 kis-auto-trading — core/strategies 분리 재구성, git init + 초기 커밋(78b798e) 로컬 환경 setup_local_env.bat(멱등), venv Python 3.11.15(uv 관리), pre-commit 훅 발견한 버그 3건 cmd.exe 괄호블록 파싱, uv 태그 때문에 py -3.11 오탐, cp949 로케일이 pip 요구사항 파일을 깨뜨림 권한 설정 .claude/settings.json — git/pytest/lint-imports는 allow, add/commit/push·runner.py는 ask, secrets/curl/rm -rf는 deny 문서 규약 build-docs/·work-log.md·next-tasks.md·blog-drafts/ 신설, 커밋 dcd0e2a 다음 글은 next-tasks.md의 첫 항목 — core/api·accounts·data·indicators·registry 이식 착수를 다룰 예정이다. 기존 저장소를 read-only oracle로 두고, 동작을 재작성하지 않고 그대로 옮기는 작업이라 지금까지와는 결이 다른 조심스러움이 필요할 것 같다.\n",
+  "wordCount" : "2871",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-07T10:00:00+09:00",
+  "dateModified": "2026-07-07T10:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축
+    </h1>
+    <div class="post-description">
+      기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-07T10:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#%ec%99%9c-dev-container-%eb%b0%96%ec%9c%bc%eb%a1%9c-%eb%82%98%ec%99%94%eb%82%98" aria-label="왜 dev container 밖으로 나왔나">왜 dev container 밖으로 나왔나</a></li>
+            <li>
+                <a href="#setup_local_envbat--%ec%84%b8-%eb%b2%88-%ea%b3%a0%ec%b3%90-%ec%93%b4-%eb%b0%b0%ec%b9%98-%ed%8c%8c%ec%9d%bc" aria-label="setup_local_env.bat — 세 번 고쳐 쓴 배치 파일">setup_local_env.bat — 세 번 고쳐 쓴 배치 파일</a></li>
+            <li>
+                <a href="#claudesettingsjson--%ea%b6%8c%ed%95%9c-%ea%b7%9c%ec%b9%99-%ec%84%b8%ed%8c%85" aria-label=".claude/settings.json — 권한 규칙 세팅">.claude/settings.json — 권한 규칙 세팅</a></li>
+            <li>
+                <a href="#%ec%84%b8%ec%85%98-%eb%b8%8c%eb%a6%bf%ec%a7%80%ea%b0%80-%ed%8c%8c%ec%9d%bc%ec%9d%84-%ec%9e%98%eb%9d%bc-%eb%b3%b4%ec%97%ac%ec%a4%80-%ec%86%8c%eb%8f%99" aria-label="세션 브릿지가 파일을 잘라 보여준 소동">세션 브릿지가 파일을 잘라 보여준 소동</a></li>
+            <li>
+                <a href="#%eb%ac%b8%ec%84%9c-%ea%b7%9c%ec%95%bd-%ec%b6%94%ea%b0%80" aria-label="문서 규약 추가">문서 규약 추가</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 7일
+<strong>최종 수정</strong>: 2026년 7월 7일
+<strong>분야</strong>: AI Trading, DevOps
+<strong>난이도</strong>: Beginner ~ Intermediate
+<strong>상태</strong>: In Progress</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><code>kis-auto-trading-bot</code>(기존 저장소)은 v0.7.1까지 잘 굴러가고 있었다. 문제는 코드가 아니라 구조였다. <code>strategy_v3</code>가 <code>strategy_v2</code>의 <code>position_registry</code>·<code>daily_reeval</code>·<code>fear_filter</code> 같은 내부 모듈을 그대로 가져다 썼고, v3를 붙이려고 v2 파일을 직접 고쳐야 했다. 공유 코어 계층이 따로 없다 보니 먼저 만든 전략이 사실상 코어 노릇을 하고 있었던 셈이다. 다음에 v4를 붙이면 이 문제가 한 번 더 반복될 게 뻔했다.</p>
+<p>그래서 전략 무관 인프라(<code>core/</code>)와 전략 로직(<code>strategies/</code>)을 명시적으로 분리한 새 저장소 <code>kis-auto-trading</code>을 시작하기로 했다. 기존 저장소는 계속 운영하면서, 이 저장소에서 병행 구축하고 검증되면 전환하는 방식이다. 설계 문서(ARCHITECTURE·CORE_EXTRACTION_MAP·BACKTEST_VALIDATION 등)와 골격, 프로젝트 스킬 4종은 이미 준비돼 있었다.</p>
+<p>오늘은 코드를 한 줄도 짜지 않았다. 대신 로컬 개발 환경부터 다졌다 — 사소해 보이지만, 이런 걸 나중으로 미루면 항상 코드 문제보다 디버깅하기 성가신 방식으로 발목을 잡는다.</p>
+<hr>
+<h2 id="왜-dev-container-밖으로-나왔나">왜 dev container 밖으로 나왔나<a hidden class="anchor" aria-hidden="true" href="#왜-dev-container-밖으로-나왔나">#</a></h2>
+<p>지금까지 코드 생성은 전부 dev container(<code>python:3.11-bookworm</code> 이미지) 안에서 했다. 이번엔 VS Code + Claude Code 플러그인으로 로컬 Windows에서 컨테이너 없이 바로 작업할 수 있는 환경을 병행 구성하기로 했다. <code>devcontainer.json</code>은 그대로 두고, 로컬 환경은 별도로 갖추는 방향이다.</p>
+<p>문제는 로컬 Windows에는 지금까지 아무것도 없었다는 것 — Python도, git 초기화도, VS Code 설정도. 이걸 한 번에 처리하는 <code>setup_local_env.bat</code>을 만들었다.</p>
+<h2 id="setup_local_envbat--세-번-고쳐-쓴-배치-파일">setup_local_env.bat — 세 번 고쳐 쓴 배치 파일<a hidden class="anchor" aria-hidden="true" href="#setup_local_envbat--세-번-고쳐-쓴-배치-파일">#</a></h2>
+<p>첫 버전은 한글 주석 + <code>chcp 65001</code> + 여러 줄짜리 괄호 블록(<code>if (...)</code>, <code>for ... do (...)</code>) 조합으로 짰다가 그대로 터졌다. cmd.exe가 명령어 토큰을 엉뚱하게 쪼개서 <code>errorlevel</code>, <code>python -m</code> 같은 멀쩡한 줄까지 &ldquo;내부 또는 외부 명령이 아닙니다&rdquo; 에러를 냈다. 한글을 전부 영문으로 바꾸고 다시 돌렸더니 이번엔 다른 지점에서 <code>- 은(는) 예상되지 않았습니다</code> 에러가 났다 — 원인은 한글이 아니라 <strong>여러 줄에 걸친 괄호 블록 자체</strong>였다. 결국 모든 분기를 <code>if ... goto label</code> 한 줄짜리로만 쓰고 <code>:label</code>로 흐름을 나누는 flat goto 스타일로 전면 재작성하고서야 안정됐다.</p>
+<p>Python 버전 탐지도 한 번에 되지 않았다. <code>py -0</code>로 확인해보니 PATH의 기본 <code>python</code>은 3.14.5였고, 3.11.15는 <strong>uv(Astral)로 설치</strong>돼 있었다 — <code>py</code> 런처에 <code>Astral\CPython3.11.15</code>라는 회사 태그로 등록돼 있어서 <code>py -3.11</code> 단축 호출로는 못 찾았다. 게다가 이 신형 <code>py</code> 런처는 해당 버전이 없을 때 &ldquo;No runtime installed&rdquo; 메시지를 찍으면서도 종료 코드는 0을 반환해서, <code>errorlevel</code> 기반 감지 로직이 조용히 오탐했다(3.11을 못 찾았는데 찾았다고 착각). 최종적으로는 uv 설치 경로(<code>%APPDATA%\uv\python\cpython-3.11*-windows-x86_64-none\python.exe</code>)를 직접 찾는 방식을 우선으로 두고, <code>py -3.11</code>은 출력 텍스트를 <code>findstr</code>로 검증하는 보조 수단으로만 남겼다.</p>
+<p>마지막 함정은 <code>requirements-dev.txt</code>였다. 이 파일의 한글 주석과 em-dash(—)가 Windows(cp949 로케일)에서 pip 24.0의 <code>auto_decode</code>를 <code>UnicodeDecodeError</code>로 깨뜨렸다 — devcontainer는 Linux UTF-8 로케일이라 지금까지 아무도 이 버그를 못 봤다. 주석을 전부 ASCII로 바꾸고서야 해결됐다. 운영 환경과 로케일이 다른 곳에서 처음 셋업할 때만 드러나는 종류의 버그였다.</p>
+<p>세 번의 삽질 끝에 <code>setup_local_env.bat</code> 하나로 git init·venv·<code>pip install -r requirements-dev.txt</code>·<code>pre-commit install</code>·<code>.vscode</code> 설정 생성·검증(<code>lint-imports</code>/<code>pytest</code>/import 스모크)까지 멱등하게(재실행해도 안전하게) 처리하게 됐다. venv는 최종적으로 Python 3.11.15로 맞췄다 — 운영 OCI 서버가 3.11.0rc1(정식 릴리스가 아닌 release candidate)이라는 것도 이번에 처음 확인했는데, rc1 자체를 다시 받긴 어려우니 3.11 계열 안정판으로 맞추고 OCI 업그레이드는 별도 과제로 미뤄뒀다.</p>
+<hr>
+<h2 id="claudesettingsjson--권한-규칙-세팅">.claude/settings.json — 권한 규칙 세팅<a hidden class="anchor" aria-hidden="true" href="#claudesettingsjson--권한-규칙-세팅">#</a></h2>
+<p>Claude Code 플러그인의 권한을 프로젝트 단위로 고정해뒀다. 매매 봇 저장소라 시크릿 유출·의도치 않은 파괴적 명령에 특히 보수적으로 잡았다.</p>
+<ul>
+<li><strong>allow</strong> (조회성, 항상 통과): <code>git status/diff/log/show/branch</code>, <code>pytest</code>, <code>lint-imports</code>, <code>pre-commit run</code>, <code>pip list/show/freeze</code></li>
+<li><strong>ask</strong> (매번 확인): <code>git add/commit/push</code>, <code>pip install</code>, <code>python -m venv</code>, 그리고 <code>runner.py</code> 실행 — 이건 나중에 실제 주문을 넣는 진입점이 될 거라 자동 허용하지 않기로 했다</li>
+<li><strong>deny</strong> (차단): <code>.env</code>/<code>secrets/</code>/<code>*.key</code>/<code>*.pem</code> 읽기, <code>curl</code>/<code>wget</code>(네트워크 유출 경로), <code>git push --force*</code>, <code>rm -rf *</code></li>
+</ul>
+<h2 id="세션-브릿지가-파일을-잘라-보여준-소동">세션 브릿지가 파일을 잘라 보여준 소동<a hidden class="anchor" aria-hidden="true" href="#세션-브릿지가-파일을-잘라-보여준-소동">#</a></h2>
+<p>문서 몇 개를 정리하던 중 <code>git diff --stat</code>이 손도 안 댄 파일들(<code>README.md</code>, <code>ARCHITECTURE.md</code> 등)까지 원본보다 훨씬 작게 나오고, <code>.gitignore</code> 끝에는 null 바이트까지 붙어 보였다. 처음엔 실제 데이터 손실을 의심해서 작업을 멈췄다. 로컬 PowerShell에서 <code>Get-Content -Raw</code>로 길이를 재고 <code>Select-String</code>으로 파일 앞뒤 마커 문자열이 다 남아있는지 직접 확인시켜보니, 실제 디스크 파일은 전부 멀쩡했다 — 잘려 보인 건 원격 작업 세션의 읽기 브릿지가 캐시 과정에서 파일을 불완전하게 돌려준 것뿐이었다.</p>
+<p>교훈은 단순하다: 의심스러운 diff를 보면 겁먹고 바로 &ldquo;복구&quot;에 들어가지 말고, 항상 로컬에서 직접 한 번 더 확인할 것. 자동화된 복구 시도가 오히려 진짜 손상을 만들 수 있다.</p>
+<hr>
+<h2 id="문서-규약-추가">문서 규약 추가<a hidden class="anchor" aria-hidden="true" href="#문서-규약-추가">#</a></h2>
+<p>작업 중 산출물을 정리할 곳도 정했다. <code>docs/development/build-docs/</code>(코드리뷰·분석 등 1회성 산출물), <code>work-log.md</code>(세션별 기록), <code>next-tasks.md</code>(다음 할 일, 완료 항목은 <code>[x]</code>로 표시), <code>blog-drafts/</code>(이 글처럼 블로그 초안). 프로젝트 스킬(<code>doc-sync</code>, <code>kis-trading-dev</code>)에도 <code>work-log.md</code>뿐 아니라 <code>next-tasks.md</code>도 매 세션 종료 시 함께 갱신하도록 절차를 반영해뒀다 — 안 그러면 next-tasks.md만 금방 낡은 문서가 될 게 뻔했다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>새 저장소</td>
+					<td><code>kis-auto-trading</code> — core/strategies 분리 재구성, git init + 초기 커밋(<code>78b798e</code>)</td>
+			</tr>
+			<tr>
+					<td>로컬 환경</td>
+					<td><code>setup_local_env.bat</code>(멱등), venv Python 3.11.15(uv 관리), pre-commit 훅</td>
+			</tr>
+			<tr>
+					<td>발견한 버그 3건</td>
+					<td>cmd.exe 괄호블록 파싱, uv 태그 때문에 <code>py -3.11</code> 오탐, cp949 로케일이 pip 요구사항 파일을 깨뜨림</td>
+			</tr>
+			<tr>
+					<td>권한 설정</td>
+					<td><code>.claude/settings.json</code> — git/pytest/lint-imports는 allow, add/commit/push·runner.py는 ask, secrets/curl/rm -rf는 deny</td>
+			</tr>
+			<tr>
+					<td>문서 규약</td>
+					<td><code>build-docs/</code>·<code>work-log.md</code>·<code>next-tasks.md</code>·<code>blog-drafts/</code> 신설, 커밋 <code>dcd0e2a</code></td>
+			</tr>
+	</tbody>
+</table>
+<p>다음 글은 <code>next-tasks.md</code>의 첫 항목 — <code>core/api·accounts·data·indicators·registry</code> 이식 착수를 다룰 예정이다. 기존 저장소를 read-only oracle로 두고, 동작을 재작성하지 않고 그대로 옮기는 작업이라 지금까지와는 결이 다른 조심스러움이 필요할 것 같다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 코드 개발 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

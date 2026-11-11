@@ -10,7 +10,7 @@
 <meta name="description" content="매도 주문 하나가 29시간 동안 40회나 취소 시도만 반복하던 좀비 주문 사고를 추적해, qty_before 캡처를 API 재조회 대신 로컬 holdings 기반으로 바꾸고 cancel_order 응답을 3-state로 구분해 재시도해도 해소되지 않는 케이스를 걸러낸 과정을 정리한다.">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/posts/sell-qty-before-local-holdings-and-cancel-order-3state/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.5a385ef0bceefb6b490abe4342de754d3174fddddd99a021dffa4b1d7a206b2d.css" integrity="sha256-Wjhe8Lzu&#43;2tJCr5DQt51TTF0/d3dmaAh3/pLHXogay0=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -100,13 +100,13 @@
     <meta property="article:published_time" content="2026-06-25T17:00:00+09:00">
     <meta property="article:modified_time" content="2026-06-25T17:00:00+09:00">
     <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/missing-stock-names-and-premarket-schedule/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/krx-401-and-market-filter-incomplete-candle/">
       <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
       <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
       <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
       <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="자동매매 코드 개발 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고">

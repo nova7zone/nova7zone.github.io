@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>자동매매 Bot 전환 및 개발 · KIS on Evan&#39;s Blog</title>
+    <link>https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-bot-%EC%A0%84%ED%99%98-%EB%B0%8F-%EA%B0%9C%EB%B0%9C--kis/</link>
+    <description>Recent content in 자동매매 Bot 전환 및 개발 · KIS on Evan&#39;s Blog</description>
+    <generator>Hugo</generator>
+    <language>ko-KR</language>
+    <lastBuildDate>Sat, 11 Jul 2026 20:00:00 +0900</lastBuildDate>
+    <atom:link href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-bot-%EC%A0%84%ED%99%98-%EB%B0%8F-%EA%B0%9C%EB%B0%9C--kis/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다</title>
+      <link>https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/</link>
+      <pubDate>Sat, 11 Jul 2026 20:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/</guid>
+      <description>코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.</description>
+    </item>
+    <item>
+      <title>자동매매 Bot 전환 및 개발 · KIS (3) — superpowers 플러그인을 통째로 도입하지 않은 이유</title>
+      <link>https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/</link>
+      <pubDate>Tue, 07 Jul 2026 22:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/</guid>
+      <description>이미 자체 작업 게이트가 있는 저장소에 범용 개발 워크플로 플러그인(superpowers)을 그대로 얹으면 어떻게 될까. 전면 도입 대신 쓸 만한 관행 세 가지만 이식하고, 읽기 전용 리뷰 서브에이전트 두 개를 만든 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/</link>
+      <pubDate>Tue, 07 Jul 2026 14:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/</guid>
+      <description>잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, &amp;#34;무엇을 만들까&amp;#34;보다 &amp;#34;무엇을 지킬까&amp;#34;를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/</link>
+      <pubDate>Tue, 07 Jul 2026 10:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/</guid>
+      <description>기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.</description>
+    </item>
+  </channel>
+</rss>

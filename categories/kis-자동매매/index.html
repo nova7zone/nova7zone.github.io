@@ -10,7 +10,7 @@
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.5a385ef0bceefb6b490abe4342de754d3174fddddd99a021dffa4b1d7a206b2d.css" integrity="sha256-Wjhe8Lzu&#43;2tJCr5DQt51TTF0/d3dmaAh3/pLHXogay0=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -180,132 +180,132 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략
     </h2>
   </header>
-  <div class="entry-content"><p>holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.</p>
+  <div class="entry-content"><p>신규 후보 38개가 전부 기준가 불일치로 거절되어 하루 종일 진입이 없었다. 원인은 새벽에 받은 직전 거래일 종가가 잠정값이라는 것이었고, 갱신 시각을 옮겨 해결했다. 같은 주에 전체 코드 리뷰로 약 90건을 정리하고, 지수 종가 공급을 코어에 추가했으며, 수급 기반 전략이 처음으로 1단계를 조건부로 통과해 모의 관측으로 이식된 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-05T15:00:00+09:00'>2026년 7월 5일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈" href="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/"></a>
+<span title='2026-11-10T19:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략" href="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법
     </h2>
   </header>
-  <div class="entry-content"><p>매수 사이클마다 시장 상황 전체를 스냅샷으로 남기는 market_context_log와, 매수되지 않은 후보까지 포함한 스크리닝 전체 결과의 사후 수익률을 추적하는 candidate_outcome 테이블을 신설했다. SQLite UNIQUE 제약의 NULL 처리 방식이 만든 재실행 중복 버그도 함께 정리한다.</p>
+  <div class="entry-content"><p>에이전트는 실전 주문을 낼 수 없고 이 프로젝트도 실전은 조회 전용이다. 사용자가 실전 주문 점검을 요청하자 거절하고 대안을 제시해, 절차 문서를 거쳐 가짜 브로커로 시험한 점검 스크립트를 만들고 실행은 사용자가 서버에서 했다. 같은 기간의 시세 조회 실전 전환, 일정이 겹치는 작업의 시각 분배, 파서가 거부한 형식 오류 한 줄, 레이트리밋 경고의 원인 세션 식별을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-05T09:00:00+09:00'>2026년 7월 5일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome" href="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/"></a>
+<span title='2026-11-03T23:50:00+09:00'>2026년 11월 3일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법" href="https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (4) — 한 번에 조건 하나씩: 사전등록 프로그램과 대조군 20시드로 연구하기
     </h2>
   </header>
-  <div class="entry-content"><p>매도 판단 과정 전체를 남기는 sell_evaluation_log 테이블과, 주문 생애주기를 append-only 이벤트로 기록하는 orders 테이블을 신설했다. brainstorming부터 설계·계획·subagent 구현까지 전체 절차로 진행한 Phase 2 데이터 수집 계층의 첫 두 테이블을 정리한다.</p>
+  <div class="entry-content"><p>국내 주식 전략 연구 회차 27번가량을 사흘 동안 돌린 기록. 후보를 하나씩 평가하는 대신 가장 단순한 기준선에서 조건을 하나씩 더하는 &#39;프로그램&#39; 방식으로 바꾸고, 같은 규칙의 무작위 대조군 20시드와 비교해 채택 여부를 정했다. 도구 버그, 구조 결함 조기 발견, 국면 사이징을 전략별 설정으로 옮긴 설계와 처음 조건부로 살아남은 후보까지 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-04T10:00:00+09:00'>2026년 7월 4일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders" href="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/"></a>
+<span title='2026-10-29T23:00:00+09:00'>2026년 10월 29일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (4) — 한 번에 조건 하나씩: 사전등록 프로그램과 대조군 20시드로 연구하기" href="https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (3) — 일봉 이력 확장, 모의투자 대시보드, 그리고 병렬 에이전트 7개로 한 전체 코드 리뷰
     </h2>
   </header>
-  <div class="entry-content"><p>KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.</p>
+  <div class="entry-content"><p>주말마다 일봉 이력을 늘리는 데몬 작업, 새로고침 기준으로 전략별 성과를 보는 모의투자 화면과 자동 갱신, 홈 화면 설치용 PWA를 만들었다. 저장소 전체를 읽기 전용 에이전트 7개로 병렬 리뷰해 High 15건을 TDD로 고친 과정과, 사용자 질문 한 줄로 연구 설계의 학습/검증 비율을 결과를 보기 전에 폐기하고 다시 사전등록한 일을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-03T10:00:00+09:00'>2026년 7월 3일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증" href="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/"></a>
+<span title='2026-10-26T22:30:00+09:00'>2026년 10월 26일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (3) — 일봉 이력 확장, 모의투자 대시보드, 그리고 병렬 에이전트 7개로 한 전체 코드 리뷰" href="https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (43) — docs 전면 최신화, v0.7.0 릴리즈
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지
     </h2>
   </header>
-  <div class="entry-content"><p>strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.</p>
+  <div class="entry-content"><p>데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-02T17:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (43) — docs 전면 최신화, v0.7.0 릴리즈" href="https://nova7zone.github.io/posts/docs-update-and-v070-release/"></a>
+<span title='2026-10-21T21:00:00+09:00'>2026년 10월 21일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지" href="https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다
     </h2>
   </header>
-  <div class="entry-content"><p>v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.</p>
+  <div class="entry-content"><p>업비트 V2의 구조를 가져와 KIS 증권 자동매매를 데몬 방식으로 새로 시작한 첫 이틀. 공식 샘플의 한도값이 지속 사용에는 맞지 않음을 실측으로 확인하고, 하루 1회 토큰 제약을 코드로 강제했다. 로컬에서는 통과했지만 서버의 깨끗한 환경에서만 드러난 결함, 당일 일봉이 장 마감 후에도 변한다는 발견, 6시간 백필까지 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-02T10:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/"></a>
+<span title='2026-10-17T14:10:00+09:00'>2026년 10월 17일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다" href="https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다
     </h2>
   </header>
-  <div class="entry-content"><p>v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.</p>
+  <div class="entry-content"><p>코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-01T16:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그" href="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/"></a>
+<span title='2026-07-11T20:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다" href="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다
     </h2>
   </header>
-  <div class="entry-content"><p>그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.</p>
+  <div class="entry-content"><p>7월 5일 코드 리뷰가 낸 지시서(데이터 정합성 4건, 분석 데이터 위생 2건, 정책 확정 2건)를 우선순위대로 하나씩 설계·TDD로 처리했다. 매수 기록 시점을 접수에서 체결로 옮기고, 혼합평균 왜곡을 보정하고, 한 전략이 다른 전략의 포지션을 건드리지 못하게 막은 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-07-01T10:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/"></a>
+<span title='2026-07-08T22:00:00+09:00'>2026년 7월 8일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다" href="https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (49) — 종목명이 비어 있던 진짜 원인, 그리고 사전 캐시 시각을 옮긴 뒤의 검증
     </h2>
   </header>
-  <div class="entry-content"><p>전략명에 들어간 언더스코어 때문에 텔레그램 알림이 400 오류로 반복 실패하던 버그와, 이틀 전 고쳤던 reversal/fear_driven 손실 매도 버그가 다른 경로로 재발한 사고를 정리하고, PR #77을 머지해 v0.6.4를 릴리즈한 과정을 다룬다.</p>
+  <div class="entry-content"><p>특정 그룹의 매수 알림에서 종목명이 비던 문제는 &#39;모의투자 서버가 빈 값을 준다&#39;는 기존 진단이 틀려 있었다. API 응답을 직접 확인해 진짜 원인을 찾았다. 같은 주에 사전 캐시 실행 시각을 18시에서 6시로 옮긴 변경을 로그로 검증하고 문서의 낡은 서술까지 정리한 기록.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-30T12:00:00+09:00'>2026년 6월 30일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈" href="https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/"></a>
+<span title='2026-07-08T20:00:00+09:00'>2026년 7월 8일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (49) — 종목명이 비어 있던 진짜 원인, 그리고 사전 캐시 시각을 옮긴 뒤의 검증" href="https://nova7zone.github.io/posts/missing-stock-names-and-premarket-schedule/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (3) — superpowers 플러그인을 통째로 도입하지 않은 이유
     </h2>
   </header>
-  <div class="entry-content"><p>매 세션 전체 로드되는 CLAUDE.md 520줄을 181줄로 줄이며 개발 문서를 docs/development 폴더로 재구성하고, PR #63~#74 구간 docs 재점검·v0.6.3 릴리즈, 그리고 스크리닝 로그가 v2 전환 이후 한 번도 기록되지 않았던 원인을 조사한 하루를 정리한다.</p>
+  <div class="entry-content"><p>이미 자체 작업 게이트가 있는 저장소에 범용 개발 워크플로 플러그인(superpowers)을 그대로 얹으면 어떻게 될까. 전면 도입 대신 쓸 만한 관행 세 가지만 이식하고, 읽기 전용 리뷰 서브에이전트 두 개를 만든 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-29T16:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈" href="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/"></a>
+<span title='2026-07-07T22:30:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (3) — superpowers 플러그인을 통째로 도입하지 않은 이유" href="https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

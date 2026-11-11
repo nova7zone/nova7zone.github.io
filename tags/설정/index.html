@@ -10,7 +10,7 @@
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.5a385ef0bceefb6b490abe4342de754d3174fddddd99a021dffa4b1d7a206b2d.css" integrity="sha256-Wjhe8Lzu&#43;2tJCr5DQt51TTF0/d3dmaAh3/pLHXogay0=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -180,6 +180,84 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다
+    </h2>
+  </header>
+  <div class="entry-content"><p>업비트 V2의 구조를 가져와 KIS 증권 자동매매를 데몬 방식으로 새로 시작한 첫 이틀. 공식 샘플의 한도값이 지속 사용에는 맞지 않음을 실측으로 확인하고, 하루 1회 토큰 제약을 코드로 강제했다. 로컬에서는 통과했지만 서버의 깨끗한 환경에서만 드러난 결함, 당일 일봉이 장 마감 후에도 변한다는 발견, 6시간 백필까지 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-17T14:10:00+09:00'>2026년 10월 17일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다" href="https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)
+    </h2>
+  </header>
+  <div class="entry-content"><p>단순한 첫 캐너리가 검증하지 못한 실행 경로를 채우는 두 번째 캐너리를 만들고, 웹에서 전략을 켜고 끄는 첫 쓰기 기능을 붙였다. 설계 탐색 중 &#39;자리만 있고 배선이 안 된 줄 알았던&#39; 설정 변경 장치가 이미 구현되어 있음을 발견해 설계를 바꾼 일, 서버에서 설정 파일을 직접 고쳐 생긴 드리프트, 홈 화면 설치용 PWA까지 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-09-26T15:00:00+09:00'>2026년 9월 26일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (8) — 웹의 첫 쓰기 경로, 이미 있던 장치를 찾아 쓰다 (그리고 PWA)" href="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다
+    </h2>
+  </header>
+  <div class="entry-content"><p>실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 &#39;파라미터가 아니라 시장 국면&#39;이라고 결론 낸 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-08-03T23:00:00+09:00'>2026년 8월 3일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다" href="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (3) — 서버에 올리며 겪은 두 번의 삽질
+    </h2>
+  </header>
+  <div class="entry-content"><p>로컬에서 테스트 61개가 전부 통과한 코드를, 이번엔 실제 OCI A1 서버에 올리고 진짜 Upbit 계좌에 연결했다. 코드는 문제가 없었다. 대신 GitHub 인증과 Upbit의 낯선 &#34;포켓&#34; 개념이 발목을 잡았다 — 둘 다 코드 리뷰만으로는 절대 안 보이는 지점이었다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-10T22:00:00+09:00'>2026년 7월 10일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (3) — 서버에 올리며 겪은 두 번의 삽질" href="https://nova7zone.github.io/posts/upbit-server-deploy-github-auth-pocket/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (48) — KRX 401 오류는 코드가 아니라 서비스 신청 문제였다
+    </h2>
+  </header>
+  <div class="entry-content"><p>서버 로그의 KRX VKOSPI 401 오류를 추적했더니 코드 결함이 아니라 API 이용신청 누락이었다. 같은 날 &#39;매수량이 너무 적다&#39;는 제보는 버그가 아니라 방어 로직의 정상 동작이었고, 그 조사 중 시장 위치 판정에 미완성 봉이 섞이는 진짜 버그를 하나 찾았다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-07T21:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (48) — KRX 401 오류는 코드가 아니라 서비스 신청 문제였다" href="https://nova7zone.github.io/posts/krx-401-and-market-filter-incomplete-candle/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축
+    </h2>
+  </header>
+  <div class="entry-content"><p>기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-07T10:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축" href="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 코드 개발 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
     </h2>
   </header>
@@ -228,84 +306,6 @@
 
 <span title='2026-06-16T18:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록
-    </h2>
-  </header>
-  <div class="entry-content"><p>Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-16T09:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정
-    </h2>
-  </header>
-  <div class="entry-content"><p>매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-14T21:00:00+09:00'>2026년 6월 14일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정" href="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집
-    </h2>
-  </header>
-  <div class="entry-content"><p>체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-10T16:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집" href="https://nova7zone.github.io/posts/trades-page-revamp/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편
-    </h2>
-  </header>
-  <div class="entry-content"><p>로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-09T20:00:00+09:00'>2026년 6월 9일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편" href="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기
-    </h2>
-  </header>
-  <div class="entry-content"><p>일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-05T11:00:00+09:00'>2026년 6월 5일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기" href="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
-    </h2>
-  </header>
-  <div class="entry-content"><p>웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-04T10:00:00+09:00'>2026년 6월 4일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입" href="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

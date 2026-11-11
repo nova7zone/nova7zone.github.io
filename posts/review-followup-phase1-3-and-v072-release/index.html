@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="버그수정, 릴리스, 설계">
+<meta name="description" content="7월 5일 코드 리뷰가 낸 지시서(데이터 정합성 4건, 분석 데이터 위생 2건, 정책 확정 2건)를 우선순위대로 하나씩 설계·TDD로 처리했다. 매수 기록 시점을 접수에서 체결로 옮기고, 혼합평균 왜곡을 보정하고, 한 전략이 다른 전략의 포지션을 건드리지 못하게 막은 과정을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다">
+  <meta property="og:description" content="7월 5일 코드 리뷰가 낸 지시서(데이터 정합성 4건, 분석 데이터 위생 2건, 정책 확정 2건)를 우선순위대로 하나씩 설계·TDD로 처리했다. 매수 기록 시점을 접수에서 체결로 옮기고, 혼합평균 왜곡을 보정하고, 한 전략이 다른 전략의 포지션을 건드리지 못하게 막은 과정을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-08T22:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-08T22:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="릴리스">
+    <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/missing-stock-names-and-premarket-schedule/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/krx-401-and-market-filter-incomplete-candle/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다">
+  <meta name="twitter:description" content="7월 5일 코드 리뷰가 낸 지시서(데이터 정합성 4건, 분석 데이터 위생 2건, 정책 확정 2건)를 우선순위대로 하나씩 설계·TDD로 처리했다. 매수 기록 시점을 접수에서 체결로 옮기고, 혼합평균 왜곡을 보정하고, 한 전략이 다른 전략의 포지션을 건드리지 못하게 막은 과정을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다",
+      "item": "https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다",
+  "name": "자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다",
+  "description": "7월 5일 코드 리뷰가 낸 지시서(데이터 정합성 4건, 분석 데이터 위생 2건, 정책 확정 2건)를 우선순위대로 하나씩 설계·TDD로 처리했다. 매수 기록 시점을 접수에서 체결로 옮기고, 혼합평균 왜곡을 보정하고, 한 전략이 다른 전략의 포지션을 건드리지 못하게 막은 과정을 정리한다.",
+  "keywords": [
+    "버그수정", "릴리스", "설계"
+  ],
+  "articleBody": "들어가며 7월 5일에 받은 코드 리뷰 결과는 지시서 형태로 정리되어 있었다. 위험도에 따라 세 단계(Phase)로 나뉘어 있고, 7월 6~8일 사흘에 걸쳐 8개 항목을 모두 처리한 뒤 v0.7.2로 릴리스했다. 신규 기능은 없고 데이터 정합성과 위험 버그 수정에 집중한 릴리스다.\n방식은 항목마다 같았다. 설계를 먼저 확정하고, 실패하는 테스트를 먼저 쓰고(RED), 구현으로 통과시킨(GREEN) 뒤 전체 테스트와 모의 실행(dry-run)으로 확인했다. 아래는 그중 의미 있는 항목들이다.\nPhase 1 — 데이터 정합성 (4건) T1-1. 매수 기록을 “접수” 시점이 아니라 “체결” 시점으로 가장 크고 매매 로직의 핵심인 항목이었다. 기존에는 매수 주문을 접수하는 순간 포지션 레지스트리에 진입가(주문가 추정치), 수량(요청 수량), 진입일(주문일)을 기록했다. 체결 시점에 호출하는 기록 함수는 이미 행이 있어서 아무것도 하지 못하는(no-op) 상태였다. 즉 레지스트리에는 체결 사실이 아니라 의도가 남아 있었다.\n수정 방향은 이랬다.\n주문 접수 시에는 전략 메타(진입 전략, 그룹, 점수, 손절가, 목표가 등)만 “대기 주문\"에 실어 두고 레지스트리에는 쓰지 않는다. 체결이 확인되면 그 메타와 실측 체결값(체결가, 체결수량, 체결 확인일)으로 레지스트리를 기록한다. 부분 체결은 “첫 번째 체결분만 등록하고 이후는 무시\"가 요구사항인데, 기존 삽입 함수의 시맨틱이 추가 코드 없이 이미 그 동작을 해 준다는 점을 확인했다. 설계 단계에서 확인한 것도 중요했다. 사이클 실행 순서가 “대기 주문 확인 → 매도 → 매수\"라서, 한 사이클에 접수한 주문은 다음 사이클의 매수 판단 전에 반드시 먼저 해소된다. 기록 시점을 늦춰도 다음 사이클 조회에 영향이 없다는 것을 코드 전수 확인으로 검증했다.\nT1-2. 지수 종가 캐시가 하루 밀리던 문제 지수 일봉 목록의 첫 항목을 “오늘의 미완성 봉\"이라고 무조건 버리고 있었다. 하지만 오전 7시 사전 실행 시점에는 당일 봉이 아직 없어서 첫 항목이 이미 완성된 전날 종가였다. 이를 버리면 완성 종가 하나가 유실되고, 대체 변동성 계산의 20일 창이 하루 밀린 값이 하루 종일 캐시에 고정된다. 첫 항목의 날짜가 실제로 오늘일 때만 버리도록 고치고, 캐시에 기준일을 함께 저장해 로그로 검증할 수 있게 했다.\nT1-3. 잔고 보정이 대기 주문을 침범하던 문제 체결 판정을 보류한 사이클에 잔고 보정 로직이 먼저 끼어들면, 매도 체결분은 청산 사유 없이 “수동\"으로 닫히고, 매수 체결분은 수량이 이중으로 잡혔다가 나중에 다시 보정되는 왜곡이 있었다. 보정이 대기 주문이 있는 종목은 건드리지 않게 했다. 체결 판정은 대기 주문 확인의 전담 영역으로 남기고, 대기가 풀리면 다음 사이클의 보정이 자연히 따라잡는다. 대기 주문이 없으면 기존과 완전히 동일하게 동작하므로 기존 테스트는 수정 없이 모두 통과했다.\nT1-4. 추가 매수 때 혼합평균이 체결가로 기록되던 문제 체결 가격으로 증권사의 계좌 전체 혼합평균 단가를 쓰고 있었다. 신규 첫 매수라면 같은 값이지만, 이미 보유한 종목을 추가 매수하면 평균에 기존 단가가 섞여 이번 분할분의 실제 체결가와 어긋난다. 이번 체결분의 가격을 평균에서 역산하는 함수를 만들었다.\n이번 분할가 = (혼합평균 × 현재수량 − 기존평균 × 기존수량) ÷ 이번 체결수량\n역산값이 비정상(0 이하이거나 주문가 대비 ±30% 초과)이면 주문가로 폴백하고, 폴백일 때는 슬리피지를 0%로 잘못 계산하지 않도록 NULL로 강제했다. 예를 들어 기존 보유분과 추가분의 단가가 다른 경우에도 혼합평균에서 추가분의 가격을 정확히 복원하는 테스트와, 부분 체결 두 번째 분할을 복원하는 테스트를 추가했다.\nPhase 2 — 분석 데이터 위생 (2건) T2-1: MFE 트레일링 스탑이 발동할 때 청산 사유 문자열에 수치가 포함된 동적 문자열이 저장되어 사유별 집계(GROUP BY)가 불가능했다. 사유를 고정 문자열로 바꾸고 수치는 상세 필드에만 남겼다. 텔레그램에는 한글 매핑이 없어 원시 문자열이 그대로 나가던 것도 함께 고쳤다. 이미 저장된 행은 고치지 않고, 분석 쿼리에서 접두 일치로 처리하도록 기록했다. T2-2: 사후 수익률 보정에서 종가가 결측(0)이면 계산이 우연히 정확히 **-100%**를 내서 “100% 손실\"이 정식 기록될 수 있었다. 종가가 0보다 클 때만 계산하도록 막고, 계산이 불가능하거나 60일이 지난 행은 조회 대상에서 제외했다. 이런 행이 정렬상 항상 앞자리를 차지해 상한(500건)을 잠식하고 새 행의 보정을 굶기던 문제도 함께 해소된다. Phase 3 — 정책 확정분 (2건) T3-1: 변동성지수 근사값이 0100을 벗어나면 무조건 버리고 “정상\"으로 취급했다. 그런데 실현 변동성 대체값은 폭락장에서 100200%대 값을 정상적으로 낼 수 있다. 무조건 버리면 가장 위험한 순간에 방어가 풀리는 역효과가 난다. 대체값 경로에서만 100~250 구간을 99.9로 고정해 반드시 “극단 공포\"로 분류되게 하고, 250을 넘으면 기존처럼 데이터 오류로 처리했다. 실측값 경로는 100을 넘을 수 없다는 전제를 유지했다. T3-2: v2 쪽에는 “v3가 관리하는 포지션은 평가·주문을 완전히 건너뛴다\"는 가드가 있었지만, v3 쪽에는 “v2 포지션은 로그만 건너뛴다\"는 불완전한 가드뿐이었다. 그래서 v3 스코어링이 v2 포지션에 잘못 적용될 위험(7월 3일 오매도 사고의 대칭 케이스)과 호출 낭비가 남아 있었다. v3 루프도 **“내 것이 아니면 완전히 건너뛴다”**로 고쳤다. 비교를 == \"v2\"가 아니라 != \"v3\"로 한 이유는, 알 수 없는 소유자 값이 생겨도 v2가 안전하게 받도록 v2 가드의 방식과 대칭을 맞추기 위해서다. v0.7.2 릴리스 Phase 1~3이 모두 끝난 뒤 PR 4건을 모아 릴리스 노트를 쓰고 태그와 릴리스를 발행했다. 전체 테스트가 1,000건 이상 모두 통과했고, 모의 실행도 정상 종료했다.\nPhase 항목 핵심 1 T1-1 ~ T1-4 체결 시점 기록, 지수 캐시 날짜, 대기 주문 보호, 혼합평균 역산 2 T2-1, T2-2 청산 사유 고정, 결측 종가 -100% 오기록 차단 3 T3-1, T3-2 극단 변동성 클램프, 전략 간 포지션 침범 차단 배운 점: 지시서를 받으면 항목을 모두 한 번에 고치려 하지 않는다. 위험도가 높은 데이터 정합성부터 설계 → RED 테스트 → 구현 → 배포 후 확인 포인트 기록까지를 항목 단위로 끝내면, 사흘 동안 서로의 변경을 오염시키지 않고 8개를 닫을 수 있다.\n",
+  "wordCount" : "2498",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-08T22:00:00+09:00",
+  "dateModified": "2026-07-08T22:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다
+    </h1>
+    <div class="post-description">
+      7월 5일 코드 리뷰가 낸 지시서(데이터 정합성 4건, 분석 데이터 위생 2건, 정책 확정 2건)를 우선순위대로 하나씩 설계·TDD로 처리했다. 매수 기록 시점을 접수에서 체결로 옮기고, 혼합평균 왜곡을 보정하고, 한 전략이 다른 전략의 포지션을 건드리지 못하게 막은 과정을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-08T22:00:00+09:00'>2026년 7월 8일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#phase-1--%eb%8d%b0%ec%9d%b4%ed%84%b0-%ec%a0%95%ed%95%a9%ec%84%b1-4%ea%b1%b4" aria-label="Phase 1 — 데이터 정합성 (4건)">Phase 1 — 데이터 정합성 (4건)</a><ul>
+                    
+            <li>
+                <a href="#t1-1-%eb%a7%a4%ec%88%98-%ea%b8%b0%eb%a1%9d%ec%9d%84-%ec%a0%91%ec%88%98-%ec%8b%9c%ec%a0%90%ec%9d%b4-%ec%95%84%eb%8b%88%eb%9d%bc-%ec%b2%b4%ea%b2%b0-%ec%8b%9c%ec%a0%90%ec%9c%bc%eb%a1%9c" aria-label="T1-1. 매수 기록을 &ldquo;접수&rdquo; 시점이 아니라 &ldquo;체결&rdquo; 시점으로">T1-1. 매수 기록을 &ldquo;접수&rdquo; 시점이 아니라 &ldquo;체결&rdquo; 시점으로</a></li>
+            <li>
+                <a href="#t1-2-%ec%a7%80%ec%88%98-%ec%a2%85%ea%b0%80-%ec%ba%90%ec%8b%9c%ea%b0%80-%ed%95%98%eb%a3%a8-%eb%b0%80%eb%a6%ac%eb%8d%98-%eb%ac%b8%ec%a0%9c" aria-label="T1-2. 지수 종가 캐시가 하루 밀리던 문제">T1-2. 지수 종가 캐시가 하루 밀리던 문제</a></li>
+            <li>
+                <a href="#t1-3-%ec%9e%94%ea%b3%a0-%eb%b3%b4%ec%a0%95%ec%9d%b4-%eb%8c%80%ea%b8%b0-%ec%a3%bc%eb%ac%b8%ec%9d%84-%ec%b9%a8%eb%b2%94%ed%95%98%eb%8d%98-%eb%ac%b8%ec%a0%9c" aria-label="T1-3. 잔고 보정이 대기 주문을 침범하던 문제">T1-3. 잔고 보정이 대기 주문을 침범하던 문제</a></li>
+            <li>
+                <a href="#t1-4-%ec%b6%94%ea%b0%80-%eb%a7%a4%ec%88%98-%eb%95%8c-%ed%98%bc%ed%95%a9%ed%8f%89%ea%b7%a0%ec%9d%b4-%ec%b2%b4%ea%b2%b0%ea%b0%80%eb%a1%9c-%ea%b8%b0%eb%a1%9d%eb%90%98%eb%8d%98-%eb%ac%b8%ec%a0%9c" aria-label="T1-4. 추가 매수 때 혼합평균이 체결가로 기록되던 문제">T1-4. 추가 매수 때 혼합평균이 체결가로 기록되던 문제</a></li></ul>
+            </li>
+            <li>
+                <a href="#phase-2--%eb%b6%84%ec%84%9d-%eb%8d%b0%ec%9d%b4%ed%84%b0-%ec%9c%84%ec%83%9d-2%ea%b1%b4" aria-label="Phase 2 — 분석 데이터 위생 (2건)">Phase 2 — 분석 데이터 위생 (2건)</a></li>
+            <li>
+                <a href="#phase-3--%ec%a0%95%ec%b1%85-%ed%99%95%ec%a0%95%eb%b6%84-2%ea%b1%b4" aria-label="Phase 3 — 정책 확정분 (2건)">Phase 3 — 정책 확정분 (2건)</a></li>
+            <li>
+                <a href="#v072-%eb%a6%b4%eb%a6%ac%ec%8a%a4" aria-label="v0.7.2 릴리스">v0.7.2 릴리스</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>7월 5일에 받은 코드 리뷰 결과는 지시서 형태로 정리되어 있었다. 위험도에 따라 세 단계(Phase)로 나뉘어 있고, 7월 6~8일 사흘에 걸쳐 <strong>8개 항목을 모두 처리한 뒤 v0.7.2로 릴리스</strong>했다. 신규 기능은 없고 데이터 정합성과 위험 버그 수정에 집중한 릴리스다.</p>
+<p>방식은 항목마다 같았다. 설계를 먼저 확정하고, 실패하는 테스트를 먼저 쓰고(RED), 구현으로 통과시킨(GREEN) 뒤 전체 테스트와 모의 실행(dry-run)으로 확인했다. 아래는 그중 의미 있는 항목들이다.</p>
+<hr>
+<h2 id="phase-1--데이터-정합성-4건">Phase 1 — 데이터 정합성 (4건)<a hidden class="anchor" aria-hidden="true" href="#phase-1--데이터-정합성-4건">#</a></h2>
+<h3 id="t1-1-매수-기록을-접수-시점이-아니라-체결-시점으로">T1-1. 매수 기록을 &ldquo;접수&rdquo; 시점이 아니라 &ldquo;체결&rdquo; 시점으로<a hidden class="anchor" aria-hidden="true" href="#t1-1-매수-기록을-접수-시점이-아니라-체결-시점으로">#</a></h3>
+<p>가장 크고 매매 로직의 핵심인 항목이었다. 기존에는 매수 주문을 <strong>접수</strong>하는 순간 포지션 레지스트리에 진입가(주문가 추정치), 수량(요청 수량), 진입일(주문일)을 기록했다. 체결 시점에 호출하는 기록 함수는 이미 행이 있어서 아무것도 하지 못하는(no-op) 상태였다. 즉 레지스트리에는 <strong>체결 사실이 아니라 의도</strong>가 남아 있었다.</p>
+<p>수정 방향은 이랬다.</p>
+<ul>
+<li>주문 접수 시에는 전략 메타(진입 전략, 그룹, 점수, 손절가, 목표가 등)만 &ldquo;대기 주문&quot;에 실어 두고 레지스트리에는 쓰지 않는다.</li>
+<li>체결이 확인되면 그 메타와 <strong>실측 체결값</strong>(체결가, 체결수량, 체결 확인일)으로 레지스트리를 기록한다.</li>
+<li>부분 체결은 &ldquo;첫 번째 체결분만 등록하고 이후는 무시&quot;가 요구사항인데, 기존 삽입 함수의 시맨틱이 추가 코드 없이 이미 그 동작을 해 준다는 점을 확인했다.</li>
+</ul>
+<p>설계 단계에서 확인한 것도 중요했다. 사이클 실행 순서가 &ldquo;대기 주문 확인 → 매도 → 매수&quot;라서, 한 사이클에 접수한 주문은 다음 사이클의 매수 판단 전에 반드시 먼저 해소된다. 기록 시점을 늦춰도 다음 사이클 조회에 영향이 없다는 것을 코드 전수 확인으로 검증했다.</p>
+<h3 id="t1-2-지수-종가-캐시가-하루-밀리던-문제">T1-2. 지수 종가 캐시가 하루 밀리던 문제<a hidden class="anchor" aria-hidden="true" href="#t1-2-지수-종가-캐시가-하루-밀리던-문제">#</a></h3>
+<p>지수 일봉 목록의 첫 항목을 &ldquo;오늘의 미완성 봉&quot;이라고 무조건 버리고 있었다. 하지만 오전 7시 사전 실행 시점에는 당일 봉이 아직 없어서 첫 항목이 이미 완성된 전날 종가였다. 이를 버리면 완성 종가 하나가 유실되고, 대체 변동성 계산의 20일 창이 하루 밀린 값이 하루 종일 캐시에 고정된다. 첫 항목의 날짜가 <strong>실제로 오늘일 때만</strong> 버리도록 고치고, 캐시에 기준일을 함께 저장해 로그로 검증할 수 있게 했다.</p>
+<h3 id="t1-3-잔고-보정이-대기-주문을-침범하던-문제">T1-3. 잔고 보정이 대기 주문을 침범하던 문제<a hidden class="anchor" aria-hidden="true" href="#t1-3-잔고-보정이-대기-주문을-침범하던-문제">#</a></h3>
+<p>체결 판정을 보류한 사이클에 잔고 보정 로직이 먼저 끼어들면, 매도 체결분은 청산 사유 없이 &ldquo;수동&quot;으로 닫히고, 매수 체결분은 수량이 이중으로 잡혔다가 나중에 다시 보정되는 왜곡이 있었다. 보정이 <strong>대기 주문이 있는 종목은 건드리지 않게</strong> 했다. 체결 판정은 대기 주문 확인의 전담 영역으로 남기고, 대기가 풀리면 다음 사이클의 보정이 자연히 따라잡는다. 대기 주문이 없으면 기존과 완전히 동일하게 동작하므로 기존 테스트는 수정 없이 모두 통과했다.</p>
+<h3 id="t1-4-추가-매수-때-혼합평균이-체결가로-기록되던-문제">T1-4. 추가 매수 때 혼합평균이 체결가로 기록되던 문제<a hidden class="anchor" aria-hidden="true" href="#t1-4-추가-매수-때-혼합평균이-체결가로-기록되던-문제">#</a></h3>
+<p>체결 가격으로 증권사의 <strong>계좌 전체 혼합평균 단가</strong>를 쓰고 있었다. 신규 첫 매수라면 같은 값이지만, 이미 보유한 종목을 추가 매수하면 평균에 기존 단가가 섞여 이번 분할분의 실제 체결가와 어긋난다. 이번 체결분의 가격을 평균에서 역산하는 함수를 만들었다.</p>
+<blockquote>
+<p>이번 분할가 = (혼합평균 × 현재수량 − 기존평균 × 기존수량) ÷ 이번 체결수량</p>
+</blockquote>
+<p>역산값이 비정상(0 이하이거나 주문가 대비 ±30% 초과)이면 주문가로 폴백하고, 폴백일 때는 슬리피지를 0%로 잘못 계산하지 않도록 <strong>NULL로 강제</strong>했다. 예를 들어 기존 보유분과 추가분의 단가가 다른 경우에도 혼합평균에서 추가분의 가격을 정확히 복원하는 테스트와, 부분 체결 두 번째 분할을 복원하는 테스트를 추가했다.</p>
+<hr>
+<h2 id="phase-2--분석-데이터-위생-2건">Phase 2 — 분석 데이터 위생 (2건)<a hidden class="anchor" aria-hidden="true" href="#phase-2--분석-데이터-위생-2건">#</a></h2>
+<ul>
+<li><strong>T2-1</strong>: MFE 트레일링 스탑이 발동할 때 청산 사유 문자열에 수치가 포함된 동적 문자열이 저장되어 사유별 집계(GROUP BY)가 불가능했다. 사유를 <strong>고정 문자열</strong>로 바꾸고 수치는 상세 필드에만 남겼다. 텔레그램에는 한글 매핑이 없어 원시 문자열이 그대로 나가던 것도 함께 고쳤다. 이미 저장된 행은 고치지 않고, 분석 쿼리에서 접두 일치로 처리하도록 기록했다.</li>
+<li><strong>T2-2</strong>: 사후 수익률 보정에서 종가가 결측(0)이면 계산이 우연히 정확히 **-100%**를 내서 &ldquo;100% 손실&quot;이 정식 기록될 수 있었다. 종가가 0보다 클 때만 계산하도록 막고, 계산이 불가능하거나 60일이 지난 행은 조회 대상에서 제외했다. 이런 행이 정렬상 항상 앞자리를 차지해 상한(500건)을 잠식하고 새 행의 보정을 굶기던 문제도 함께 해소된다.</li>
+</ul>
+<hr>
+<h2 id="phase-3--정책-확정분-2건">Phase 3 — 정책 확정분 (2건)<a hidden class="anchor" aria-hidden="true" href="#phase-3--정책-확정분-2건">#</a></h2>
+<ul>
+<li><strong>T3-1</strong>: 변동성지수 근사값이 0<del>100을 벗어나면 무조건 버리고 &ldquo;정상&quot;으로 취급했다. 그런데 실현 변동성 대체값은 폭락장에서 100</del>200%대 값을 정상적으로 낼 수 있다. 무조건 버리면 가장 위험한 순간에 방어가 풀리는 <strong>역효과</strong>가 난다. 대체값 경로에서만 100~250 구간을 99.9로 고정해 반드시 &ldquo;극단 공포&quot;로 분류되게 하고, 250을 넘으면 기존처럼 데이터 오류로 처리했다. 실측값 경로는 100을 넘을 수 없다는 전제를 유지했다.</li>
+<li><strong>T3-2</strong>: v2 쪽에는 &ldquo;v3가 관리하는 포지션은 평가·주문을 완전히 건너뛴다&quot;는 가드가 있었지만, v3 쪽에는 &ldquo;v2 포지션은 로그만 건너뛴다&quot;는 불완전한 가드뿐이었다. 그래서 v3 스코어링이 v2 포지션에 잘못 적용될 위험(7월 3일 오매도 사고의 대칭 케이스)과 호출 낭비가 남아 있었다. v3 루프도 **&ldquo;내 것이 아니면 완전히 건너뛴다&rdquo;**로 고쳤다. 비교를 <code>== &quot;v2&quot;</code>가 아니라 <code>!= &quot;v3&quot;</code>로 한 이유는, 알 수 없는 소유자 값이 생겨도 v2가 안전하게 받도록 v2 가드의 방식과 대칭을 맞추기 위해서다.</li>
+</ul>
+<hr>
+<h2 id="v072-릴리스">v0.7.2 릴리스<a hidden class="anchor" aria-hidden="true" href="#v072-릴리스">#</a></h2>
+<p>Phase 1~3이 모두 끝난 뒤 PR 4건을 모아 릴리스 노트를 쓰고 태그와 릴리스를 발행했다. 전체 테스트가 1,000건 이상 모두 통과했고, 모의 실행도 정상 종료했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Phase</th>
+					<th>항목</th>
+					<th>핵심</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>T1-1 ~ T1-4</td>
+					<td>체결 시점 기록, 지수 캐시 날짜, 대기 주문 보호, 혼합평균 역산</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>T2-1, T2-2</td>
+					<td>청산 사유 고정, 결측 종가 -100% 오기록 차단</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>T3-1, T3-2</td>
+					<td>극단 변동성 클램프, 전략 간 포지션 침범 차단</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 지시서를 받으면 항목을 모두 한 번에 고치려 하지 않는다. 위험도가 높은 데이터 정합성부터 설계 → RED 테스트 → 구현 → 배포 후 확인 포인트 기록까지를 항목 단위로 끝내면, 사흘 동안 서로의 변경을 오염시키지 않고 8개를 닫을 수 있다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">릴리스</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/missing-stock-names-and-premarket-schedule/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 코드 개발 (49) — 종목명이 비어 있던 진짜 원인, 그리고 사전 캐시 시각을 옮긴 뒤의 검증</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

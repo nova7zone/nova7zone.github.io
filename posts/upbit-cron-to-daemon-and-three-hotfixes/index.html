@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포, 버그수정">
+<meta name="description" content="15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기">
+  <meta property="og:description" content="15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-27T23:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-27T23:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="버그수정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기">
+  <meta name="twitter:description" content="15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기",
+      "item": "https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기",
+  "name": "자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기",
+  "description": "15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.",
+  "keywords": [
+    "설계", "배포", "버그수정"
+  ],
+  "articleBody": "들어가며 7월 26~27일에는 두 가지가 겹쳤다. 새 전략 후보들의 단계가 마무리되었고, 운영 구조가 크론에서 상시 데몬으로 바뀌었다. 배포 당일 같은 증상이 세 번 이어졌다. 이 글은 주로 그 세 번의 핫픽스에 관한 기록이다.\n1. 전략 쪽: 단계 종결 운영 전략에는 새 전략 후보가 두 갈래로 붙어 있었다. 충격 후 반등 계열(v3)은 마지막 단계에서 탈락해 배분이 회수되었고 운영 전략 하나에 다시 100%가 돌아갔다. 시장 국면 기반 추세 계열(v4)은 같은 코드로 재현하는 단계에서 실패해 개발 중단이 확정되었다. 두 후보 모두 앞선 글의 절차(사전 등록, 같은 코드 재현)가 걸러낸 결과다.\n그 사이 한 가지 이득이 있었다. v4를 만들다 부산물로 임의 마켓의 로컬 캔들 캐시가 core에 생겼다. 이전에는 거래소 API가 한 번에 200개까지만 조회해서 긴 구간의 지표 계산에 제약이 있었는데 이를 해소했다. 운영 전략에는 거래 중이던 포지션에 대한 순손실 누적을 모니터링 항목에 올렸다.\n2. 왜 데몬으로 바꿨나 사용자가 이렇게 판단했다. “가드가 15분 간격이라 청산 반응이 늦고, 그게 손실을 키운다.” 요구는 구체적이었다. 종목 선정은 30분마다, 보유 종목은 1~5초마다 현재가를 확인해 매도한다. 확인한 것은 두 가지다. 4시간봉 신호 로직은 그대로 두고 확인 주기만 줄인다. 배포는 systemd로 한다.\n설계: 스레드 없이 단일 루프 서브에이전트로 사전 조사를 병렬로 했다(락과 동시성, 전략의 청산 판단이 캔들에 의존하는 정도, 배포 관행). 결론은 단일 스레드 틱 루프였다. 파일 락, SQLite, 로깅 전역 값, 텔레그램 쿨다운이 전부 “한 프로세스가 순차 실행\"을 가정하고 있어서 스레드나 asyncio를 도입하지 않는 편이 기존 부품을 그대로 재사용할 수 있었다.\n스케줄러는 순수한 틱 루프 클래스로 만들고 가짜 콜백만으로 단위 테스트한다. 전략 하나의 청산 판단이 매 호출마다 캔들을 새로 읽던 부분(추세 이탈 체크)을 타임스탬프로 게이팅해 최소 30분 간격으로 제한했다. 손절·익절 임계값은 그대로고 “캔들을 언제 다시 읽는가\"만 조절한다. 거래소 차단(418)을 받으면 데몬을 종료하고, 종료 신호는 틱 사이에서 처리한다. 청산 틱마다 실행 기록을 DB에 쓰면 폭증하므로 하트비트 주기마다 한 번만 쓴다. 모니터링 임계값도 하트비트와 새 진입 주기에 맞게 조정했다. 배포 스크립트가 서비스 파일을 동기화하고, 상시 프로세스라 코드 변경 시 매번 재시작한다. 크론과 다른 점이다. 3. 핫픽스 1: 청산 틱마다 시장 상황을 재계산했다 사용자가 서버에 데몬을 올리자마자 로그에 “캔들 그룹 요청 제한” 경고가 4초 간격으로 끊임없이 찍혔다.\n원인은 청산 틱이 컨텍스트를 만드는 함수를 그대로 호출했다는 점이다. 그 함수 안에서 시장 국면 판정, 변동성 판정, 공포 게이트가 모두 BTC 4시간봉을 그때마다 새로 조회한다. 원래 크론 가드가 15분에 한 번 부르던 코드를 1~5초 주기로 재사용한 것이다. 전략 4개 × 캔들 함수 3종이 초당 수 회 호출되어 요청 한도(초당 10회)가 바로 소진되었다.\n“가드는 현재가 조회만 하고 4시간봉은 재계산하지 않는다\"는 계약을 청산 판단 쪽에는 지켰는데 시장 컨텍스트 쪽에서는 놓쳤다.\n수정은 국면·변동성·공포 게이트를 30분 단위로 캐시하는 래퍼를 두는 것이었다. 포지션과 계좌는 청산 판단에 항상 최신이어야 하므로 캐시하지 않는다. 캐시 주기는 설정 파일로 뺐다. 회귀 테스트 4건(첫 호출은 항상 계산, 주기 내 재사용, 주기 경과 후 재계산, 포지션은 캐시하지 않음)을 추가했다.\n4. 핫픽스 2: 경고가 계속 나왔고, 로그의 이름표가 틀렸다 재배포했는데도 경고가 계속 나왔다. 오히려 더 빈번했다. 그리고 경고 전부가 같은 전략 이름으로 찍혔다.\n이 지점에서 진짜 문제를 찾은 것은 경고가 아니라 그 전략 이름표였다. 진입 스캔 로그(market_excluded_warning)가 섞여 나오는 것을 보고, 데몬 재시작 직후 모든 전략이 동시에 첫 스캔을 도는 정상적인 일회성 버스트일 가능성을 의심했다. 그런데 그렇게 보기에는 이름표를 믿을 수가 없었다.\n원인은 로그 필터의 전역 전략 ID가 setup_logging() 호출 때마다만 갱신된다는 점이었다. 데몬은 시작할 때 전략 4개의 의존성을 한 번씩 조립하면서 그 안에서 setup_logging()을 부른다. 그 루프가 끝나면 정렬상 마지막 전략으로 전역 값이 고정된다. 청산 루프는 매 틱마다 설정을 다시 부르지 않으므로(전략별 의존성을 시작 시 1회만 만드는 게 설계 의도다), 30분마다 도는 진입 루프가 그 전략을 처리할 때만 이름표가 바뀐다. 그 사이의 청산 틱 로그는 전부 한 전략 이름으로 찍힌다.\n앞서 크론 재설계 때 사전에 막았다고 생각한 “전략 ID 필드 고정” 버그의 데몬판이었다. 크론에서는 순회가 한 프로세스 안에서 끝났지만, 데몬에서는 프로세스가 오래 살면서 전역 값이 장수한다.\n수정은 전역 값을 갱신하는 함수를 공개로 올리고, 청산 틱이 매 틱 시작에 직접 호출하게 하는 것이었다. 이 수정은 로그 이름표만 바로잡고 API 호출량은 바꾸지 않는다. TDD로 라벨만 갱신되는지, 청산 틱 후 라벨이 실제로 처리한 전략이 되는지 테스트했다.\n5. 핫픽스 3: 이름표를 고치자 진짜 원인이 보였다 정확해진 이름표로 다시 보니 경고는 두 가지 면에서 달랐다.\n재시작 버스트가 아니라 특정 전략에서 3~4초 간격으로 계속 반복되었다. 그룹이 캔들이 아니라 시세(ticker) 였다. 앞서 고친 캔들 재계산과는 별개의 세 번째 원인이었다. 시세 조회 인터페이스의 계약 문서에는 “가드 사이클은 보유 종목 일괄 조회\"라고 명시되어 있었다. 그런데 실제 전략들은 청산 판단 안에서 포지션마다 개별 호출하고 있었다. 크론 가드가 15분에 한 번 돌 때는 포지션이 적어서 무해했고, 설계 문서에도 “포지션이 적어 여유 있음, 필요해지면 별도 작업\"이라고 인지된 상태였다. 청산 틱 1~5초 주기에서 그것이 곱해져 한도(초당 10회, IP 공유)를 소진했다.\n거버넌스상 전략 코드를 이 계층에서 직접 고치지 않는다. 그래서 전략을 건드리지 않고 계약을 코어가 대신 지키게 했다.\n틱 시작 시 보유 포지션 전체 마켓의 시세를 한 번에 프리페치한다. 데이터 접근 객체를 얇은 래퍼로 감싸, 같은 틱 안의 개별 시세 호출이 캐시를 반환하게 한다. 캐시에 없는 마켓만 실제 API로 폴백한다. 프리페치가 실패해도(순간적인 429 등) 빈 캐시로 넘어가 기존의 포지션 단위 오류 처리를 그대로 보존한다. 418은 기존처럼 즉시 전파한다. 테스트로 두 가지를 고정했다. 포지션이 둘이면 시세 조회가 정확히 1회, 두 마켓을 합쳐서만 호출되는지, 프리페치가 실패해도 청산 판단이 폴백으로 정상 진행되는지다.\n6. 종결 확인: 발췌 로그가 아니라 전체 로그 핫픽스 3 이후에도 사용자가 경고가 잠깐 다시 보인다고 알려 왔다. 이번에는 사용자가 서버의 로그와 DB 폴더를 로컬로 복사해 주어서 발췌가 아니라 실제 로그 전체를 열어 대조했다.\n재시작 직후 모든 전략의 마지막 진입 시각이 비어 있어서 첫 틱에 동시에 진입 스캔이 도는 일회성 버스트였다. 요청 제한 경고는 시작 후 24초 동안만 집중되었고 그 뒤 4분 이상 0건이었다. 시세 경고는 재시작 후 0건이었다. 로그에서 보유 종목이 한 번의 호출로 묶여 조회되는 것을 직접 확인했다. 이로써 세 핫픽스가 모두 의도대로 작동하는 것으로 종결했다. 남은 24초짜리 버스트는 전략별 진입 시각을 어긋나게 하면 없앨 수 있지만 필요해질 때 하기로 했다. 정작 확인할 것은 원래 목표인 “청산 반응이 실제로 빨라졌는가\"이고, 며칠 관찰해야 한다.\n정리 핫픽스 증상 진짜 원인 수정 1 캔들 요청 제한 경고 청산 틱마다 시장 컨텍스트 재계산 30분 캐시 2 경고가 계속됨, 이름표 이상 로그 전략 ID 전역 값이 시작 시 고정 틱마다 갱신 3 시세 요청 제한 포지션마다 시세 개별 호출 틱 시작 시 일괄 프리페치 배운 점: 주기를 15분에서 몇 초로 줄이면 호출 횟수가 수백 배가 된다. 그동안 무해했던 “작아서 괜찮은 비효율\"이 전부 한꺼번에 드러난다. 그리고 두 번째 핫픽스가 가장 값졌다. 증상이 같으면 같은 원인이라고 가정하기 쉽지만, 관측 도구(로그 이름표)가 틀려 있으면 진단 전체가 틀어진다. 이름표를 고치자 증상의 정체가 다른 것으로 바뀌었다. 또 한 번 배운 것은, 발췌된 로그 조각보다 전체 로그를 직접 읽는 편이 “문제가 끝났다\"를 판단하는 근거로 훨씬 강하다는 점이다.\n",
+  "wordCount" : "3238",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-27T23:00:00+09:00",
+  "dateModified": "2026-07-27T23:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기
+    </h1>
+    <div class="post-description">
+      15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-27T23:00:00+09:00'>2026년 7월 27일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%a0%84%eb%9e%b5-%ec%aa%bd-%eb%8b%a8%ea%b3%84-%ec%a2%85%ea%b2%b0" aria-label="1. 전략 쪽: 단계 종결">1. 전략 쪽: 단계 종결</a></li>
+            <li>
+                <a href="#2-%ec%99%9c-%eb%8d%b0%eb%aa%ac%ec%9c%bc%eb%a1%9c-%eb%b0%94%ea%bf%a8%eb%82%98" aria-label="2. 왜 데몬으로 바꿨나">2. 왜 데몬으로 바꿨나</a><ul>
+                    
+            <li>
+                <a href="#%ec%84%a4%ea%b3%84-%ec%8a%a4%eb%a0%88%eb%93%9c-%ec%97%86%ec%9d%b4-%eb%8b%a8%ec%9d%bc-%eb%a3%a8%ed%94%84" aria-label="설계: 스레드 없이 단일 루프">설계: 스레드 없이 단일 루프</a></li></ul>
+            </li>
+            <li>
+                <a href="#3-%ed%95%ab%ed%94%bd%ec%8a%a4-1-%ec%b2%ad%ec%82%b0-%ed%8b%b1%eb%a7%88%eb%8b%a4-%ec%8b%9c%ec%9e%a5-%ec%83%81%ed%99%a9%ec%9d%84-%ec%9e%ac%ea%b3%84%ec%82%b0%ed%96%88%eb%8b%a4" aria-label="3. 핫픽스 1: 청산 틱마다 시장 상황을 재계산했다">3. 핫픽스 1: 청산 틱마다 시장 상황을 재계산했다</a></li>
+            <li>
+                <a href="#4-%ed%95%ab%ed%94%bd%ec%8a%a4-2-%ea%b2%bd%ea%b3%a0%ea%b0%80-%ea%b3%84%ec%86%8d-%eb%82%98%ec%99%94%ea%b3%a0-%eb%a1%9c%ea%b7%b8%ec%9d%98-%ec%9d%b4%eb%a6%84%ed%91%9c%ea%b0%80-%ed%8b%80%eb%a0%b8%eb%8b%a4" aria-label="4. 핫픽스 2: 경고가 계속 나왔고, 로그의 이름표가 틀렸다">4. 핫픽스 2: 경고가 계속 나왔고, 로그의 이름표가 틀렸다</a></li>
+            <li>
+                <a href="#5-%ed%95%ab%ed%94%bd%ec%8a%a4-3-%ec%9d%b4%eb%a6%84%ed%91%9c%eb%a5%bc-%ea%b3%a0%ec%b9%98%ec%9e%90-%ec%a7%84%ec%a7%9c-%ec%9b%90%ec%9d%b8%ec%9d%b4-%eb%b3%b4%ec%98%80%eb%8b%a4" aria-label="5. 핫픽스 3: 이름표를 고치자 진짜 원인이 보였다">5. 핫픽스 3: 이름표를 고치자 진짜 원인이 보였다</a></li>
+            <li>
+                <a href="#6-%ec%a2%85%ea%b2%b0-%ed%99%95%ec%9d%b8-%eb%b0%9c%ec%b7%8c-%eb%a1%9c%ea%b7%b8%ea%b0%80-%ec%95%84%eb%8b%88%eb%9d%bc-%ec%a0%84%ec%b2%b4-%eb%a1%9c%ea%b7%b8" aria-label="6. 종결 확인: 발췌 로그가 아니라 전체 로그">6. 종결 확인: 발췌 로그가 아니라 전체 로그</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>7월 26~27일에는 두 가지가 겹쳤다. 새 전략 후보들의 단계가 마무리되었고, 운영 구조가 크론에서 <strong>상시 데몬</strong>으로 바뀌었다. 배포 당일 같은 증상이 세 번 이어졌다. 이 글은 주로 그 세 번의 핫픽스에 관한 기록이다.</p>
+<hr>
+<h2 id="1-전략-쪽-단계-종결">1. 전략 쪽: 단계 종결<a hidden class="anchor" aria-hidden="true" href="#1-전략-쪽-단계-종결">#</a></h2>
+<p>운영 전략에는 새 전략 후보가 두 갈래로 붙어 있었다. 충격 후 반등 계열(v3)은 마지막 단계에서 탈락해 배분이 회수되었고 운영 전략 하나에 다시 100%가 돌아갔다. 시장 국면 기반 추세 계열(v4)은 같은 코드로 재현하는 단계에서 실패해 개발 중단이 확정되었다. 두 후보 모두 앞선 글의 절차(사전 등록, 같은 코드 재현)가 걸러낸 결과다.</p>
+<p>그 사이 한 가지 이득이 있었다. v4를 만들다 부산물로 <strong>임의 마켓의 로컬 캔들 캐시</strong>가 core에 생겼다. 이전에는 거래소 API가 한 번에 200개까지만 조회해서 긴 구간의 지표 계산에 제약이 있었는데 이를 해소했다. 운영 전략에는 거래 중이던 포지션에 대한 순손실 누적을 모니터링 항목에 올렸다.</p>
+<hr>
+<h2 id="2-왜-데몬으로-바꿨나">2. 왜 데몬으로 바꿨나<a hidden class="anchor" aria-hidden="true" href="#2-왜-데몬으로-바꿨나">#</a></h2>
+<p>사용자가 이렇게 판단했다. &ldquo;가드가 15분 간격이라 청산 반응이 늦고, 그게 손실을 키운다.&rdquo; 요구는 구체적이었다. 종목 선정은 30분마다, 보유 종목은 1~5초마다 현재가를 확인해 매도한다. 확인한 것은 두 가지다. 4시간봉 신호 로직은 그대로 두고 <strong>확인 주기만</strong> 줄인다. 배포는 systemd로 한다.</p>
+<h3 id="설계-스레드-없이-단일-루프">설계: 스레드 없이 단일 루프<a hidden class="anchor" aria-hidden="true" href="#설계-스레드-없이-단일-루프">#</a></h3>
+<p>서브에이전트로 사전 조사를 병렬로 했다(락과 동시성, 전략의 청산 판단이 캔들에 의존하는 정도, 배포 관행). 결론은 <strong>단일 스레드 틱 루프</strong>였다. 파일 락, SQLite, 로깅 전역 값, 텔레그램 쿨다운이 전부 &ldquo;한 프로세스가 순차 실행&quot;을 가정하고 있어서 스레드나 asyncio를 도입하지 않는 편이 기존 부품을 그대로 재사용할 수 있었다.</p>
+<ul>
+<li>스케줄러는 순수한 틱 루프 클래스로 만들고 가짜 콜백만으로 단위 테스트한다.</li>
+<li>전략 하나의 청산 판단이 매 호출마다 캔들을 새로 읽던 부분(추세 이탈 체크)을 타임스탬프로 게이팅해 최소 30분 간격으로 제한했다. 손절·익절 임계값은 그대로고 &ldquo;캔들을 언제 다시 읽는가&quot;만 조절한다.</li>
+<li>거래소 차단(418)을 받으면 데몬을 종료하고, 종료 신호는 틱 사이에서 처리한다.</li>
+<li>청산 틱마다 실행 기록을 DB에 쓰면 폭증하므로 <strong>하트비트 주기마다 한 번만</strong> 쓴다. 모니터링 임계값도 하트비트와 새 진입 주기에 맞게 조정했다.</li>
+<li>배포 스크립트가 서비스 파일을 동기화하고, 상시 프로세스라 코드 변경 시 <strong>매번 재시작</strong>한다. 크론과 다른 점이다.</li>
+</ul>
+<hr>
+<h2 id="3-핫픽스-1-청산-틱마다-시장-상황을-재계산했다">3. 핫픽스 1: 청산 틱마다 시장 상황을 재계산했다<a hidden class="anchor" aria-hidden="true" href="#3-핫픽스-1-청산-틱마다-시장-상황을-재계산했다">#</a></h2>
+<p>사용자가 서버에 데몬을 올리자마자 로그에 &ldquo;캔들 그룹 요청 제한&rdquo; 경고가 4초 간격으로 끊임없이 찍혔다.</p>
+<p>원인은 청산 틱이 컨텍스트를 만드는 함수를 그대로 호출했다는 점이다. 그 함수 안에서 시장 국면 판정, 변동성 판정, 공포 게이트가 모두 <strong>BTC 4시간봉을 그때마다 새로 조회</strong>한다. 원래 크론 가드가 15분에 한 번 부르던 코드를 1~5초 주기로 재사용한 것이다. 전략 4개 × 캔들 함수 3종이 초당 수 회 호출되어 요청 한도(초당 10회)가 바로 소진되었다.</p>
+<p>&ldquo;가드는 현재가 조회만 하고 4시간봉은 재계산하지 않는다&quot;는 계약을 청산 판단 쪽에는 지켰는데 시장 컨텍스트 쪽에서는 놓쳤다.</p>
+<p>수정은 국면·변동성·공포 게이트를 <strong>30분 단위로 캐시</strong>하는 래퍼를 두는 것이었다. 포지션과 계좌는 청산 판단에 항상 최신이어야 하므로 캐시하지 않는다. 캐시 주기는 설정 파일로 뺐다. 회귀 테스트 4건(첫 호출은 항상 계산, 주기 내 재사용, 주기 경과 후 재계산, 포지션은 캐시하지 않음)을 추가했다.</p>
+<hr>
+<h2 id="4-핫픽스-2-경고가-계속-나왔고-로그의-이름표가-틀렸다">4. 핫픽스 2: 경고가 계속 나왔고, 로그의 이름표가 틀렸다<a hidden class="anchor" aria-hidden="true" href="#4-핫픽스-2-경고가-계속-나왔고-로그의-이름표가-틀렸다">#</a></h2>
+<p>재배포했는데도 경고가 계속 나왔다. 오히려 더 빈번했다. 그리고 경고 전부가 같은 전략 이름으로 찍혔다.</p>
+<p>이 지점에서 진짜 문제를 찾은 것은 경고가 아니라 그 전략 이름표였다. 진입 스캔 로그(<code>market_excluded_warning</code>)가 섞여 나오는 것을 보고, 데몬 재시작 직후 모든 전략이 동시에 첫 스캔을 도는 정상적인 일회성 버스트일 가능성을 의심했다. 그런데 그렇게 보기에는 <strong>이름표를 믿을 수가 없었다.</strong></p>
+<p>원인은 로그 필터의 전역 전략 ID가 <code>setup_logging()</code> 호출 때마다만 갱신된다는 점이었다. 데몬은 시작할 때 전략 4개의 의존성을 한 번씩 조립하면서 그 안에서 <code>setup_logging()</code>을 부른다. 그 루프가 끝나면 정렬상 마지막 전략으로 전역 값이 고정된다. 청산 루프는 매 틱마다 설정을 다시 부르지 않으므로(전략별 의존성을 시작 시 1회만 만드는 게 설계 의도다), 30분마다 도는 진입 루프가 그 전략을 처리할 때만 이름표가 바뀐다. 그 사이의 청산 틱 로그는 <strong>전부 한 전략 이름으로</strong> 찍힌다.</p>
+<p>앞서 크론 재설계 때 사전에 막았다고 생각한 &ldquo;전략 ID 필드 고정&rdquo; 버그의 데몬판이었다. 크론에서는 순회가 한 프로세스 안에서 끝났지만, 데몬에서는 프로세스가 오래 살면서 전역 값이 장수한다.</p>
+<p>수정은 전역 값을 갱신하는 함수를 공개로 올리고, 청산 틱이 매 틱 시작에 직접 호출하게 하는 것이었다. 이 수정은 로그 이름표만 바로잡고 API 호출량은 바꾸지 않는다. TDD로 라벨만 갱신되는지, 청산 틱 후 라벨이 실제로 처리한 전략이 되는지 테스트했다.</p>
+<hr>
+<h2 id="5-핫픽스-3-이름표를-고치자-진짜-원인이-보였다">5. 핫픽스 3: 이름표를 고치자 진짜 원인이 보였다<a hidden class="anchor" aria-hidden="true" href="#5-핫픽스-3-이름표를-고치자-진짜-원인이-보였다">#</a></h2>
+<p>정확해진 이름표로 다시 보니 경고는 두 가지 면에서 달랐다.</p>
+<ul>
+<li>재시작 버스트가 아니라 <strong>특정 전략에서 3~4초 간격으로 계속</strong> 반복되었다.</li>
+<li>그룹이 캔들이 아니라 <strong>시세(ticker)</strong> 였다.</li>
+</ul>
+<p>앞서 고친 캔들 재계산과는 별개의 세 번째 원인이었다. 시세 조회 인터페이스의 계약 문서에는 &ldquo;가드 사이클은 보유 종목 일괄 조회&quot;라고 명시되어 있었다. 그런데 실제 전략들은 청산 판단 안에서 포지션마다 개별 호출하고 있었다. 크론 가드가 15분에 한 번 돌 때는 포지션이 적어서 무해했고, 설계 문서에도 &ldquo;포지션이 적어 여유 있음, 필요해지면 별도 작업&quot;이라고 인지된 상태였다. 청산 틱 1~5초 주기에서 그것이 곱해져 한도(초당 10회, IP 공유)를 소진했다.</p>
+<p>거버넌스상 전략 코드를 이 계층에서 직접 고치지 않는다. 그래서 전략을 건드리지 않고 <strong>계약을 코어가 대신 지키게</strong> 했다.</p>
+<ul>
+<li>틱 시작 시 보유 포지션 전체 마켓의 시세를 한 번에 <strong>프리페치</strong>한다.</li>
+<li>데이터 접근 객체를 얇은 래퍼로 감싸, 같은 틱 안의 개별 시세 호출이 캐시를 반환하게 한다. 캐시에 없는 마켓만 실제 API로 폴백한다.</li>
+<li>프리페치가 실패해도(순간적인 429 등) 빈 캐시로 넘어가 기존의 포지션 단위 오류 처리를 그대로 보존한다. 418은 기존처럼 즉시 전파한다.</li>
+</ul>
+<p>테스트로 두 가지를 고정했다. 포지션이 둘이면 시세 조회가 정확히 1회, 두 마켓을 합쳐서만 호출되는지, 프리페치가 실패해도 청산 판단이 폴백으로 정상 진행되는지다.</p>
+<hr>
+<h2 id="6-종결-확인-발췌-로그가-아니라-전체-로그">6. 종결 확인: 발췌 로그가 아니라 전체 로그<a hidden class="anchor" aria-hidden="true" href="#6-종결-확인-발췌-로그가-아니라-전체-로그">#</a></h2>
+<p>핫픽스 3 이후에도 사용자가 경고가 잠깐 다시 보인다고 알려 왔다. 이번에는 사용자가 서버의 로그와 DB 폴더를 로컬로 복사해 주어서 <strong>발췌가 아니라 실제 로그 전체</strong>를 열어 대조했다.</p>
+<ul>
+<li>재시작 직후 모든 전략의 마지막 진입 시각이 비어 있어서 첫 틱에 동시에 진입 스캔이 도는 일회성 버스트였다.</li>
+<li>요청 제한 경고는 시작 후 <strong>24초 동안만</strong> 집중되었고 그 뒤 4분 이상 0건이었다.</li>
+<li>시세 경고는 재시작 후 0건이었다. 로그에서 보유 종목이 한 번의 호출로 묶여 조회되는 것을 직접 확인했다.</li>
+</ul>
+<p>이로써 세 핫픽스가 모두 의도대로 작동하는 것으로 종결했다. 남은 24초짜리 버스트는 전략별 진입 시각을 어긋나게 하면 없앨 수 있지만 필요해질 때 하기로 했다. 정작 확인할 것은 원래 목표인 &ldquo;청산 반응이 실제로 빨라졌는가&quot;이고, 며칠 관찰해야 한다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>핫픽스</th>
+					<th>증상</th>
+					<th>진짜 원인</th>
+					<th>수정</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>캔들 요청 제한 경고</td>
+					<td>청산 틱마다 시장 컨텍스트 재계산</td>
+					<td>30분 캐시</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>경고가 계속됨, 이름표 이상</td>
+					<td>로그 전략 ID 전역 값이 시작 시 고정</td>
+					<td>틱마다 갱신</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>시세 요청 제한</td>
+					<td>포지션마다 시세 개별 호출</td>
+					<td>틱 시작 시 일괄 프리페치</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 주기를 15분에서 몇 초로 줄이면 호출 횟수가 수백 배가 된다. 그동안 무해했던 &ldquo;작아서 괜찮은 비효율&quot;이 전부 한꺼번에 드러난다. 그리고 두 번째 핫픽스가 가장 값졌다. 증상이 같으면 같은 원인이라고 가정하기 쉽지만, <strong>관측 도구(로그 이름표)가 틀려 있으면 진단 전체가 틀어진다.</strong> 이름표를 고치자 증상의 정체가 다른 것으로 바뀌었다. 또 한 번 배운 것은, 발췌된 로그 조각보다 전체 로그를 직접 읽는 편이 &ldquo;문제가 끝났다&quot;를 판단하는 근거로 훨씬 강하다는 점이다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (11) — 전략의 &#39;기억&#39;을 코어에 두고, 크론을 다섯 줄로 줄이다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

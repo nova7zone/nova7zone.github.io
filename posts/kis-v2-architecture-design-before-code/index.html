@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계">
+<meta name="description" content="잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, &#34;무엇을 만들까&#34;보다 &#34;무엇을 지킬까&#34;를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나">
+  <meta property="og:description" content="잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, &#34;무엇을 만들까&#34;보다 &#34;무엇을 지킬까&#34;를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-07T14:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-07T14:00:00+09:00">
+    <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나">
+  <meta name="twitter:description" content="잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, &#34;무엇을 만들까&#34;보다 &#34;무엇을 지킬까&#34;를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나",
+      "item": "https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나",
+  "name": "자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나",
+  "description": "잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, \"무엇을 만들까\"보다 \"무엇을 지킬까\"를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.",
+  "keywords": [
+    "설계"
+  ],
+  "articleBody": "작성일: 2026년 7월 7일 최종 수정: 2026년 7월 7일 분야: AI Trading, Software Architecture 난이도: Intermediate 상태: 설계 확정, 이식 착수 전\n들어가며 지난 글에서 새 저장소 kis-auto-trading의 로컬 개발 환경을 다졌다. 이번 글은 한 걸음 뒤로 물러나서, 그 저장소를 시작하기로 한 결정 자체 — 설계를 어떻게 진행했는가를 다룬다. 코드는 아직 한 줄도 이식하지 않았다. 그런데도 쓸 이야기가 이렇게 많다는 게, 이 프로젝트의 성격을 잘 보여준다고 생각한다.\n기존 봇 kis-auto-trading-bot은 실계좌로 잘 돌아가고 있었다. 그러니 이건 “안 되는 걸 고치는” 이야기가 아니다. 잘 되는 걸, 다음 전략을 붙일 수 있는 구조로 다시 세우는 이야기다. 그리고 그 과정에서 내가 가장 신경 쓴 건 “무엇을 만들까\"가 아니라 “무엇을 지킬까\"였다.\n1. 문제는 코드가 아니라 구조였다 기존 저장소를 실측해보니 전략들의 의존 관계가 이랬다.\nstrategy_v2 → strategy_v1: 로직을 복제했다(import가 아니라 복붙). 지저분하지만 독립적이라 분리는 된다. strategy_v3 → strategy_v2: 하드 런타임 의존이었다. v3가 v2의 cache_manager·daily_reeval·position_registry·dynamic_stop·fear_filter 같은 내부 모듈을 직접 import했고, v3를 얹으려고 v2의 position_registry.upsert()와 daily_reeval.py를 직접 고쳐서 v3용 분기를 심어놨다. 근본 원인은 하나였다. 공유 코어 계층이 없어서, 먼저 만든 strategy_v2가 사실상 코어 노릇을 하고 있었다. 그래서 “v3를 개선하려면 v2를 건드려야 하는” 상황이 반복됐고, v4를 붙이면 v2의 네 번째 세입자가 될 게 뻔했다.\n이건 리팩터링으로 조금씩 풀 문제가 아니라고 판단했다. 세입자를 한 명 더 받는 대신, 건물을 다시 짓기로 했다.\n2. 첫 번째 결정: 계약을 먼저 쓴다 새 저장소에서 제일 먼저 한 일은 코드 골격이 아니라 설계 계약 문서(ARCHITECTURE.md)를 쓴 것이었다. 규칙은 단순하다: 코드가 이 문서를 위반하면, 고치는 건 문서가 아니라 코드다.\n핵심 계약은 두 줄로 요약된다.\ncore는 전략을 모른다. core/의 어떤 모듈도 strategies/를 import하지 않는다. 의존 방향은 항상 strategies → core, 절대 역방향 없음. 전략은 인프라를 모른다. 전략은 KIS API·DB·주문을 직접 다루지 않는다. core가 넘겨주는 컨텍스트만 받아 **판단(dataclass)**을 반환한다. 이 두 줄이 1번 문제(전략이 전략을 침범)를 구조적으로 차단한다. 전략끼리는 서로를 아예 볼 수 없고, 공유가 필요한 건 전부 core로 내려가기 때문이다.\n3. 전략을 “흐름\"이 아니라 “단계\"로 정의하다 기존 v3가 복잡해진 이유 중 하나는 “그룹별 종목 풀 + 그룹별 스크리닝\"을 공통 매매 흐름에 억지로 끼워 넣었기 때문이다. 새 설계에서는 전략을 매매 흐름 전체가 아니라 파이프라인 단계의 집합으로 정의했다.\n# 장전(pre-market) build_universe → build_pools → screen · reevaluate(보유 재평가 훅) # 장중(15분 사이클) evaluate_entry → evaluate_exit 각 단계는 순수 함수에 가깝게 유지한다(외부 IO 없이 컨텍스트만 받아 판단 반환). core가 이 단계들을 정해진 순서로 호출하고, 주문·영속·리포트는 전부 core가 책임진다. 그룹풀 전략은 build_pools를 오버라이드하고, 단순한 전략은 기본 구현(전체를 단일 그룹으로)을 그대로 쓴다. 어느 쪽이든 core의 사이징·집행·레지스트리는 동일하게 돈다.\n설계 검토 중에 구멍 하나를 찾았다. 기존 daily_reeval(장전 보유 재평가)에 v2/v3 분기가 뒤섞여 있었는데, 이걸 어느 단계로 옮길지가 애매했다. evaluate_exit에 욱여넣으면 장중 청산과 장전 재평가가 뭉개진다. 그래서 6번째 훅 reevaluate를 추가했다 — 기본 구현은 “유지(hold)“이고, 일봉 기준 재평가가 필요한 전략만 오버라이드한다. “v3 고치려고 v2를 건드리던” 바로 그 지점이, 이제 각 전략이 자기 파일에서 구현하는 훅 하나로 정리됐다.\n4. 가장 어려운 결정: 이 프로그램을 어떻게 검증할 것인가 여기가 설계에서 제일 오래 붙든 부분이다. “백테스트를 Lean(업계 표준 엔진)으로 돌려 검증하면 되지 않나?“에서 출발했는데, 파고들수록 답이 “안 된다\"로 기울었다.\n우리 전략은 가중 스코어(20지표 가중합 ≥ 임계값), 이벤트 confluence(두 신호가 시간창 안에서 결합), R:R 게이트, ATR 리스크 사이징, 단계 청산(부분익절 → 트레일링 → 전량)으로 돌아간다. Lean의 YAML DSL은 “조건 A AND B이면 매수, 손절 5%” 수준의 규칙 기반 단일 시그널에 최적화돼 있어서, 우리 전략을 넣으면 다른 전략이 되어버린다. 검증하려는 대상이 재현 과정에서 변질되면, 검증이 아니라 자기모순이다.\n그래서 방침을 뒤집었다. 실거래와 똑같은 코드(core + strategies)를 그대로 구동하는 same-code 자체 백테스터를 주 검증 수단으로 삼고, 시뮬레이션 브로커만 갈아끼운다. 백테스트 통과 = 실코드 검증이 성립하려면 이 방법뿐이다. Lean은 버리지 않고, 단순화한 하위 시그널의 독립 사니티 체크와 KOSPI 벤치마크·시각화 보조로만 쓴다.\n그런데 여기서 한 가지를 놓칠 뻔했다. 원래 계획은 “새 repo 백테스트 vs 기존 repo 백테스트를 비교해서 이식 충실성을 증명\"하는 것이었는데 — 기존 repo는 백테스트를 수행한 적이 아예 없었다. 비교 대상이 존재하지 않는 것이다. 그래서 이식 검증을 2단계로 다시 정의했다.\nfixture 판단 회귀: 기존 repo의 실측 입력(캔들·설정·보유 상태)을 고정해두고, 같은 입력을 신·구 코드에 똑같이 넣어 판단 결과가 필드 단위로 일치하는지 본다. 백테스터 없이 이식 직후 돌릴 수 있다. dual-run 리플레이: 두 프로그램을 비교해야 한다면, 별도 엔진을 만들지 않고 같은 엔진·같은 데이터에서 전략 판단 코드만 바꿔 돌려 트레이드 로그를 diff한다. 엔진이 둘이면 체결·비용 모델 차이가 비교를 오염시키기 때문이다. 이 결정 하나 때문에 백테스트 엔진이 원래 “선택(최종 단계)“에서 “필수(5단계)“로 승격됐다. v1 합격 판정 자체가 이 엔진을 전제하니까.\n5. 규칙은 사람이 아니라 도구가 지킨다 계층 분리를 문서에 아무리 써놔도, 바쁠 때 core에서 strategies를 한 줄 import하면 그 순간 원래 문제로 회귀한다. 그래서 계약을 기계적으로 강제하기로 했다.\nimport-linter contract로 “core → strategies/web 금지”, “전략 간 독립”, “strategies → web 금지\"를 선언하고, pre-commit과 CI에서 매번 검사한다. 역방향 import는 커밋 자체가 거부된다. 거버넌스 규칙도 문서로 고정했다: 전략 개발자의 작업 범위는 자기 전략 폴더로 한정, core나 타 전략 수정이 필요하면 직접 고치지 말고 아키텍처 오너에게 통보 → 공용 개정. core는 한 전략의 편의가 아니라 전 전략에 대한 공용 계약으로만 바뀐다. 이 절차 자체를 프로젝트 스킬 4종(작업 시작 / 작업 종료 / 문서 최신화 / 통합 규칙)으로 만들어서, Claude Code 세션이 “작업 시작\"이라는 말만으로 매번 같은 착수 절차 — HANDOFF 정독, 단계 확인, 수정 범위 선언 — 를 밟게 했다. 핵심 아이디어는, 실수하기 쉬운 규칙일수록 사람의 기억력에 맡기지 않는다는 것이다.\n6. 나머지 결정들: 작지만 나중에 발목 잡을 것들 설계 검토를 하며 확정한 결정이 스물세 개가 됐다. 큰 것 몇 개 말고, 나중에 조용히 사고를 낼 만한 작은 것들을 골라 미리 못박아 뒀다.\n백테스트 동시 터치 = 보수 우선. 한 일봉이 진입 트리거와 손절가를 모두 건드리면 손절이 먼저 체결된 것으로 간주한다. 낙관 편향은 백테스트 신뢰를 통째로 깎는다. 거래비용은 연도별 요율 테이블로 외부화. 증권거래세는 매년 바뀌고(2025년 코스피 0%+농특세 0.15%, 2026년 인상), 5년 백테스트는 이 변화를 구간별로 반영해야 한다. 요율은 settings/에 넣고 코드에 박지 않는다. web 대시보드의 쓰기 권한은 킬스위치 하나로 제한. 나머지 설정 변경은 서버에서 YAML 직접 수정. 대시보드 계정 탈취가 곧 계좌 사고로 이어지는 경로를 구조적으로 끊는다. 운영 전환(cutover)은 3단계. 섀도 병행(신 repo를 paper로 4주+ 병행, 판단 diff 무결 확인) → 신규 진입만 전환 → 구 포지션은 이관하지 않고 자연 청산. 포지션 이관은 그 자체가 리스크라 피했다. 생존편향은 정직하게 인정하기로 했다. 현재 구성종목으로 백테스트하되 보고서에 한계를 명시하고, point-in-time 유니버스 자료는 운영 전환 시점에 확보한다. 정리 항목 결정 근본 문제 공유 코어 부재 → 먼저 만든 전략이 코어 노릇 → “v3 고치려 v2 수정” 반복 핵심 분리 core(전략 무관 인프라) ↔ strategies(전략 로직), 의존은 항상 단방향 전략 정의 매매 흐름 전체가 아니라 파이프라인 5+1단계 — core가 호출, 전략은 판단만 검증 방식 same-code 자체 백테스터가 주 검증, fixture 회귀 + dual-run으로 이식 충실성 강제 수단 import-linter + pre-commit + CI, 거버넌스 문서, 프로젝트 스킬 4종 확정 결정 수 23건 (HANDOFF 결정 테이블) 돌아보면 이번 설계에서 배운 건 이거였다. 잘 돌아가는 시스템을 다시 세울 때 가장 위험한 건, 예전 방식으로 “빨리” 하고 싶은 유혹이다. 코드를 한 줄도 안 짜고 계약과 검증 방식과 강제 수단부터 세운 게 답답해 보일 수 있지만, 기존 봇이 딱 그 단계를 건너뛰어서 지금 이 고생을 하고 있는 거니까.\n그런데 이식에 바로 들어가기 전에 하나 짚고 갈 게 있다. 앞에서 “검증된 v3 로직은 재작성 말고 그대로 이식한다\"고 했지만 — 정말 그 로직에 고칠 데가 없는지는 아직 확인하지 않았다. 그래서 다음 순서를 이렇게 잡았다. 기존 코드를 모의 투자(paper) 모드로 약 5일간 돌린 로그를 먼저 분석해서, 실제 운영에서 드러나는 오류·엣지 케이스를 추린다. 거기서 나온 문제들을 새 코드용 개발요청서(DEV_REQUEST_TEMPLATE)에 반영한 다음, 그 요청서를 근거로 이식·개발에 착수한다.\n이 순서가 중요한 이유가 있다. 아무 판단 없이 옮기면 기존 버그까지 그대로 이식된다. 반대로 이식하면서 즉흥적으로 “개선\"하면, 그건 이식이 아니라 새 전략이 되어서 oracle 회귀 검증의 기준 자체가 흔들린다(4장의 자기모순과 같은 함정이다). 그래서 고칠 것과 그대로 옮길 것을 코딩 전에 요청서로 분리해두려는 것이다 — 무엇을 왜 바꾸는지가 문서에 남아야, 나중에 회귀가 어긋났을 때 “이식 결함\"인지 “의도한 수정\"인지 가려낼 수 있으니까.\n다음 글은 그 로그 분석기다 — 5일치 paper 로그에서 무엇이 나왔고, 그중 무엇을 개발요청서에 올렸는지를 다룰 예정이다.\n",
+  "wordCount" : "4271",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-07T14:00:00+09:00",
+  "dateModified": "2026-07-07T14:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나
+    </h1>
+    <div class="post-description">
+      잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, &#34;무엇을 만들까&#34;보다 &#34;무엇을 지킬까&#34;를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-07T14:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%eb%ac%b8%ec%a0%9c%eb%8a%94-%ec%bd%94%eb%93%9c%ea%b0%80-%ec%95%84%eb%8b%88%eb%9d%bc-%ea%b5%ac%ec%a1%b0%ec%98%80%eb%8b%a4" aria-label="1. 문제는 코드가 아니라 구조였다">1. 문제는 코드가 아니라 구조였다</a></li>
+            <li>
+                <a href="#2-%ec%b2%ab-%eb%b2%88%ec%a7%b8-%ea%b2%b0%ec%a0%95-%ea%b3%84%ec%95%bd%ec%9d%84-%eb%a8%bc%ec%a0%80-%ec%93%b4%eb%8b%a4" aria-label="2. 첫 번째 결정: 계약을 먼저 쓴다">2. 첫 번째 결정: 계약을 먼저 쓴다</a></li>
+            <li>
+                <a href="#3-%ec%a0%84%eb%9e%b5%ec%9d%84-%ed%9d%90%eb%a6%84%ec%9d%b4-%ec%95%84%eb%8b%88%eb%9d%bc-%eb%8b%a8%ea%b3%84%eb%a1%9c-%ec%a0%95%ec%9d%98%ed%95%98%eb%8b%a4" aria-label="3. 전략을 &ldquo;흐름&quot;이 아니라 &ldquo;단계&quot;로 정의하다">3. 전략을 &ldquo;흐름&quot;이 아니라 &ldquo;단계&quot;로 정의하다</a></li>
+            <li>
+                <a href="#4-%ea%b0%80%ec%9e%a5-%ec%96%b4%eb%a0%a4%ec%9a%b4-%ea%b2%b0%ec%a0%95-%ec%9d%b4-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8%ec%9d%84-%ec%96%b4%eb%96%bb%ea%b2%8c-%ea%b2%80%ec%a6%9d%ed%95%a0-%ea%b2%83%ec%9d%b8%ea%b0%80" aria-label="4. 가장 어려운 결정: 이 프로그램을 어떻게 검증할 것인가">4. 가장 어려운 결정: 이 프로그램을 어떻게 검증할 것인가</a></li>
+            <li>
+                <a href="#5-%ea%b7%9c%ec%b9%99%ec%9d%80-%ec%82%ac%eb%9e%8c%ec%9d%b4-%ec%95%84%eb%8b%88%eb%9d%bc-%eb%8f%84%ea%b5%ac%ea%b0%80-%ec%a7%80%ed%82%a8%eb%8b%a4" aria-label="5. 규칙은 사람이 아니라 도구가 지킨다">5. 규칙은 사람이 아니라 도구가 지킨다</a></li>
+            <li>
+                <a href="#6-%eb%82%98%eb%a8%b8%ec%a7%80-%ea%b2%b0%ec%a0%95%eb%93%a4-%ec%9e%91%ec%a7%80%eb%a7%8c-%eb%82%98%ec%a4%91%ec%97%90-%eb%b0%9c%eb%aa%a9-%ec%9e%a1%ec%9d%84-%ea%b2%83%eb%93%a4" aria-label="6. 나머지 결정들: 작지만 나중에 발목 잡을 것들">6. 나머지 결정들: 작지만 나중에 발목 잡을 것들</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 7일
+<strong>최종 수정</strong>: 2026년 7월 7일
+<strong>분야</strong>: AI Trading, Software Architecture
+<strong>난이도</strong>: Intermediate
+<strong>상태</strong>: 설계 확정, 이식 착수 전</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>지난 글에서 새 저장소 <code>kis-auto-trading</code>의 로컬 개발 환경을 다졌다. 이번 글은 한 걸음
+뒤로 물러나서, <strong>그 저장소를 시작하기로 한 결정 자체 — 설계를 어떻게 진행했는가</strong>를
+다룬다. 코드는 아직 한 줄도 이식하지 않았다. 그런데도 쓸 이야기가 이렇게 많다는 게,
+이 프로젝트의 성격을 잘 보여준다고 생각한다.</p>
+<p>기존 봇 <code>kis-auto-trading-bot</code>은 실계좌로 잘 돌아가고 있었다. 그러니 이건 &ldquo;안 되는 걸
+고치는&rdquo; 이야기가 아니다. <strong>잘 되는 걸, 다음 전략을 붙일 수 있는 구조로 다시 세우는</strong>
+이야기다. 그리고 그 과정에서 내가 가장 신경 쓴 건 &ldquo;무엇을 만들까&quot;가 아니라 &ldquo;무엇을
+지킬까&quot;였다.</p>
+<hr>
+<h2 id="1-문제는-코드가-아니라-구조였다">1. 문제는 코드가 아니라 구조였다<a hidden class="anchor" aria-hidden="true" href="#1-문제는-코드가-아니라-구조였다">#</a></h2>
+<p>기존 저장소를 실측해보니 전략들의 의존 관계가 이랬다.</p>
+<ul>
+<li><code>strategy_v2 → strategy_v1</code>: 로직을 <strong>복제</strong>했다(import가 아니라 복붙). 지저분하지만
+독립적이라 분리는 된다.</li>
+<li><code>strategy_v3 → strategy_v2</code>: <strong>하드 런타임 의존</strong>이었다. v3가 v2의
+<code>cache_manager</code>·<code>daily_reeval</code>·<code>position_registry</code>·<code>dynamic_stop</code>·<code>fear_filter</code>
+같은 내부 모듈을 직접 import했고, v3를 얹으려고 v2의 <code>position_registry.upsert()</code>와
+<code>daily_reeval.py</code>를 <strong>직접 고쳐서</strong> v3용 분기를 심어놨다.</li>
+</ul>
+<p>근본 원인은 하나였다. <strong>공유 코어 계층이 없어서, 먼저 만든 <code>strategy_v2</code>가 사실상 코어
+노릇을 하고 있었다.</strong> 그래서 &ldquo;v3를 개선하려면 v2를 건드려야 하는&rdquo; 상황이 반복됐고,
+v4를 붙이면 v2의 네 번째 세입자가 될 게 뻔했다.</p>
+<p>이건 리팩터링으로 조금씩 풀 문제가 아니라고 판단했다. 세입자를 한 명 더 받는 대신,
+<strong>건물을 다시 짓기로</strong> 했다.</p>
+<hr>
+<h2 id="2-첫-번째-결정-계약을-먼저-쓴다">2. 첫 번째 결정: 계약을 먼저 쓴다<a hidden class="anchor" aria-hidden="true" href="#2-첫-번째-결정-계약을-먼저-쓴다">#</a></h2>
+<p>새 저장소에서 제일 먼저 한 일은 코드 골격이 아니라 <strong>설계 계약 문서</strong>(<code>ARCHITECTURE.md</code>)를
+쓴 것이었다. 규칙은 단순하다: 코드가 이 문서를 위반하면, 고치는 건 문서가 아니라 코드다.</p>
+<p>핵심 계약은 두 줄로 요약된다.</p>
+<ol>
+<li><strong>core는 전략을 모른다.</strong> <code>core/</code>의 어떤 모듈도 <code>strategies/</code>를 import하지 않는다.
+의존 방향은 항상 <code>strategies → core</code>, 절대 역방향 없음.</li>
+<li><strong>전략은 인프라를 모른다.</strong> 전략은 KIS API·DB·주문을 직접 다루지 않는다. core가
+넘겨주는 컨텍스트만 받아 **판단(dataclass)**을 반환한다.</li>
+</ol>
+<p>이 두 줄이 1번 문제(전략이 전략을 침범)를 구조적으로 차단한다. 전략끼리는 서로를 아예
+볼 수 없고, 공유가 필요한 건 전부 core로 내려가기 때문이다.</p>
+<hr>
+<h2 id="3-전략을-흐름이-아니라-단계로-정의하다">3. 전략을 &ldquo;흐름&quot;이 아니라 &ldquo;단계&quot;로 정의하다<a hidden class="anchor" aria-hidden="true" href="#3-전략을-흐름이-아니라-단계로-정의하다">#</a></h2>
+<p>기존 v3가 복잡해진 이유 중 하나는 &ldquo;그룹별 종목 풀 + 그룹별 스크리닝&quot;을 공통 매매 흐름에
+억지로 끼워 넣었기 때문이다. 새 설계에서는 전략을 매매 흐름 전체가 아니라 <strong>파이프라인
+단계의 집합</strong>으로 정의했다.</p>
+<pre tabindex="0"><code># 장전(pre-market)
+build_universe → build_pools → screen · reevaluate(보유 재평가 훅)
+# 장중(15분 사이클)
+evaluate_entry → evaluate_exit
+</code></pre><p>각 단계는 순수 함수에 가깝게 유지한다(외부 IO 없이 컨텍스트만 받아 판단 반환). core가
+이 단계들을 정해진 순서로 호출하고, 주문·영속·리포트는 전부 core가 책임진다. 그룹풀
+전략은 <code>build_pools</code>를 오버라이드하고, 단순한 전략은 기본 구현(전체를 단일 그룹으로)을
+그대로 쓴다. 어느 쪽이든 core의 사이징·집행·레지스트리는 동일하게 돈다.</p>
+<p>설계 검토 중에 구멍 하나를 찾았다. 기존 <code>daily_reeval</code>(장전 보유 재평가)에 v2/v3 분기가
+뒤섞여 있었는데, 이걸 어느 단계로 옮길지가 애매했다. <code>evaluate_exit</code>에 욱여넣으면
+장중 청산과 장전 재평가가 뭉개진다. 그래서 <strong>6번째 훅 <code>reevaluate</code>를 추가</strong>했다 — 기본
+구현은 &ldquo;유지(hold)&ldquo;이고, 일봉 기준 재평가가 필요한 전략만 오버라이드한다. &ldquo;v3 고치려고
+v2를 건드리던&rdquo; 바로 그 지점이, 이제 각 전략이 자기 파일에서 구현하는 훅 하나로 정리됐다.</p>
+<hr>
+<h2 id="4-가장-어려운-결정-이-프로그램을-어떻게-검증할-것인가">4. 가장 어려운 결정: 이 프로그램을 어떻게 검증할 것인가<a hidden class="anchor" aria-hidden="true" href="#4-가장-어려운-결정-이-프로그램을-어떻게-검증할-것인가">#</a></h2>
+<p>여기가 설계에서 제일 오래 붙든 부분이다. &ldquo;백테스트를 Lean(업계 표준 엔진)으로 돌려
+검증하면 되지 않나?&ldquo;에서 출발했는데, 파고들수록 답이 &ldquo;안 된다&quot;로 기울었다.</p>
+<p>우리 전략은 <strong>가중 스코어</strong>(20지표 가중합 ≥ 임계값), <strong>이벤트 confluence</strong>(두 신호가
+시간창 안에서 결합), <strong>R:R 게이트</strong>, <strong>ATR 리스크 사이징</strong>, <strong>단계 청산</strong>(부분익절 →
+트레일링 → 전량)으로 돌아간다. Lean의 YAML DSL은 &ldquo;조건 A AND B이면 매수, 손절 5%&rdquo; 수준의
+규칙 기반 단일 시그널에 최적화돼 있어서, 우리 전략을 넣으면 <strong>다른 전략이 되어버린다.</strong>
+검증하려는 대상이 재현 과정에서 변질되면, 검증이 아니라 자기모순이다.</p>
+<p>그래서 방침을 뒤집었다. <strong>실거래와 똑같은 코드(core + strategies)를 그대로 구동하는
+same-code 자체 백테스터</strong>를 주 검증 수단으로 삼고, 시뮬레이션 브로커만 갈아끼운다.
+백테스트 통과 = 실코드 검증이 성립하려면 이 방법뿐이다. Lean은 버리지 않고, 단순화한
+하위 시그널의 독립 사니티 체크와 KOSPI 벤치마크·시각화 보조로만 쓴다.</p>
+<p>그런데 여기서 한 가지를 놓칠 뻔했다. 원래 계획은 &ldquo;새 repo 백테스트 vs 기존 repo
+백테스트를 비교해서 이식 충실성을 증명&quot;하는 것이었는데 — <strong>기존 repo는 백테스트를 수행한
+적이 아예 없었다.</strong> 비교 대상이 존재하지 않는 것이다. 그래서 이식 검증을 2단계로 다시
+정의했다.</p>
+<ol>
+<li><strong>fixture 판단 회귀</strong>: 기존 repo의 실측 입력(캔들·설정·보유 상태)을 고정해두고, 같은
+입력을 신·구 코드에 똑같이 넣어 <strong>판단 결과가 필드 단위로 일치</strong>하는지 본다. 백테스터
+없이 이식 직후 돌릴 수 있다.</li>
+<li><strong>dual-run 리플레이</strong>: 두 프로그램을 비교해야 한다면, 별도 엔진을 만들지 않고 <strong>같은
+엔진·같은 데이터에서 전략 판단 코드만 바꿔</strong> 돌려 트레이드 로그를 diff한다. 엔진이
+둘이면 체결·비용 모델 차이가 비교를 오염시키기 때문이다.</li>
+</ol>
+<p>이 결정 하나 때문에 백테스트 엔진이 원래 &ldquo;선택(최종 단계)&ldquo;에서 <strong>&ldquo;필수(5단계)&ldquo;로
+승격</strong>됐다. v1 합격 판정 자체가 이 엔진을 전제하니까.</p>
+<hr>
+<h2 id="5-규칙은-사람이-아니라-도구가-지킨다">5. 규칙은 사람이 아니라 도구가 지킨다<a hidden class="anchor" aria-hidden="true" href="#5-규칙은-사람이-아니라-도구가-지킨다">#</a></h2>
+<p>계층 분리를 문서에 아무리 써놔도, 바쁠 때 <code>core</code>에서 <code>strategies</code>를 한 줄 import하면
+그 순간 원래 문제로 회귀한다. 그래서 계약을 <strong>기계적으로 강제</strong>하기로 했다.</p>
+<ul>
+<li><code>import-linter</code> contract로 &ldquo;core → strategies/web 금지&rdquo;, &ldquo;전략 간 독립&rdquo;, &ldquo;strategies →
+web 금지&quot;를 선언하고, <code>pre-commit</code>과 CI에서 매번 검사한다. 역방향 import는 커밋 자체가
+거부된다.</li>
+<li><strong>거버넌스 규칙</strong>도 문서로 고정했다: 전략 개발자의 작업 범위는 자기 전략 폴더로 한정,
+core나 타 전략 수정이 필요하면 직접 고치지 말고 아키텍처 오너에게 통보 → 공용 개정.
+core는 한 전략의 편의가 아니라 전 전략에 대한 공용 계약으로만 바뀐다.</li>
+<li>이 절차 자체를 <strong>프로젝트 스킬 4종</strong>(작업 시작 / 작업 종료 / 문서 최신화 / 통합 규칙)으로
+만들어서, Claude Code 세션이 &ldquo;작업 시작&quot;이라는 말만으로 매번 같은 착수 절차 — HANDOFF
+정독, 단계 확인, 수정 범위 선언 — 를 밟게 했다.</li>
+</ul>
+<p>핵심 아이디어는, 실수하기 쉬운 규칙일수록 사람의 기억력에 맡기지 않는다는 것이다.</p>
+<hr>
+<h2 id="6-나머지-결정들-작지만-나중에-발목-잡을-것들">6. 나머지 결정들: 작지만 나중에 발목 잡을 것들<a hidden class="anchor" aria-hidden="true" href="#6-나머지-결정들-작지만-나중에-발목-잡을-것들">#</a></h2>
+<p>설계 검토를 하며 확정한 결정이 스물세 개가 됐다. 큰 것 몇 개 말고, 나중에 조용히
+사고를 낼 만한 작은 것들을 골라 미리 못박아 뒀다.</p>
+<ul>
+<li><strong>백테스트 동시 터치 = 보수 우선.</strong> 한 일봉이 진입 트리거와 손절가를 모두 건드리면
+손절이 먼저 체결된 것으로 간주한다. 낙관 편향은 백테스트 신뢰를 통째로 깎는다.</li>
+<li><strong>거래비용은 연도별 요율 테이블로 외부화.</strong> 증권거래세는 매년 바뀌고(2025년 코스피
+0%+농특세 0.15%, 2026년 인상), 5년 백테스트는 이 변화를 구간별로 반영해야 한다.
+요율은 <code>settings/</code>에 넣고 코드에 박지 않는다.</li>
+<li><strong>web 대시보드의 쓰기 권한은 킬스위치 하나로 제한.</strong> 나머지 설정 변경은 서버에서 YAML
+직접 수정. 대시보드 계정 탈취가 곧 계좌 사고로 이어지는 경로를 구조적으로 끊는다.</li>
+<li><strong>운영 전환(cutover)은 3단계.</strong> 섀도 병행(신 repo를 paper로 4주+ 병행, 판단 diff 무결
+확인) → 신규 진입만 전환 → 구 포지션은 이관하지 않고 자연 청산. 포지션 이관은 그 자체가
+리스크라 피했다.</li>
+<li><strong>생존편향</strong>은 정직하게 인정하기로 했다. 현재 구성종목으로 백테스트하되 보고서에 한계를
+명시하고, point-in-time 유니버스 자료는 운영 전환 시점에 확보한다.</li>
+</ul>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>결정</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>근본 문제</td>
+					<td>공유 코어 부재 → 먼저 만든 전략이 코어 노릇 → &ldquo;v3 고치려 v2 수정&rdquo; 반복</td>
+			</tr>
+			<tr>
+					<td>핵심 분리</td>
+					<td><code>core</code>(전략 무관 인프라) ↔ <code>strategies</code>(전략 로직), 의존은 항상 단방향</td>
+			</tr>
+			<tr>
+					<td>전략 정의</td>
+					<td>매매 흐름 전체가 아니라 파이프라인 5+1단계 — core가 호출, 전략은 판단만</td>
+			</tr>
+			<tr>
+					<td>검증 방식</td>
+					<td>same-code 자체 백테스터가 주 검증, fixture 회귀 + dual-run으로 이식 충실성</td>
+			</tr>
+			<tr>
+					<td>강제 수단</td>
+					<td>import-linter + pre-commit + CI, 거버넌스 문서, 프로젝트 스킬 4종</td>
+			</tr>
+			<tr>
+					<td>확정 결정 수</td>
+					<td>23건 (HANDOFF 결정 테이블)</td>
+			</tr>
+	</tbody>
+</table>
+<p>돌아보면 이번 설계에서 배운 건 이거였다. <strong>잘 돌아가는 시스템을 다시 세울 때 가장
+위험한 건, 예전 방식으로 &ldquo;빨리&rdquo; 하고 싶은 유혹이다.</strong> 코드를 한 줄도 안 짜고 계약과
+검증 방식과 강제 수단부터 세운 게 답답해 보일 수 있지만, 기존 봇이 딱 그 단계를 건너뛰어서
+지금 이 고생을 하고 있는 거니까.</p>
+<p>그런데 이식에 바로 들어가기 전에 하나 짚고 갈 게 있다. 앞에서 &ldquo;검증된 v3 로직은 재작성
+말고 그대로 이식한다&quot;고 했지만 — <strong>정말 그 로직에 고칠 데가 없는지</strong>는 아직 확인하지
+않았다. 그래서 다음 순서를 이렇게 잡았다. 기존 코드를 모의 투자(paper) 모드로 <strong>약 5일간
+돌린 로그를 먼저 분석</strong>해서, 실제 운영에서 드러나는 오류·엣지 케이스를 추린다. 거기서
+나온 문제들을 <strong>새 코드용 개발요청서(<code>DEV_REQUEST_TEMPLATE</code>)에 반영</strong>한 다음, 그 요청서를
+근거로 이식·개발에 착수한다.</p>
+<p>이 순서가 중요한 이유가 있다. 아무 판단 없이 옮기면 기존 버그까지 그대로 이식된다.
+반대로 이식하면서 즉흥적으로 &ldquo;개선&quot;하면, 그건 이식이 아니라 새 전략이 되어서 oracle 회귀
+검증의 기준 자체가 흔들린다(4장의 자기모순과 같은 함정이다). 그래서 <strong>고칠 것과 그대로
+옮길 것을 코딩 전에 요청서로 분리</strong>해두려는 것이다 — 무엇을 왜 바꾸는지가 문서에 남아야,
+나중에 회귀가 어긋났을 때 &ldquo;이식 결함&quot;인지 &ldquo;의도한 수정&quot;인지 가려낼 수 있으니까.</p>
+<p>다음 글은 그 로그 분석기다 — 5일치 paper 로그에서 무엇이 나왔고, 그중 무엇을 개발요청서에
+올렸는지를 다룰 예정이다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/krx-401-and-market-filter-incomplete-candle/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 코드 개발 (48) — KRX 401 오류는 코드가 아니라 서비스 신청 문제였다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

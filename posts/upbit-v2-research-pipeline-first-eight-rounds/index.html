@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="연구, 설계, 버그수정">
+<meta name="description" content="전략 연구를 에이전트 4종 파이프라인으로 자동화한 첫 2주. 엔진 계약의 공백을 먼저 발견해 고쳤고, 8개 후보가 모두 조기 기각되었으며, 봉인 규칙이 &#39;돌파&#39; 클래스까지 실질적으로 막는 구조를 확인했다. 무료 데이터 소스가 끝내 막힌 이야기와 엔진의 숨은 결함 13건 점검도 함께 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다">
+  <meta property="og:description" content="전략 연구를 에이전트 4종 파이프라인으로 자동화한 첫 2주. 엔진 계약의 공백을 먼저 발견해 고쳤고, 8개 후보가 모두 조기 기각되었으며, 봉인 규칙이 &#39;돌파&#39; 클래스까지 실질적으로 막는 구조를 확인했다. 무료 데이터 소스가 끝내 막힌 이야기와 엔진의 숨은 결함 13건 점검도 함께 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-08-12T23:40:00+09:00">
+    <meta property="article:modified_time" content="2026-08-12T23:40:00+09:00">
+    <meta property="article:tag" content="연구">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="버그수정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다">
+  <meta name="twitter:description" content="전략 연구를 에이전트 4종 파이프라인으로 자동화한 첫 2주. 엔진 계약의 공백을 먼저 발견해 고쳤고, 8개 후보가 모두 조기 기각되었으며, 봉인 규칙이 &#39;돌파&#39; 클래스까지 실질적으로 막는 구조를 확인했다. 무료 데이터 소스가 끝내 막힌 이야기와 엔진의 숨은 결함 13건 점검도 함께 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다",
+  "name": "자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다",
+  "description": "전략 연구를 에이전트 4종 파이프라인으로 자동화한 첫 2주. 엔진 계약의 공백을 먼저 발견해 고쳤고, 8개 후보가 모두 조기 기각되었으며, 봉인 규칙이 '돌파' 클래스까지 실질적으로 막는 구조를 확인했다. 무료 데이터 소스가 끝내 막힌 이야기와 엔진의 숨은 결함 13건 점검도 함께 정리한다.",
+  "keywords": [
+    "연구", "설계", "버그수정"
+  ],
+  "articleBody": "들어가며 V2의 목표는 “돈이 되는 전략을 찾는 것\"이 아니라 전략을 정직하게 걸러내는 파이프라인을 만드는 것이다. 8월 5일부터 12일까지 이 파이프라인을 처음 가동했고, 연구 회차 8건이 전부 기각으로 끝났다. 실패가 아니라 정상 동작이다. 이 글은 어떻게 기각되었는지와, 가동 과정에서 드러난 시스템 쪽 문제를 다룬다. 후보 전략의 구체적 파라미터는 공개하지 않는다.\n1. 파이프라인 구성 연구 에이전트 4종과 판정 기준 문서(criteria.md)로 구성했다.\n에이전트 역할 scout 문헌·웹에서 후보 수집 (독립 소스 2개 이상 필요) composer 후보를 규칙 명세로 변환 (창작 금지) validator 신호 함수만 구현해 백테스트 엔진으로 검증 reviser 스모크 단계에서 실패 진단 (최대 3회) 회차 하나가 후보 하나를 끝까지 처리한다. 종료 상태는 통과(PASS), 엄격 실패, 스모크 실패, 조기 기각(REJECTED-EARLY), 후보 없음(NO-CANDIDATE) 등이다. 정보는 회차 폴더의 파일로만 전달된다.\n판정 기준은 전부 잠정값으로 시작했다. 조기 판별, 부트스트랩 신뢰구간, 낙폭 상한, 과최적화 확률(PBO) 합격선, 파라미터 고원 허용폭 등이다. 봉인 구간은 누적 시도 횟수 K에 따라 신뢰수준을 높인다(시도가 많을수록 더 엄격하게).\n2. 첫 발견: 엔진이 연구 설계를 못 따라갔다 에이전트 정의를 쓰기 전에 실제 백테스트 코드를 먼저 열어 보았다. 연구 문서는 시장 국면 필터를 네 가지 조합(둘 다 끔, 하나만 켬, 둘 다 켬)으로 비교하라고 하는데, 엔진으로는 조합 A(완전 off)를 만들 수 없었다.\n공통 가드 불린 하나가 공포 게이트, 쿨다운, 스프레드 가드, 일일 손실 한도를 한꺼번에 묶고 있었다. 거시 국면 게이트는 위험 설정의 하락장 사이즈 계수가 포지션 크기 함수에 조건 없이 적용되어 끌 방법이 없었다. 이것은 연구 시작 전의 정지 조건에 해당했다. 사용자에게 확인하고 그 세션에서 직접 계약을 개정했다. 프리셋에 거시 게이트와 공포 게이트의 독립 스위치를 추가하고, 끈 경우 균일 계수를 쓰게 했다. 켜고 끈 각각을 고정하는 테스트 4건을 추가했다.\n연구 도구를 만들다가 연구 도구가 의존하는 엔진의 결함을 먼저 찾은 셈이다. 에이전트를 돌리기 전에 인프라가 문서의 설계를 실제로 지원하는지 확인하는 단계가 없었다면, 결과가 조용히 오염되었을 것이다.\n3. 회차들: 모두 일찍, 조용히 기각 회차마다 후보 전략 이름은 달랐지만 결론은 비슷했다.\n후보 대부분이 조기 기각(REJECTED-EARLY)이었다. 스모크 단계에서 신호 수가 부족하거나 수익 팩터가 기준에 못 미쳤다. 같은 분류(예: 추세추종, 평균회귀)가 연속 기각되면 그 분류를 봉인한다. 5회차까지 가자 네 분류가 한꺼번에 봉인되었다. 8번째 회차에서는 봉인되지 않은 분류가 사실상 하나밖에 남지 않았다. 구조적 발견: 분류 태깅 규칙이 “돌파\"도 막았다 7번째 회차는 후보를 하나도 세우지 못하고 후보 없음으로 끝났다. 오케스트레이터가 탐색 결과를 직접 읽고 확인한 발견이 있다. 분류 태깅 규칙(“애매하면 넓은 쪽으로”)을 지키면 롱 온리 돌파 전략은 반드시 추세추종(지속) 또는 평균회귀(실패 반전) 중 하나를 함께 물게 된다. 두 분류가 봉인된 지금은 돌파 분류도 실질적으로 같이 막힌다.\n이때 별도 예외 규칙을 만들지 않고 그 상태를 그대로 수용했다. 예외를 만드는 순간 봉인 우회 경로가 된다. 대신 탐색 에이전트가 낸 결론, “막힌 것을 뚫는 길은 문헌 탐색이 아니라 범위 확장 결정(외부 데이터 도입, 하위 봉 데이터 확보)“이 에이전트와 오케스트레이터의 권한 밖이라고 판단해 사용자에게 선택지 셋을 제시하고 결정을 기다렸다. 확장 없이 계속하기, 외부 데이터 도입 검토, 봉인 만료 대기다.\n후보가 없을 때 억지로 후보를 세우지 않는 것도 규율이다. 후보 없음은 시도 횟수 K에 산입되지 않는다.\n4. 무료 데이터 소스가 끝내 막혔다 감성 분류에서는 검색 관심도 데이터를 후보로 쓰려 했다. 과거 구간 백필이 비공식 라이브러리 경로에서 요청 제한(429)으로 계속 막혔다. 시도한 우회는 두 가지였다.\n브라우저에서 수동으로 CSV를 받아 구간별로 채우기: 19개 구간 중 16개까지는 되었다. 로그인한 세션의 쿠키를 넘기는 방식: 신선한 세션으로 해도 첫 요청부터 즉시 429가 재현되었다. 세션의 신선도나 인증 완전성과 무관하게 막히는 것으로 보아 IP 또는 엔드포인트 수준의 구조적 차단이다. “더 이상 쿠키·라이브러리 경로를 재시도하지 않는다\"를 결정 문서에 명문화했다. 그런데 백그라운드에서 30분 간격으로 돌던 단순 재시도가 이 회차 도중 8번째 시도에서 성공했다. 전 구간이 통째로 재적재되어 공백이 해소되었고, 마침 도는 검증이 새 데이터로 자동 수행되었다. 소스의 안정성을 믿어서는 안 되지만, 순정 방식의 느린 재시도는 우회보다 나은 경우가 있다.\n5. 회차 8: 가정을 실측으로 확인하라 이 데이터로 8번째 회차를 돌렸다. composer가 저빈도 신호의 사전 검정력을 역산해 판정 비가 경계선(1.0 근방)이라 조기 기각을 권고하면서, 저비용 우회 경로(학습 구간 백테스트 1회)를 사전 등록했다. 오케스트레이터가 경계선이라는 이유로 그 경로를 직접 지시했다.\n결과는 composer의 가정보다 후보에게 더 불리했다. 신호 창이 31% 적었고 창당 수익률의 표준편차가 가정의 1.56배였다. 체결률만 유리했다. 조기 기각이 확정되었다.\n여기서 새 패턴 하나를 기록했다. 스스로 “관대하다\"고 판단한 가정도, 저비용 실측 경로가 있으면 실측해야 한다. 가정이 관대하다는 판단 자체가 틀렸다.\n6. 엔진의 숨은 결함 13건 연구 중 쌓인 “코어 공용 개정 후보\"를 하루에 걸쳐 모두 코드로 다시 진단했다. 결과는 이랬다.\n수정: 체결 슬리피지에 따라 상대/절대 손절 방식이 달라야 하는데 리플레이에 적용되지 않던 것, 최대 유리/불리 변동폭이 항상 0.0으로 기록되던 것, 최소 손익비 검사가 백테스트에 배선되지 않았던 것. 예상 밖 발견: 최소 손익비 검사 함수가 라이브 경로 어디에서도 호출되지 않고 있었다. 기능이 완전히 무동작이었다. 지금까지 모든 회차가 이 옵션을 끄고 돌아서 연구 결과에는 영향이 없었지만, 실전 위험은 더 크다. (며칠 뒤 라이브에서 별도로 고쳤다.) 조치 불필요: 이미 해결된 항목(모든 리포트에 이력 배너가 노출 중). 진단만 기록: 설계 결정이 필요한 6건은 지금 구현하지 않고 사용자와 “하나씩 나중에\"로 합의했다. 이 점검은 연구 결과가 쌓이기 전에 엔진을 믿을 수 있게 만드는 작업이었다. 항상 0인 계측값과 호출되지 않는 검사는 “값이 있으니 동작한다\"는 착각을 만든다.\n정리 영역 결과 인프라 연구 에이전트 4종, 판정 기준 잠정 확정, 엔진 계약 개정 결과 8회차 전부 기각 또는 후보 없음 구조 분류 태깅 규칙으로 돌파까지 실질 봉인 → 범위 확장은 사용자 결정 데이터 검색 관심도 백필은 우회가 막히고 느린 재시도로 성공 엔진 숨은 결함 13건 중 5건 수정, 6건 진단 기록 배운 점: 걸러내는 파이프라인이 잘 동작하면 처음 몇 주는 아무것도 통과하지 않는 것이 정상이다. 통과가 없다고 파이프라인을 의심하는 대신, 파이프라인이 설계한 대로 막고 있는지를 확인했다. 그리고 막혔을 때 규칙에 예외를 만드는 대신 결정을 권한이 있는 사람에게 올리는 편이 장기적으로 더 정직한 결과를 낳는다.\n",
+  "wordCount" : "2833",
+  "inLanguage": "ko",
+  "datePublished": "2026-08-12T23:40:00+09:00",
+  "dateModified": "2026-08-12T23:40:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다
+    </h1>
+    <div class="post-description">
+      전략 연구를 에이전트 4종 파이프라인으로 자동화한 첫 2주. 엔진 계약의 공백을 먼저 발견해 고쳤고, 8개 후보가 모두 조기 기각되었으며, 봉인 규칙이 &#39;돌파&#39; 클래스까지 실질적으로 막는 구조를 확인했다. 무료 데이터 소스가 끝내 막힌 이야기와 엔진의 숨은 결함 13건 점검도 함께 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-08-12T23:40:00+09:00'>2026년 8월 12일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ed%8c%8c%ec%9d%b4%ed%94%84%eb%9d%bc%ec%9d%b8-%ea%b5%ac%ec%84%b1" aria-label="1. 파이프라인 구성">1. 파이프라인 구성</a></li>
+            <li>
+                <a href="#2-%ec%b2%ab-%eb%b0%9c%ea%b2%ac-%ec%97%94%ec%a7%84%ec%9d%b4-%ec%97%b0%ea%b5%ac-%ec%84%a4%ea%b3%84%eb%a5%bc-%eb%aa%bb-%eb%94%b0%eb%9d%bc%ea%b0%94%eb%8b%a4" aria-label="2. 첫 발견: 엔진이 연구 설계를 못 따라갔다">2. 첫 발견: 엔진이 연구 설계를 못 따라갔다</a></li>
+            <li>
+                <a href="#3-%ed%9a%8c%ec%b0%a8%eb%93%a4-%eb%aa%a8%eb%91%90-%ec%9d%bc%ec%b0%8d-%ec%a1%b0%ec%9a%a9%ed%9e%88-%ea%b8%b0%ea%b0%81" aria-label="3. 회차들: 모두 일찍, 조용히 기각">3. 회차들: 모두 일찍, 조용히 기각</a><ul>
+                    
+            <li>
+                <a href="#%ea%b5%ac%ec%a1%b0%ec%a0%81-%eb%b0%9c%ea%b2%ac-%eb%b6%84%eb%a5%98-%ed%83%9c%ea%b9%85-%ea%b7%9c%ec%b9%99%ec%9d%b4-%eb%8f%8c%ed%8c%8c%eb%8f%84-%eb%a7%89%ec%95%98%eb%8b%a4" aria-label="구조적 발견: 분류 태깅 규칙이 &ldquo;돌파&quot;도 막았다">구조적 발견: 분류 태깅 규칙이 &ldquo;돌파&quot;도 막았다</a></li></ul>
+            </li>
+            <li>
+                <a href="#4-%eb%ac%b4%eb%a3%8c-%eb%8d%b0%ec%9d%b4%ed%84%b0-%ec%86%8c%ec%8a%a4%ea%b0%80-%eb%81%9d%eb%82%b4-%eb%a7%89%ed%98%94%eb%8b%a4" aria-label="4. 무료 데이터 소스가 끝내 막혔다">4. 무료 데이터 소스가 끝내 막혔다</a></li>
+            <li>
+                <a href="#5-%ed%9a%8c%ec%b0%a8-8-%ea%b0%80%ec%a0%95%ec%9d%84-%ec%8b%a4%ec%b8%a1%ec%9c%bc%eb%a1%9c-%ed%99%95%ec%9d%b8%ed%95%98%eb%9d%bc" aria-label="5. 회차 8: 가정을 실측으로 확인하라">5. 회차 8: 가정을 실측으로 확인하라</a></li>
+            <li>
+                <a href="#6-%ec%97%94%ec%a7%84%ec%9d%98-%ec%88%a8%ec%9d%80-%ea%b2%b0%ed%95%a8-13%ea%b1%b4" aria-label="6. 엔진의 숨은 결함 13건">6. 엔진의 숨은 결함 13건</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>V2의 목표는 &ldquo;돈이 되는 전략을 찾는 것&quot;이 아니라 <strong>전략을 정직하게 걸러내는 파이프라인을 만드는 것</strong>이다. 8월 5일부터 12일까지 이 파이프라인을 처음 가동했고, 연구 회차 8건이 전부 기각으로 끝났다. 실패가 아니라 정상 동작이다. 이 글은 어떻게 기각되었는지와, 가동 과정에서 드러난 시스템 쪽 문제를 다룬다. 후보 전략의 구체적 파라미터는 공개하지 않는다.</p>
+<hr>
+<h2 id="1-파이프라인-구성">1. 파이프라인 구성<a hidden class="anchor" aria-hidden="true" href="#1-파이프라인-구성">#</a></h2>
+<p>연구 에이전트 4종과 판정 기준 문서(<code>criteria.md</code>)로 구성했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>에이전트</th>
+					<th>역할</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>scout</td>
+					<td>문헌·웹에서 후보 수집 (독립 소스 2개 이상 필요)</td>
+			</tr>
+			<tr>
+					<td>composer</td>
+					<td>후보를 규칙 명세로 변환 (창작 금지)</td>
+			</tr>
+			<tr>
+					<td>validator</td>
+					<td>신호 함수만 구현해 백테스트 엔진으로 검증</td>
+			</tr>
+			<tr>
+					<td>reviser</td>
+					<td>스모크 단계에서 실패 진단 (최대 3회)</td>
+			</tr>
+	</tbody>
+</table>
+<p>회차 하나가 후보 하나를 끝까지 처리한다. 종료 상태는 통과(PASS), 엄격 실패, 스모크 실패, 조기 기각(REJECTED-EARLY), 후보 없음(NO-CANDIDATE) 등이다. 정보는 회차 폴더의 파일로만 전달된다.</p>
+<p>판정 기준은 전부 <strong>잠정값</strong>으로 시작했다. 조기 판별, 부트스트랩 신뢰구간, 낙폭 상한, 과최적화 확률(PBO) 합격선, 파라미터 고원 허용폭 등이다. 봉인 구간은 누적 시도 횟수 K에 따라 신뢰수준을 높인다(시도가 많을수록 더 엄격하게).</p>
+<hr>
+<h2 id="2-첫-발견-엔진이-연구-설계를-못-따라갔다">2. 첫 발견: 엔진이 연구 설계를 못 따라갔다<a hidden class="anchor" aria-hidden="true" href="#2-첫-발견-엔진이-연구-설계를-못-따라갔다">#</a></h2>
+<p>에이전트 정의를 쓰기 전에 실제 백테스트 코드를 먼저 열어 보았다. 연구 문서는 시장 국면 필터를 네 가지 조합(둘 다 끔, 하나만 켬, 둘 다 켬)으로 비교하라고 하는데, 엔진으로는 <strong>조합 A(완전 off)를 만들 수 없었다.</strong></p>
+<ul>
+<li>공통 가드 불린 하나가 공포 게이트, 쿨다운, 스프레드 가드, 일일 손실 한도를 한꺼번에 묶고 있었다.</li>
+<li>거시 국면 게이트는 위험 설정의 하락장 사이즈 계수가 포지션 크기 함수에 조건 없이 적용되어 끌 방법이 없었다.</li>
+</ul>
+<p>이것은 연구 시작 전의 정지 조건에 해당했다. 사용자에게 확인하고 그 세션에서 직접 계약을 개정했다. 프리셋에 거시 게이트와 공포 게이트의 독립 스위치를 추가하고, 끈 경우 균일 계수를 쓰게 했다. 켜고 끈 각각을 고정하는 테스트 4건을 추가했다.</p>
+<p>연구 도구를 만들다가 연구 도구가 의존하는 엔진의 결함을 먼저 찾은 셈이다. 에이전트를 돌리기 전에 인프라가 문서의 설계를 실제로 지원하는지 확인하는 단계가 없었다면, 결과가 조용히 오염되었을 것이다.</p>
+<hr>
+<h2 id="3-회차들-모두-일찍-조용히-기각">3. 회차들: 모두 일찍, 조용히 기각<a hidden class="anchor" aria-hidden="true" href="#3-회차들-모두-일찍-조용히-기각">#</a></h2>
+<p>회차마다 후보 전략 이름은 달랐지만 결론은 비슷했다.</p>
+<ul>
+<li>후보 대부분이 <strong>조기 기각</strong>(REJECTED-EARLY)이었다. 스모크 단계에서 신호 수가 부족하거나 수익 팩터가 기준에 못 미쳤다.</li>
+<li>같은 분류(예: 추세추종, 평균회귀)가 연속 기각되면 그 분류를 봉인한다. 5회차까지 가자 네 분류가 한꺼번에 봉인되었다.</li>
+<li>8번째 회차에서는 봉인되지 않은 분류가 사실상 하나밖에 남지 않았다.</li>
+</ul>
+<h3 id="구조적-발견-분류-태깅-규칙이-돌파도-막았다">구조적 발견: 분류 태깅 규칙이 &ldquo;돌파&quot;도 막았다<a hidden class="anchor" aria-hidden="true" href="#구조적-발견-분류-태깅-규칙이-돌파도-막았다">#</a></h3>
+<p>7번째 회차는 후보를 하나도 세우지 못하고 <strong>후보 없음</strong>으로 끝났다. 오케스트레이터가 탐색 결과를 직접 읽고 확인한 발견이 있다. 분류 태깅 규칙(&ldquo;애매하면 넓은 쪽으로&rdquo;)을 지키면 롱 온리 돌파 전략은 반드시 추세추종(지속) 또는 평균회귀(실패 반전) 중 하나를 함께 물게 된다. 두 분류가 봉인된 지금은 <strong>돌파 분류도 실질적으로 같이 막힌다.</strong></p>
+<p>이때 별도 예외 규칙을 만들지 않고 그 상태를 그대로 수용했다. 예외를 만드는 순간 봉인 우회 경로가 된다. 대신 탐색 에이전트가 낸 결론, &ldquo;막힌 것을 뚫는 길은 문헌 탐색이 아니라 <strong>범위 확장 결정</strong>(외부 데이터 도입, 하위 봉 데이터 확보)&ldquo;이 에이전트와 오케스트레이터의 권한 밖이라고 판단해 사용자에게 선택지 셋을 제시하고 결정을 기다렸다. 확장 없이 계속하기, 외부 데이터 도입 검토, 봉인 만료 대기다.</p>
+<p>후보가 없을 때 억지로 후보를 세우지 않는 것도 규율이다. 후보 없음은 시도 횟수 K에 산입되지 않는다.</p>
+<hr>
+<h2 id="4-무료-데이터-소스가-끝내-막혔다">4. 무료 데이터 소스가 끝내 막혔다<a hidden class="anchor" aria-hidden="true" href="#4-무료-데이터-소스가-끝내-막혔다">#</a></h2>
+<p>감성 분류에서는 검색 관심도 데이터를 후보로 쓰려 했다. 과거 구간 백필이 비공식 라이브러리 경로에서 요청 제한(429)으로 계속 막혔다. 시도한 우회는 두 가지였다.</p>
+<ul>
+<li>브라우저에서 수동으로 CSV를 받아 구간별로 채우기: 19개 구간 중 16개까지는 되었다.</li>
+<li>로그인한 세션의 쿠키를 넘기는 방식: <strong>신선한 세션으로 해도 첫 요청부터 즉시 429가 재현</strong>되었다. 세션의 신선도나 인증 완전성과 무관하게 막히는 것으로 보아 IP 또는 엔드포인트 수준의 구조적 차단이다. &ldquo;더 이상 쿠키·라이브러리 경로를 재시도하지 않는다&quot;를 결정 문서에 명문화했다.</li>
+</ul>
+<p>그런데 백그라운드에서 30분 간격으로 돌던 단순 재시도가 이 회차 도중 8번째 시도에서 성공했다. 전 구간이 통째로 재적재되어 공백이 해소되었고, 마침 도는 검증이 새 데이터로 자동 수행되었다. 소스의 안정성을 믿어서는 안 되지만, 순정 방식의 느린 재시도는 우회보다 나은 경우가 있다.</p>
+<hr>
+<h2 id="5-회차-8-가정을-실측으로-확인하라">5. 회차 8: 가정을 실측으로 확인하라<a hidden class="anchor" aria-hidden="true" href="#5-회차-8-가정을-실측으로-확인하라">#</a></h2>
+<p>이 데이터로 8번째 회차를 돌렸다. composer가 저빈도 신호의 사전 검정력을 역산해 판정 비가 경계선(1.0 근방)이라 조기 기각을 권고하면서, 저비용 우회 경로(학습 구간 백테스트 1회)를 사전 등록했다. 오케스트레이터가 경계선이라는 이유로 그 경로를 직접 지시했다.</p>
+<p>결과는 composer의 가정보다 후보에게 더 불리했다. 신호 창이 31% 적었고 창당 수익률의 표준편차가 가정의 1.56배였다. 체결률만 유리했다. 조기 기각이 확정되었다.</p>
+<p>여기서 새 패턴 하나를 기록했다. <strong>스스로 &ldquo;관대하다&quot;고 판단한 가정도, 저비용 실측 경로가 있으면 실측해야 한다.</strong> 가정이 관대하다는 판단 자체가 틀렸다.</p>
+<hr>
+<h2 id="6-엔진의-숨은-결함-13건">6. 엔진의 숨은 결함 13건<a hidden class="anchor" aria-hidden="true" href="#6-엔진의-숨은-결함-13건">#</a></h2>
+<p>연구 중 쌓인 &ldquo;코어 공용 개정 후보&quot;를 하루에 걸쳐 모두 코드로 다시 진단했다. 결과는 이랬다.</p>
+<ul>
+<li><strong>수정</strong>: 체결 슬리피지에 따라 상대/절대 손절 방식이 달라야 하는데 리플레이에 적용되지 않던 것, 최대 유리/불리 변동폭이 <strong>항상 0.0</strong>으로 기록되던 것, 최소 손익비 검사가 백테스트에 배선되지 않았던 것.</li>
+<li><strong>예상 밖 발견</strong>: 최소 손익비 검사 함수가 <strong>라이브 경로 어디에서도 호출되지 않고 있었다.</strong> 기능이 완전히 무동작이었다. 지금까지 모든 회차가 이 옵션을 끄고 돌아서 연구 결과에는 영향이 없었지만, 실전 위험은 더 크다. (며칠 뒤 라이브에서 별도로 고쳤다.)</li>
+<li><strong>조치 불필요</strong>: 이미 해결된 항목(모든 리포트에 이력 배너가 노출 중).</li>
+<li><strong>진단만 기록</strong>: 설계 결정이 필요한 6건은 지금 구현하지 않고 사용자와 &ldquo;하나씩 나중에&quot;로 합의했다.</li>
+</ul>
+<p>이 점검은 연구 결과가 쌓이기 전에 엔진을 믿을 수 있게 만드는 작업이었다. 항상 0인 계측값과 호출되지 않는 검사는 &ldquo;값이 있으니 동작한다&quot;는 착각을 만든다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>인프라</td>
+					<td>연구 에이전트 4종, 판정 기준 잠정 확정, 엔진 계약 개정</td>
+			</tr>
+			<tr>
+					<td>결과</td>
+					<td>8회차 전부 기각 또는 후보 없음</td>
+			</tr>
+			<tr>
+					<td>구조</td>
+					<td>분류 태깅 규칙으로 돌파까지 실질 봉인 → 범위 확장은 사용자 결정</td>
+			</tr>
+			<tr>
+					<td>데이터</td>
+					<td>검색 관심도 백필은 우회가 막히고 느린 재시도로 성공</td>
+			</tr>
+			<tr>
+					<td>엔진</td>
+					<td>숨은 결함 13건 중 5건 수정, 6건 진단 기록</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 걸러내는 파이프라인이 잘 동작하면 처음 몇 주는 아무것도 통과하지 않는 것이 정상이다. 통과가 없다고 파이프라인을 의심하는 대신, 파이프라인이 설계한 대로 막고 있는지를 확인했다. 그리고 막혔을 때 규칙에 예외를 만드는 대신 <strong>결정을 권한이 있는 사람에게 올리는</strong> 편이 장기적으로 더 정직한 결과를 낳는다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

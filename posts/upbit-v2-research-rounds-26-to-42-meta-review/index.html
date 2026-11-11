@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락 | Evan&#39;s Blog</title>
+<meta name="keywords" content="연구, 설계, 리뷰">
+<meta name="description" content="연구 41회차를 돌렸는데 통과가 한 건도 없다. 게이트가 과한 건지, 후보가 나쁜 건지를 가리려고 회차 이력을 전수 집계해 종결 사유를 네 가지로 분류했다. 봉인 해제 카운터가 서로 다른 두 일을 하나의 숫자로 재고 있어서 생긴 데드락을 푼 과정과, 통계 문턱은 건드리지 않는다는 결론을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락">
+  <meta property="og:description" content="연구 41회차를 돌렸는데 통과가 한 건도 없다. 게이트가 과한 건지, 후보가 나쁜 건지를 가리려고 회차 이력을 전수 집계해 종결 사유를 네 가지로 분류했다. 봉인 해제 카운터가 서로 다른 두 일을 하나의 숫자로 재고 있어서 생긴 데드락을 푼 과정과, 통계 문턱은 건드리지 않는다는 결론을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-09-11T12:00:00+09:00">
+    <meta property="article:modified_time" content="2026-09-11T12:00:00+09:00">
+    <meta property="article:tag" content="연구">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="리뷰">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락">
+  <meta name="twitter:description" content="연구 41회차를 돌렸는데 통과가 한 건도 없다. 게이트가 과한 건지, 후보가 나쁜 건지를 가리려고 회차 이력을 전수 집계해 종결 사유를 네 가지로 분류했다. 봉인 해제 카운터가 서로 다른 두 일을 하나의 숫자로 재고 있어서 생긴 데드락을 푼 과정과, 통계 문턱은 건드리지 않는다는 결론을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락",
+  "name": "자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락",
+  "description": "연구 41회차를 돌렸는데 통과가 한 건도 없다. 게이트가 과한 건지, 후보가 나쁜 건지를 가리려고 회차 이력을 전수 집계해 종결 사유를 네 가지로 분류했다. 봉인 해제 카운터가 서로 다른 두 일을 하나의 숫자로 재고 있어서 생긴 데드락을 푼 과정과, 통계 문턱은 건드리지 않는다는 결론을 정리한다.",
+  "keywords": [
+    "연구", "설계", "리뷰"
+  ],
+  "articleBody": "들어가며 9월 초 연구 회차가 30번을 넘겼다. 32번째 회차를 마쳤을 때 사용자가 이렇게 물었다. “전략 개발에 통과(pass)가 안 나오는데, 매크로·미시 전략을 수정해야 하는 것 아닌가?” 41회차 직후에는 더 근본적으로 물었다. “통과가 안 나오는데 전략 개발과 기록이 의미가 있는가?” 이 글은 그 질문에 데이터로 답한 두 번의 방법론 점검과, 그 과정에서 찾은 규칙의 결함에 대한 기록이다. 후보의 구체 규칙과 수치는 공개하지 않는다.\n1. 먼저 집계한다 의견 대신 집계를 택했다. 회차 이력 표 41행 전체를 서브에이전트(탐색 전용)에게 구조화 추출만 시켰다. 회차 번호, 일자, 후보, 분류, 판정, 도달 단계, 핵심 종결 사유, 엔진 실행 횟수다. 기계적 추출이고 판단은 넣지 않았다. 집계와 분류는 오케스트레이터가 직접 했다.\n판정 건수 PASS 0 FAIL-SMOKE 1 REJECTED-EARLY 31 NO-CANDIDATE 9 기각된 33건이 어디서 멈췄는지를 보면 명세 단계 18%, 사전 스캔 33%, 사전 스캔과 일부 엔진 9%, 정식 그리드까지 간 것이 39%였다. 종결 원인은 네 가지로 분류됐다.\n검정력·표본 구조 미달 42%: 신호가 너무 드물어서 맞는지 틀린지 가릴 수 없다. 신호 무정보 또는 역효과 39%: 신호가 무작위와 다르지 않거나 반대다. 비용 초과 18%: 신호는 실재하지만 크기가 거래 비용과 같은 자릿수라 남는 게 없다. 측정 불가 1건. 진단은 “게이트 과잉\"이 아니었다. 무작위 대조군과 비교하면 차이가 실재하는 후보도 있었지만, 그 크기가 실측 비용과 같은 자릿수라는 패턴이 반복됐다. 통계 문턱을 낮추면 이런 후보가 통과하겠지만, 그건 비용으로 사라질 신호를 통과시키는 일이다.\n결정은 이랬다. 통계 문턱은 낮추지 않는다. 대신 공용 개정 몇 가지를 했다.\n부품 무효화 대조군과 무작위 대조군의 결과가 갈릴 때는 더 비관적인 쪽을 따른다(처음엔 한쪽만 따르기로 했다가, 반대 방향 실증 사례를 만나 정정했다). 효과크기를 보고하지 않은 후보나 3차 이상 모멘트로 정렬하는 후보는 탐색 단계에서 간단한 산술로 미리 점검한다. 표준오차 대 효과 비율이 일정 수준을 넘으면 경고 배너를 붙인다. 최종 판정을 대체하지는 않는다(사후 배제 금지). 비용 추정 슬롯의 부분집합 규약과 소스 채택 규율을 정리했다. “기록이 의미가 있는가\"에는 이렇게 답했다. 기각 기록은 다중 검정 보정에 필수다. 시도가 많을수록 우연히 좋아 보이는 후보가 나올 확률이 커지므로, 시도한 횟수가 정확히 남아 있어야 한다. 다만 41회 연속 통과가 없다면 메타 진단은 필요하다. 이번 집계가 그것이다.\n2. K 데드락: 같은 숫자로 두 가지를 재고 있었다 34회차에서 구조적 교착이 확인됐다. 상황은 이랬다.\n분류가 봉인되면 해제 조건은 누적 시도 횟수 K가 일정 값에 도달하는 것이다. K는 후보가 엔진에 도달해야만 증가한다. 엔진에 도달 가능한 열린 분류는 돌파 하나인데, 그 안의 정의역이 거의 소진됐다. 후보가 없으면(NO-CANDIDATE) K에 산입하지 않으니 K는 영원히 같은 값에 머문다. 탐색 에이전트는 이 상황에서 스스로 판단하지 않고 논리적 출구 네 가지(자료원 해금, 봉인 우회 예외 승인, 봉인 산정 규칙 재검토(느슨화 금지), 회차 휴지)만 정리해 사용자에게 올렸다.\n진짜 원인 사용자 요청으로 봉인 규칙을 검토하다가 발견했다. 봉인 해제와 다중 검정 보정이 같은 K를 공유하고 있는데 두 가지는 다른 양을 재고 있다.\n봉인 해제는 “연구 노력이 얼마나 누적됐는가\"를 재고 싶다. 다중 검정 보정은 “봉인 구간 데이터를 실제로 몇 번 만졌는가\"를 재야 한다. 자기 설계를 스스로 기각 첫 설계는 클래스 전용 카운터를 두는 것이었다. 검토 중 결정적인 결함이 보였다. 봉인된 클래스를 직접 두드릴수록 봉인이 풀리는 구조가 된다. 반복 낚시를 막으려는 봉인의 목적 자체를 무력화한다. 그래서 이 설계를 스스로 기각했다.\n재설계는 K를 보정 전용으로 두고, **봉인 해제 전용 카운터 R(완결 회차)**을 새로 분리하는 것이었다. R이 의미를 갖는 방식으로 정의했고, 시작값은 K와 같게 했다.\n소급은 하지 않는다 소급 적용 범위를 조사했더니 엔진 실행 0회로 끝난 REJECTED-EARLY가 프로젝트 시작 이래 최소 13건이었다. 예상한 3건이 아니었다. 전부 소급하면 분류 이력 전체를 재감사해야 한다. 이 사실을 보여주고 사용자가 선택했다. 프로스펙티브 적용만, 소급 없음. 규칙을 바꾸는 순간 과거 결과의 해석이 달라지는 것을 막는 가장 안전한 선택이다.\n이 결정으로 당장 풀린 봉인은 없다. 데드락이 해소된 것도 아니다. 다음 길은 여전히 자료원 해금이나 회차 휴지다.\n3. 회차들이 보여준 구조 26~42회차에서 반복된 것을 한 줄씩 정리한다.\n봉인 우회가 연속으로 실패했다. 후보 1건 한정 우회가 세 번 연속 실패하면서 후보 재고가 완전히 소진됐다. “판별했고 반대였다\"로 종결한 첫 사례. 기대한 효과의 부호가 반대로 나타난 경우도 정식 종결이다. 같은 이론을 다른 이름으로 반복하는 경향. 문헌 3중 독립 확인과 “자료원 해금은 충분조건이 아니다\"라는 구조적 발견을 얻었다. 데이터가 있어도 신호가 없을 수 있다. 횡단면 선별은 저위험 선별이어도 사이징으로 검정력을 살 수 없다. 포지션을 키운다고 통계적 증거가 늘어나지 않는다. 오케스트레이터가 다음 회차 인계 기록의 오기(봉 주기)를 발견해 정정했다. 인계 문서도 틀릴 수 있다. 정리 질문 답 게이트가 과한가 아니다. 신호 크기가 비용과 같은 자릿수 문턱을 낮출까 아니다. 대신 탐색 단계 산술 점검과 비관 쪽 판정 데드락 원인 봉인 해제와 다중 검정 보정이 한 숫자를 공유 해결 봉인 해제 전용 카운터 R 분리, 소급 없음 배운 점: 결과가 계속 나쁠 때 가장 위험한 대응은 기준을 낮추는 것이다. 그 전에 집계를 해야 한다. 집계가 “게이트의 문제가 아니라 신호 크기의 문제\"를 보여 주었다. 그리고 규칙의 결함은 규칙을 만든 사람이 가장 보기 어렵다. 설계안을 스스로 반례로 깨 보고, 소급 범위를 실측으로 확인한 뒤에야 결정할 수 있었다. 마지막으로, 해결책이 데드락을 풀지 못하더라도 “풀리지 않았다\"고 문서에 적는 것이 이후 모든 판단의 신뢰를 지켜 준다.\n",
+  "wordCount" : "2371",
+  "inLanguage": "ko",
+  "datePublished": "2026-09-11T12:00:00+09:00",
+  "dateModified": "2026-09-11T12:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락
+    </h1>
+    <div class="post-description">
+      연구 41회차를 돌렸는데 통과가 한 건도 없다. 게이트가 과한 건지, 후보가 나쁜 건지를 가리려고 회차 이력을 전수 집계해 종결 사유를 네 가지로 분류했다. 봉인 해제 카운터가 서로 다른 두 일을 하나의 숫자로 재고 있어서 생긴 데드락을 푼 과정과, 통계 문턱은 건드리지 않는다는 결론을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-09-11T12:00:00+09:00'>2026년 9월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%eb%a8%bc%ec%a0%80-%ec%a7%91%ea%b3%84%ed%95%9c%eb%8b%a4" aria-label="1. 먼저 집계한다">1. 먼저 집계한다</a></li>
+            <li>
+                <a href="#2-k-%eb%8d%b0%eb%93%9c%eb%9d%bd-%ea%b0%99%ec%9d%80-%ec%88%ab%ec%9e%90%eb%a1%9c-%eb%91%90-%ea%b0%80%ec%a7%80%eb%a5%bc-%ec%9e%ac%ea%b3%a0-%ec%9e%88%ec%97%88%eb%8b%a4" aria-label="2. K 데드락: 같은 숫자로 두 가지를 재고 있었다">2. K 데드락: 같은 숫자로 두 가지를 재고 있었다</a><ul>
+                    
+            <li>
+                <a href="#%ec%a7%84%ec%a7%9c-%ec%9b%90%ec%9d%b8" aria-label="진짜 원인">진짜 원인</a></li>
+            <li>
+                <a href="#%ec%9e%90%ea%b8%b0-%ec%84%a4%ea%b3%84%eb%a5%bc-%ec%8a%a4%ec%8a%a4%eb%a1%9c-%ea%b8%b0%ea%b0%81" aria-label="자기 설계를 스스로 기각">자기 설계를 스스로 기각</a></li>
+            <li>
+                <a href="#%ec%86%8c%ea%b8%89%ec%9d%80-%ed%95%98%ec%a7%80-%ec%95%8a%eb%8a%94%eb%8b%a4" aria-label="소급은 하지 않는다">소급은 하지 않는다</a></li></ul>
+            </li>
+            <li>
+                <a href="#3-%ed%9a%8c%ec%b0%a8%eb%93%a4%ec%9d%b4-%eb%b3%b4%ec%97%ac%ec%a4%80-%ea%b5%ac%ec%a1%b0" aria-label="3. 회차들이 보여준 구조">3. 회차들이 보여준 구조</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>9월 초 연구 회차가 30번을 넘겼다. 32번째 회차를 마쳤을 때 사용자가 이렇게 물었다. &ldquo;전략 개발에 통과(pass)가 안 나오는데, 매크로·미시 전략을 수정해야 하는 것 아닌가?&rdquo; 41회차 직후에는 더 근본적으로 물었다. &ldquo;통과가 안 나오는데 전략 개발과 기록이 의미가 있는가?&rdquo; 이 글은 그 질문에 데이터로 답한 두 번의 방법론 점검과, 그 과정에서 찾은 규칙의 결함에 대한 기록이다. 후보의 구체 규칙과 수치는 공개하지 않는다.</p>
+<hr>
+<h2 id="1-먼저-집계한다">1. 먼저 집계한다<a hidden class="anchor" aria-hidden="true" href="#1-먼저-집계한다">#</a></h2>
+<p>의견 대신 집계를 택했다. 회차 이력 표 41행 전체를 서브에이전트(탐색 전용)에게 구조화 추출만 시켰다. 회차 번호, 일자, 후보, 분류, 판정, 도달 단계, 핵심 종결 사유, 엔진 실행 횟수다. 기계적 추출이고 판단은 넣지 않았다. 집계와 분류는 오케스트레이터가 직접 했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>판정</th>
+					<th>건수</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>PASS</td>
+					<td>0</td>
+			</tr>
+			<tr>
+					<td>FAIL-SMOKE</td>
+					<td>1</td>
+			</tr>
+			<tr>
+					<td>REJECTED-EARLY</td>
+					<td>31</td>
+			</tr>
+			<tr>
+					<td>NO-CANDIDATE</td>
+					<td>9</td>
+			</tr>
+	</tbody>
+</table>
+<p>기각된 33건이 어디서 멈췄는지를 보면 명세 단계 18%, 사전 스캔 33%, 사전 스캔과 일부 엔진 9%, 정식 그리드까지 간 것이 39%였다. 종결 원인은 네 가지로 분류됐다.</p>
+<ol>
+<li><strong>검정력·표본 구조 미달</strong> 42%: 신호가 너무 드물어서 맞는지 틀린지 가릴 수 없다.</li>
+<li><strong>신호 무정보 또는 역효과</strong> 39%: 신호가 무작위와 다르지 않거나 반대다.</li>
+<li><strong>비용 초과</strong> 18%: 신호는 실재하지만 크기가 거래 비용과 같은 자릿수라 남는 게 없다.</li>
+<li>측정 불가 1건.</li>
+</ol>
+<p>진단은 &ldquo;게이트 과잉&quot;이 아니었다. 무작위 대조군과 비교하면 차이가 실재하는 후보도 있었지만, <strong>그 크기가 실측 비용과 같은 자릿수</strong>라는 패턴이 반복됐다. 통계 문턱을 낮추면 이런 후보가 통과하겠지만, 그건 비용으로 사라질 신호를 통과시키는 일이다.</p>
+<p>결정은 이랬다. <strong>통계 문턱은 낮추지 않는다.</strong> 대신 공용 개정 몇 가지를 했다.</p>
+<ul>
+<li>부품 무효화 대조군과 무작위 대조군의 결과가 갈릴 때는 <strong>더 비관적인 쪽을 따른다</strong>(처음엔 한쪽만 따르기로 했다가, 반대 방향 실증 사례를 만나 정정했다).</li>
+<li>효과크기를 보고하지 않은 후보나 3차 이상 모멘트로 정렬하는 후보는 <strong>탐색 단계에서 간단한 산술로 미리 점검</strong>한다. 표준오차 대 효과 비율이 일정 수준을 넘으면 경고 배너를 붙인다. 최종 판정을 대체하지는 않는다(사후 배제 금지).</li>
+<li>비용 추정 슬롯의 부분집합 규약과 소스 채택 규율을 정리했다.</li>
+</ul>
+<p>&ldquo;기록이 의미가 있는가&quot;에는 이렇게 답했다. 기각 기록은 <strong>다중 검정 보정에 필수</strong>다. 시도가 많을수록 우연히 좋아 보이는 후보가 나올 확률이 커지므로, 시도한 횟수가 정확히 남아 있어야 한다. 다만 41회 연속 통과가 없다면 메타 진단은 필요하다. 이번 집계가 그것이다.</p>
+<hr>
+<h2 id="2-k-데드락-같은-숫자로-두-가지를-재고-있었다">2. K 데드락: 같은 숫자로 두 가지를 재고 있었다<a hidden class="anchor" aria-hidden="true" href="#2-k-데드락-같은-숫자로-두-가지를-재고-있었다">#</a></h2>
+<p>34회차에서 구조적 교착이 확인됐다. 상황은 이랬다.</p>
+<ul>
+<li>분류가 봉인되면 해제 조건은 누적 시도 횟수 K가 일정 값에 도달하는 것이다.</li>
+<li>K는 후보가 <strong>엔진에 도달해야만</strong> 증가한다.</li>
+<li>엔진에 도달 가능한 열린 분류는 돌파 하나인데, 그 안의 정의역이 거의 소진됐다.</li>
+<li>후보가 없으면(NO-CANDIDATE) K에 산입하지 않으니 K는 영원히 같은 값에 머문다.</li>
+</ul>
+<p>탐색 에이전트는 이 상황에서 스스로 판단하지 않고 논리적 출구 네 가지(자료원 해금, 봉인 우회 예외 승인, 봉인 산정 규칙 재검토(느슨화 금지), 회차 휴지)만 정리해 사용자에게 올렸다.</p>
+<h3 id="진짜-원인">진짜 원인<a hidden class="anchor" aria-hidden="true" href="#진짜-원인">#</a></h3>
+<p>사용자 요청으로 봉인 규칙을 검토하다가 발견했다. 봉인 해제와 다중 검정 보정이 <strong>같은 K를 공유하고 있는데 두 가지는 다른 양을 재고 있다.</strong></p>
+<ul>
+<li>봉인 해제는 &ldquo;연구 노력이 얼마나 누적됐는가&quot;를 재고 싶다.</li>
+<li>다중 검정 보정은 &ldquo;봉인 구간 데이터를 실제로 몇 번 만졌는가&quot;를 재야 한다.</li>
+</ul>
+<h3 id="자기-설계를-스스로-기각">자기 설계를 스스로 기각<a hidden class="anchor" aria-hidden="true" href="#자기-설계를-스스로-기각">#</a></h3>
+<p>첫 설계는 클래스 전용 카운터를 두는 것이었다. 검토 중 결정적인 결함이 보였다. 봉인된 클래스를 직접 두드릴수록 봉인이 풀리는 구조가 된다. 반복 낚시를 막으려는 봉인의 목적 자체를 무력화한다. 그래서 이 설계를 스스로 기각했다.</p>
+<p>재설계는 K를 보정 전용으로 두고, **봉인 해제 전용 카운터 R(완결 회차)**을 새로 분리하는 것이었다. R이 의미를 갖는 방식으로 정의했고, 시작값은 K와 같게 했다.</p>
+<h3 id="소급은-하지-않는다">소급은 하지 않는다<a hidden class="anchor" aria-hidden="true" href="#소급은-하지-않는다">#</a></h3>
+<p>소급 적용 범위를 조사했더니 엔진 실행 0회로 끝난 REJECTED-EARLY가 프로젝트 시작 이래 <strong>최소 13건</strong>이었다. 예상한 3건이 아니었다. 전부 소급하면 분류 이력 전체를 재감사해야 한다. 이 사실을 보여주고 사용자가 선택했다. <strong>프로스펙티브 적용만, 소급 없음.</strong> 규칙을 바꾸는 순간 과거 결과의 해석이 달라지는 것을 막는 가장 안전한 선택이다.</p>
+<p>이 결정으로 당장 풀린 봉인은 없다. 데드락이 해소된 것도 아니다. 다음 길은 여전히 자료원 해금이나 회차 휴지다.</p>
+<hr>
+<h2 id="3-회차들이-보여준-구조">3. 회차들이 보여준 구조<a hidden class="anchor" aria-hidden="true" href="#3-회차들이-보여준-구조">#</a></h2>
+<p>26~42회차에서 반복된 것을 한 줄씩 정리한다.</p>
+<ul>
+<li><strong>봉인 우회가 연속으로 실패했다.</strong> 후보 1건 한정 우회가 세 번 연속 실패하면서 후보 재고가 완전히 소진됐다.</li>
+<li><strong>&ldquo;판별했고 반대였다&quot;로 종결한 첫 사례.</strong> 기대한 효과의 부호가 반대로 나타난 경우도 정식 종결이다.</li>
+<li><strong>같은 이론을 다른 이름으로 반복하는 경향.</strong> 문헌 3중 독립 확인과 &ldquo;자료원 해금은 충분조건이 아니다&quot;라는 구조적 발견을 얻었다. 데이터가 있어도 신호가 없을 수 있다.</li>
+<li><strong>횡단면 선별은 저위험 선별이어도 사이징으로 검정력을 살 수 없다.</strong> 포지션을 키운다고 통계적 증거가 늘어나지 않는다.</li>
+<li>오케스트레이터가 다음 회차 인계 기록의 오기(봉 주기)를 발견해 정정했다. 인계 문서도 틀릴 수 있다.</li>
+</ul>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>질문</th>
+					<th>답</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>게이트가 과한가</td>
+					<td>아니다. 신호 크기가 비용과 같은 자릿수</td>
+			</tr>
+			<tr>
+					<td>문턱을 낮출까</td>
+					<td>아니다. 대신 탐색 단계 산술 점검과 비관 쪽 판정</td>
+			</tr>
+			<tr>
+					<td>데드락 원인</td>
+					<td>봉인 해제와 다중 검정 보정이 한 숫자를 공유</td>
+			</tr>
+			<tr>
+					<td>해결</td>
+					<td>봉인 해제 전용 카운터 R 분리, 소급 없음</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 결과가 계속 나쁠 때 가장 위험한 대응은 기준을 낮추는 것이다. 그 전에 <strong>집계</strong>를 해야 한다. 집계가 &ldquo;게이트의 문제가 아니라 신호 크기의 문제&quot;를 보여 주었다. 그리고 규칙의 결함은 규칙을 만든 사람이 가장 보기 어렵다. 설계안을 스스로 반례로 깨 보고, 소급 범위를 실측으로 확인한 뒤에야 결정할 수 있었다. 마지막으로, 해결책이 데드락을 풀지 못하더라도 &ldquo;풀리지 않았다&quot;고 문서에 적는 것이 이후 모든 판단의 신뢰를 지켜 준다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-45-to-66-closed-loop/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (6) — 연구 45~66회차: 모든 분류가 닫혔을 때, 돈으로도 안 풀리는 것과 새 데이터를 검증하는 법</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-9-to-25/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (4) — 연구 9~25회차: 기각의 공장에서 배운 것들</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

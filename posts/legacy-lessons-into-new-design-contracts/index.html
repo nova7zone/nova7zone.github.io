@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 리뷰">
+<meta name="description" content="코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다">
+  <meta property="og:description" content="코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-11T20:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-11T20:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="리뷰">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다">
+  <meta name="twitter:description" content="코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 '계약'으로 옮기다",
+      "item": "https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 '계약'으로 옮기다",
+  "name": "자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 \u0027계약\u0027으로 옮기다",
+  "description": "코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.",
+  "keywords": [
+    "설계", "리뷰"
+  ],
+  "articleBody": "들어가며 새 저장소 kis-auto-trading은 7월 7일 이후 코드 이식을 시작하지 않았다. 대신 7월 8일부터 11일까지는 문서만 고쳤다. 이유는 하나다. “검증된 로직은 재작성하지 않고 그대로 옮긴다\"는 원칙이 있는데, 무엇이 검증된 동작인지가 문서에 적혀 있지 않았기 때문이다.\n1. 판단 근거를 DB에 항상 남기는 설계 (7월 8일) 코인 자동매매 파생 프로젝트에서 확정한 “매매 분석 데이터 축적” 설계를 이 저장소에 역으로 반영했다. 기존 봇은 판단 근거가 DEBUG 로그에만 남았는데 운영 기본 레벨이 INFO라 사실상 사라졌다.\n핵심 원칙은 한 줄이다. 판단 스냅샷은 로그 레벨과 무관하게 DB에 항상 기록한다. 로그는 관제용이고, DB가 분석의 정본이다.\n기록 시점 네 가지: 후보 선정, 진입, 청산, 사후 추적 스키마 요건: 결측 종가를 -100%로 오기록하지 않고 NULL로 둔다, 청산 사유는 고정 열거형으로 둔다, 60일을 넘긴 후보는 제외한다, paper와 백테스트가 같은 스키마를 쓰도록 모드 컬럼을 둔다 완료 기준: 왕복 매매 1건이 네 종류 레코드를 모두 남기는지 검증하는 테스트 일지(사람이 읽는 것)와 스냅샷(집계용)은 역할이 달라서 별도 단계로 유지하기로 했다.\n2. 첫 주 운영 리뷰와의 갭 대조 → 안전장치 8건 (7월 10일) 기존 저장소의 첫 주 운영 리뷰를 읽고 새 설계와 대조했다. 이미 설계가 커버한 것은 8건 중 2건뿐이었다. 나머지를 전략과 무관하게 코어가 지켜야 하는 안전장치로 문서에 추가했다.\n영역 요구사항 주문 집행 오래된 가격으로 주문 금지, 청산 사유별 주문 유형 구분, 미체결 시 재시도 간격 늘리기 리스크 손절 후 재진입 쿨다운, 일일 손실 한도 회로 차단기, 기업 이벤트로 인한 가격 괴리 가드 데이터 우선주·저유동성 필터, 업종 해석 정상화 여기서 중요한 구분이 하나 생겼다. 원칙상 이식은 로직을 고치지 않지만, 운영에서 결함으로 증명된 두 항목은 문서화된 예외로 이식 시 수정하기로 했다. 대신 회귀 테스트에서 그 케이스의 기대값이 기존 코드와 의도적으로 다르다는 것을 주석으로 남긴다. 그래야 나중에 회귀가 어긋났을 때 이식 결함과 의도된 수정을 구분할 수 있다.\n3. 운영 교훈 전수 대조 → ‘집행 계약’ 10개 항 (7월 10일 두 번째 세션) “기존 운영 코드의 오류와 개선 사항이 새 설계에 정말 반영됐는지 깊게 확인해 달라\"는 요청으로 더 넓게 훑었다. 대상은 사고 이력 문서, 6~7월 두 차례의 코드 리뷰, AI 코드 안전 체크리스트, 릴리스 노트였다.\n핵심 갭은 이거였다. 사고를 겪고 확정된 집행 규칙이 코드에는 있었지만 새 설계 문서에는 전혀 없었다. 예를 들면 다음과 같다.\n체결 판단은 잔고 증감(holdings-diff) 기반으로 한다 주문·취소 재시도를 하지 않는다 매도 수량 기준은 로컬 보유량이다 취소는 3가지 상태(성공, 실패, 이미 체결)로 구분한다 레지스트리는 체결 시점에 기록한다 보정 로직은 대기 주문을 건드리지 않는다 시각은 항상 한국 시간 헬퍼로 얻는다 이런 규칙이 문서에 없으면, 나중에 누군가 코어를 개정하면서 “더 깔끔한 구조\"로 바꾸는 순간 사고 방지 장치가 조용히 사라진다. 그래서 ARCHITECTURE에 “집행 계약 — 기존 운영 사고로 확정된 설계 결정” 절을 새로 만들어 열 가지 항으로 명문화하고, 이식 대상 파일마다 어느 사고에서 온 규칙인지를 표시했다. 주문 관리자처럼 사고가 몰린 모듈에는 “재작성 절대 금지\"를 붙였다.\n데이터 계약도 보강했다. 일봉 첫 항목을 버리기 전에 날짜를 확인할 것(앞 글의 지수 캐시 버그), 종목명은 캐시 사전이 정본이라는 점(조회 API에 이름 필드가 없다), 파일 열기는 인코딩을 명시할 것이 그것이다.\n기존 저장소의 미해결 항목 9건은 “승계 확인 목록\"으로 따로 정리했고, 이식 시점에 원본 상태를 다시 확인하도록 규칙을 정했다. 기존 저장소가 계속 수정되고 있어서, 목록은 2026-07-10 시점의 스냅샷일 뿐이기 때문이다.\n4. 개발요청서 거버넌스 대조와 릴리스 태깅 규칙 (7월 11일) 실제로 작성된 개발요청서 1건을 거버넌스 문서 전체와 대조했다. 발견은 이랬다.\n요청서는 “코어 이식 1단계 착수\"를 전제로 쓰였다. 그런데 이틀 뒤 “코인 파일럿이 끝날 때까지 코드 착수를 유예한다\"는 결정이 내려졌고, 이 사실이 요청서에도, 작업 시작 절차가 정독하는 인수인계 문서에도 반영되지 않았다. 결과적으로 절차를 그대로 따르면 “착수 가능\"으로 오인할 틈이 있었다. 이 유예를 요청서에 배지로 표기하는 건 사용자 확인을 기다리는 제안 상태로 두었다. 대신 릴리스 태깅 규칙을 신설했다.\n태그 의미 v0.1.0 ~ v0.7.0 이식 1단계 완료부터 7단계(웹) 완료까지 v0.8.0 섀도 병행 개시 v0.9.0 실거래 신규 진입 v1.0.0 이후 발견된 오류 수정·안정화 완료 단계 사이의 소규모 변경은 패치 태그(v0.1.1 등)를 허용하고, 문서만 바뀐 커밋은 태깅 대상이 아니다.\n정리 날짜 작업 결과 7/8 매매 분석 데이터 축적 설계 역반영 “판단 스냅샷은 DB에 항상” 원칙 7/10 첫 주 리뷰 갭 대조 코어 안전장치 8건, 동작 보존 예외 문서화 7/10 운영 교훈 전수 대조 집행 계약 10개 항, 승계 확인 목록 9건 7/11 개발요청서 거버넌스 대조 유예 결정 미반영 갭 발견, 릴리스 태깅 규칙 배운 점: 잘 돌아가는 시스템을 다시 세울 때 가장 쉽게 유실되는 건 코드가 아니라 “왜 이렇게 하는지\"의 이력이다. 사고로 얻은 규칙을 코드에만 두면 구조를 바꾸는 순간 사라진다. 코드를 옮기기 전에 그 규칙을 계약으로 문서에 올려 두는 편이 안전하다.\n",
+  "wordCount" : "2181",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-11T20:00:00+09:00",
+  "dateModified": "2026-07-11T20:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다
+    </h1>
+    <div class="post-description">
+      코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-11T20:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ed%8c%90%eb%8b%a8-%ea%b7%bc%ea%b1%b0%eb%a5%bc-db%ec%97%90-%ed%95%ad%ec%83%81-%eb%82%a8%ea%b8%b0%eb%8a%94-%ec%84%a4%ea%b3%84-7%ec%9b%94-8%ec%9d%bc" aria-label="1. 판단 근거를 DB에 항상 남기는 설계 (7월 8일)">1. 판단 근거를 DB에 항상 남기는 설계 (7월 8일)</a></li>
+            <li>
+                <a href="#2-%ec%b2%ab-%ec%a3%bc-%ec%9a%b4%ec%98%81-%eb%a6%ac%eb%b7%b0%ec%99%80%ec%9d%98-%ea%b0%ad-%eb%8c%80%ec%a1%b0--%ec%95%88%ec%a0%84%ec%9e%a5%ec%b9%98-8%ea%b1%b4-7%ec%9b%94-10%ec%9d%bc" aria-label="2. 첫 주 운영 리뷰와의 갭 대조 → 안전장치 8건 (7월 10일)">2. 첫 주 운영 리뷰와의 갭 대조 → 안전장치 8건 (7월 10일)</a></li>
+            <li>
+                <a href="#3-%ec%9a%b4%ec%98%81-%ea%b5%90%ed%9b%88-%ec%a0%84%ec%88%98-%eb%8c%80%ec%a1%b0--%ec%a7%91%ed%96%89-%ea%b3%84%ec%95%bd-10%ea%b0%9c-%ed%95%ad-7%ec%9b%94-10%ec%9d%bc-%eb%91%90-%eb%b2%88%ec%a7%b8-%ec%84%b8%ec%85%98" aria-label="3. 운영 교훈 전수 대조 → &lsquo;집행 계약&rsquo; 10개 항 (7월 10일 두 번째 세션)">3. 운영 교훈 전수 대조 → &lsquo;집행 계약&rsquo; 10개 항 (7월 10일 두 번째 세션)</a></li>
+            <li>
+                <a href="#4-%ea%b0%9c%eb%b0%9c%ec%9a%94%ec%b2%ad%ec%84%9c-%ea%b1%b0%eb%b2%84%eb%84%8c%ec%8a%a4-%eb%8c%80%ec%a1%b0%ec%99%80-%eb%a6%b4%eb%a6%ac%ec%8a%a4-%ed%83%9c%ea%b9%85-%ea%b7%9c%ec%b9%99-7%ec%9b%94-11%ec%9d%bc" aria-label="4. 개발요청서 거버넌스 대조와 릴리스 태깅 규칙 (7월 11일)">4. 개발요청서 거버넌스 대조와 릴리스 태깅 규칙 (7월 11일)</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>새 저장소 <code>kis-auto-trading</code>은 7월 7일 이후 코드 이식을 시작하지 않았다. 대신 7월 8일부터 11일까지는 <strong>문서만</strong> 고쳤다. 이유는 하나다. &ldquo;검증된 로직은 재작성하지 않고 그대로 옮긴다&quot;는 원칙이 있는데, <strong>무엇이 검증된 동작인지가 문서에 적혀 있지 않았기</strong> 때문이다.</p>
+<hr>
+<h2 id="1-판단-근거를-db에-항상-남기는-설계-7월-8일">1. 판단 근거를 DB에 항상 남기는 설계 (7월 8일)<a hidden class="anchor" aria-hidden="true" href="#1-판단-근거를-db에-항상-남기는-설계-7월-8일">#</a></h2>
+<p>코인 자동매매 파생 프로젝트에서 확정한 &ldquo;매매 분석 데이터 축적&rdquo; 설계를 이 저장소에 역으로 반영했다. 기존 봇은 판단 근거가 DEBUG 로그에만 남았는데 운영 기본 레벨이 INFO라 사실상 사라졌다.</p>
+<p>핵심 원칙은 한 줄이다. <strong>판단 스냅샷은 로그 레벨과 무관하게 DB에 항상 기록한다.</strong> 로그는 관제용이고, DB가 분석의 정본이다.</p>
+<ul>
+<li>기록 시점 네 가지: 후보 선정, 진입, 청산, 사후 추적</li>
+<li>스키마 요건: 결측 종가를 -100%로 오기록하지 않고 NULL로 둔다, 청산 사유는 고정 열거형으로 둔다, 60일을 넘긴 후보는 제외한다, paper와 백테스트가 같은 스키마를 쓰도록 모드 컬럼을 둔다</li>
+<li>완료 기준: 왕복 매매 1건이 네 종류 레코드를 모두 남기는지 검증하는 테스트</li>
+</ul>
+<p>일지(사람이 읽는 것)와 스냅샷(집계용)은 역할이 달라서 별도 단계로 유지하기로 했다.</p>
+<hr>
+<h2 id="2-첫-주-운영-리뷰와의-갭-대조--안전장치-8건-7월-10일">2. 첫 주 운영 리뷰와의 갭 대조 → 안전장치 8건 (7월 10일)<a hidden class="anchor" aria-hidden="true" href="#2-첫-주-운영-리뷰와의-갭-대조--안전장치-8건-7월-10일">#</a></h2>
+<p>기존 저장소의 첫 주 운영 리뷰를 읽고 새 설계와 대조했다. 이미 설계가 커버한 것은 8건 중 2건뿐이었다. 나머지를 <strong>전략과 무관하게 코어가 지켜야 하는 안전장치</strong>로 문서에 추가했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>요구사항</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>주문 집행</td>
+					<td>오래된 가격으로 주문 금지, 청산 사유별 주문 유형 구분, 미체결 시 재시도 간격 늘리기</td>
+			</tr>
+			<tr>
+					<td>리스크</td>
+					<td>손절 후 재진입 쿨다운, 일일 손실 한도 회로 차단기, 기업 이벤트로 인한 가격 괴리 가드</td>
+			</tr>
+			<tr>
+					<td>데이터</td>
+					<td>우선주·저유동성 필터, 업종 해석 정상화</td>
+			</tr>
+	</tbody>
+</table>
+<p>여기서 중요한 구분이 하나 생겼다. 원칙상 이식은 로직을 고치지 않지만, <strong>운영에서 결함으로 증명된 두 항목은 문서화된 예외</strong>로 이식 시 수정하기로 했다. 대신 회귀 테스트에서 그 케이스의 기대값이 기존 코드와 의도적으로 다르다는 것을 주석으로 남긴다. 그래야 나중에 회귀가 어긋났을 때 이식 결함과 의도된 수정을 구분할 수 있다.</p>
+<hr>
+<h2 id="3-운영-교훈-전수-대조--집행-계약-10개-항-7월-10일-두-번째-세션">3. 운영 교훈 전수 대조 → &lsquo;집행 계약&rsquo; 10개 항 (7월 10일 두 번째 세션)<a hidden class="anchor" aria-hidden="true" href="#3-운영-교훈-전수-대조--집행-계약-10개-항-7월-10일-두-번째-세션">#</a></h2>
+<p>&ldquo;기존 운영 코드의 오류와 개선 사항이 새 설계에 정말 반영됐는지 깊게 확인해 달라&quot;는 요청으로 더 넓게 훑었다. 대상은 사고 이력 문서, 6~7월 두 차례의 코드 리뷰, AI 코드 안전 체크리스트, 릴리스 노트였다.</p>
+<p>핵심 갭은 이거였다. <strong>사고를 겪고 확정된 집행 규칙이 코드에는 있었지만 새 설계 문서에는 전혀 없었다.</strong> 예를 들면 다음과 같다.</p>
+<ul>
+<li>체결 판단은 잔고 증감(holdings-diff) 기반으로 한다</li>
+<li>주문·취소 재시도를 하지 않는다</li>
+<li>매도 수량 기준은 로컬 보유량이다</li>
+<li>취소는 3가지 상태(성공, 실패, 이미 체결)로 구분한다</li>
+<li>레지스트리는 체결 시점에 기록한다</li>
+<li>보정 로직은 대기 주문을 건드리지 않는다</li>
+<li>시각은 항상 한국 시간 헬퍼로 얻는다</li>
+</ul>
+<p>이런 규칙이 문서에 없으면, 나중에 누군가 코어를 개정하면서 &ldquo;더 깔끔한 구조&quot;로 바꾸는 순간 사고 방지 장치가 조용히 사라진다. 그래서 <code>ARCHITECTURE</code>에 <strong>&ldquo;집행 계약 — 기존 운영 사고로 확정된 설계 결정&rdquo;</strong> 절을 새로 만들어 열 가지 항으로 명문화하고, 이식 대상 파일마다 어느 사고에서 온 규칙인지를 표시했다. 주문 관리자처럼 사고가 몰린 모듈에는 &ldquo;재작성 절대 금지&quot;를 붙였다.</p>
+<p>데이터 계약도 보강했다. 일봉 첫 항목을 버리기 전에 날짜를 확인할 것(앞 글의 지수 캐시 버그), 종목명은 캐시 사전이 정본이라는 점(조회 API에 이름 필드가 없다), 파일 열기는 인코딩을 명시할 것이 그것이다.</p>
+<p>기존 저장소의 <strong>미해결 항목 9건</strong>은 &ldquo;승계 확인 목록&quot;으로 따로 정리했고, 이식 시점에 원본 상태를 다시 확인하도록 규칙을 정했다. 기존 저장소가 계속 수정되고 있어서, 목록은 2026-07-10 시점의 스냅샷일 뿐이기 때문이다.</p>
+<hr>
+<h2 id="4-개발요청서-거버넌스-대조와-릴리스-태깅-규칙-7월-11일">4. 개발요청서 거버넌스 대조와 릴리스 태깅 규칙 (7월 11일)<a hidden class="anchor" aria-hidden="true" href="#4-개발요청서-거버넌스-대조와-릴리스-태깅-규칙-7월-11일">#</a></h2>
+<p>실제로 작성된 개발요청서 1건을 거버넌스 문서 전체와 대조했다. 발견은 이랬다.</p>
+<ul>
+<li>요청서는 &ldquo;코어 이식 1단계 착수&quot;를 전제로 쓰였다.</li>
+<li>그런데 이틀 뒤 &ldquo;코인 파일럿이 끝날 때까지 코드 착수를 유예한다&quot;는 결정이 내려졌고, 이 사실이 요청서에도, 작업 시작 절차가 정독하는 인수인계 문서에도 반영되지 않았다.</li>
+<li>결과적으로 절차를 그대로 따르면 &ldquo;착수 가능&quot;으로 오인할 틈이 있었다.</li>
+</ul>
+<p>이 유예를 요청서에 배지로 표기하는 건 사용자 확인을 기다리는 제안 상태로 두었다. 대신 <strong>릴리스 태깅 규칙</strong>을 신설했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>태그</th>
+					<th>의미</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>v0.1.0 ~ v0.7.0</td>
+					<td>이식 1단계 완료부터 7단계(웹) 완료까지</td>
+			</tr>
+			<tr>
+					<td>v0.8.0</td>
+					<td>섀도 병행 개시</td>
+			</tr>
+			<tr>
+					<td>v0.9.0</td>
+					<td>실거래 신규 진입</td>
+			</tr>
+			<tr>
+					<td>v1.0.0</td>
+					<td>이후 발견된 오류 수정·안정화 완료</td>
+			</tr>
+	</tbody>
+</table>
+<p>단계 사이의 소규모 변경은 패치 태그(v0.1.1 등)를 허용하고, 문서만 바뀐 커밋은 태깅 대상이 아니다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>날짜</th>
+					<th>작업</th>
+					<th>결과</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>7/8</td>
+					<td>매매 분석 데이터 축적 설계 역반영</td>
+					<td>&ldquo;판단 스냅샷은 DB에 항상&rdquo; 원칙</td>
+			</tr>
+			<tr>
+					<td>7/10</td>
+					<td>첫 주 리뷰 갭 대조</td>
+					<td>코어 안전장치 8건, 동작 보존 예외 문서화</td>
+			</tr>
+			<tr>
+					<td>7/10</td>
+					<td>운영 교훈 전수 대조</td>
+					<td>집행 계약 10개 항, 승계 확인 목록 9건</td>
+			</tr>
+			<tr>
+					<td>7/11</td>
+					<td>개발요청서 거버넌스 대조</td>
+					<td>유예 결정 미반영 갭 발견, 릴리스 태깅 규칙</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 잘 돌아가는 시스템을 다시 세울 때 가장 쉽게 유실되는 건 코드가 아니라 <strong>&ldquo;왜 이렇게 하는지&quot;의 이력</strong>이다. 사고로 얻은 규칙을 코드에만 두면 구조를 바꾸는 순간 사라진다. 코드를 옮기기 전에 그 규칙을 계약으로 문서에 올려 두는 편이 안전하다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-server-deploy-github-auth-pocket/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 Bot 전환 및 개발 · Upbit (3) — 서버에 올리며 겪은 두 번의 삽질</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

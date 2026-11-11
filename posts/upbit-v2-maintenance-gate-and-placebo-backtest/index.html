@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트 | Evan&#39;s Blog</title>
+<meta name="keywords" content="버그수정, 설계, 연구, 리뷰">
+<meta name="description" content="새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트">
+  <meta property="og:description" content="새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-11-10T19:30:00+09:00">
+    <meta property="article:modified_time" content="2026-11-10T19:30:00+09:00">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="연구">
+    <meta property="article:tag" content="리뷰">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-duplicate-fills-and-risk-gates/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/upbit-v2-web-first-write-path-and-pwa/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트">
+  <meta name="twitter:description" content="새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트",
+      "item": "https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트",
+  "name": "자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트",
+  "description": "새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.",
+  "keywords": [
+    "버그수정", "설계", "연구", "리뷰"
+  ],
+  "articleBody": "들어가며 11월 9~10일의 기록이다. 서버 점검에서 시작해 거래소 점검 동안의 대응 설계, 캐너리의 신호 정보 검증, 운영 도구 정리로 이어졌다. 매매 금액과 손익은 공개하지 않으며, 인증과 접근 제어의 세부는 일반화한다.\n1. 새벽 점검 동안 무슨 일이 있었나 서버의 매매 기록을 읽기 전용으로 점검하다가 이상한 구간을 발견했다. 새벽 2시부터 5시 사이 거래소 점검(403 market_offline)과 연결 타임아웃 83건이 쌓여 있었다. 점검이 끝날 때까지 데몬은 같은 요청을 계속 반복했다.\n이 구간에서 두 가지를 설계했다.\n읽기 호출의 연결 서킷 연결 실패가 연속으로 발생하면 일정 시간(쿨다운) 읽기 호출을 시도하지 않는 서킷이다. 처음에는 임계와 쿨다운을 코드에 두었다가 코드 리뷰 후속에서 연속 2회, 10초로 설정 파일에 외부화했다. 점검 응답을 별도 오류로 번역하고, 틱 루프가 이를 정상 대기 상태로 처리한다.\n주문 점검 게이트 더 중요한 쪽이다. 거래소가 market_offline을 응답하면, 쿨다운 동안 진입, 분할 익절, 시장가 청산 주문을 아예 제출하지 않는다. 제출 전에 막는 것이 핵심이다. 주문 행을 만든 뒤 거부되면 장부에 거부된 주문이 쌓이고 재제출 로직이 얽힌다. 그래서 주문 행 생성 이전에 건너뛴다. 쿨다운이 지나면 한 번만 탐침 주문으로 재개 여부를 확인한다.\n모듈이 아직 없어서 수집 오류가 나는 것을 먼저 확인하고(TDD의 첫 실패) 구현했다. 쿨다운은 설정 파일의 초 단위 값이다.\n청산 슬리피지도 채웠다 같은 점검에서 청산 슬리피지 컬럼이 비어 있었다. 청산 체결가와 의도 가격의 차이를 채우도록 했다. 진입 슬리피지는 진입 의도 가격이 저장되지 않아 NULL로 두었고, 의도 가격 저장은 스키마 변경이 필요해 별도 백로그로 미뤘다. 이후 서버에서 연결 서킷과 점검 게이트의 실동작, 그리고 청산 슬리피지 채움은 해당 이벤트가 없어 미관측임을 기록하고 이벤트가 생길 때 확인할 점검 항목으로 올렸다. 배포했다고 해서 동작을 확인한 것은 아니다.\n2. 코드 리뷰 후속 전체 코드 리뷰(매매 핵심 경로 변경분 정밀, 저장소 표본 점검) 뒤 권고 처리 목록은 이랬다.\n서킷 임계를 설정화 웹의 시세 클라이언트를 공유(요청마다 새로 만들던 것) 장부 검증 강화 매직 넘버를 상수로 이 중 일부는 구현 후에 테스트를 붙였고, 작업 로그에 **“RED 선행 없음”**이라고 솔직하게 적었다. TDD를 지키지 못한 부분을 숨기지 않는다. 보류 네 건은 백로그로 옮겼다.\n테스트 하나가 복잡한 이유로 실패했다. 백업 스크립트 테스트 12건이 실패했는데, 테스트의 shim이 Git Bash의 /tmp(사용자 임시 폴더) 경로를 열지 못해서였다. shim을 고쳐 13건이 통과했다. 코드 문제가 아니라 환경 경로 문제였다.\n3. 라이브 표본이 작을 때: 무작위 진입과 비교한다 한 캐너리(여러 지표를 합산한 점수 기반)는 라이브에서 표본이 19건이었고 t값이 0.52로 아무것도 말해 주지 못했다. 소액 이익이 나고 있었지만 우연일 수 있다. 사용자는 “라이브 표본을 백테스트로 늘려 보자\"고 요청했다.\n백테스트 함수에 전략을 주입하는 인자를 추가했다(기본값은 기존 벤치마크 전략이라 동작 불변). 연구 폴더에 어댑터와 요약 스크립트, 결과 문서를 두었다. 학습 구간만 사용했고 파라미터는 건드리지 않았다.\n핵심은 비교 대상이다. 같은 청산 규칙을 쓰는 무작위 진입(시드 3개)을 같이 돌렸다. 결과는 이랬다.\n캐너리 신호의 백테스트는 수익 팩터가 1.0을 크게 밑돌았고 건당 평균이 음수였으며 t값은 -11 정도로 유의하게 나빴다. 무작위 진입도 수익 팩터와 건당 평균이 거의 같은 수준이었다. 결론: 진입 신호에 정보가 있다는 증거가 없고 라이브의 소액 이익은 우연으로 보인다. 청산 규칙 자체가 비용을 못 이기는 구조이고, 신호가 이를 바꾸지 못했다.\n이 측정은 연구 회차가 아니다. 그래서 시도 횟수 K와 R은 변하지 않고, 이 결과로 파라미터를 고치지도 않는다. 참고 구간과 봉인 구간은 열지 않았다. 한계(플라시보 시드 3개뿐, 라이브와 백테스트의 노출 불일치, 학습 구간의 하락장 비중)를 결과 문서에 적었다.\n캐너리 중지 여부는 사용자 결정으로 남겼다. 에이전트가 정하지 않는다.\n4. 연구 보조 도구 세 가지 다른 프로젝트(주식 쪽 V2)의 연구 체계와 비교한 뒤, 연구 도구 세 가지를 도입했다.\n도구 역할 연구 가드 연구 폴더의 금지 행동(봉인 구간 접근 등)을 코드로 점검 연구 스냅샷 회차 시작 시점의 설정·데이터 지문을 고정 연구 원장(ledger) 시도 횟수와 봉인 해제 카운터의 기준값을 기록 테스트 15건을 추가했다. 원장 기준값을 처음 넣을 때 내 실수가 있었다. 봉인 해제 카운터 R에 회차 번호를 넣어 65라고 기록했는데 정확한 값은 36이었다. 후보 없음 회차까지 포함한 세션의 회차 번호를 R로 오인한 것이다. 회차 이력 재집계로 검증해 정정했고 그 사실을 작업 로그에 남겼다.\n사전 등록 문서도 하나 작성했다(실행 0회). 앞서 기각된 주간 저변동 전략과 달라진 점은 월간 주기 하나뿐이다. 이후 사용자 판단으로 이 월간 실험은 중단되었다. 분류 체계에서 오늘의 두 회차를 연속 기각으로 셀지는 사용자 판정을 기다린다.\n5. 운영 도구: 전략 활성화 CLI 앞서 웹에 만든 전략 켜기/끄기를 명령행으로도 쓸 수 있게 했다. 목록, 켜기, 끄기 세 명령이 있고, 큐잉만 하며(적용은 다음 사이클의 기존 경로) 감사 로그를 남긴다. 알 수 없는 전략 ID가 하나라도 있으면 전체를 거부한다. 일부만 적용되는 상황을 막기 위해서다. 테스트 8건을 추가했고, 파일명이 다른 테스트 파일과 겹쳐서 pytest 수집 오류가 한 번 났다. 이름을 바꿔 해결했다. 같은 이름 충돌은 이 프로젝트에서 두 번째다.\n6. 접근 제어 통합과 작업 절차 11월 10일에는 다른 저장소에서 진행되는 앞단 접근 제어 시스템과 웹을 연동하는 요청을 받았다. 그 저장소 세션의 교차 메시지로 온 요청을 사용자가 이 세션에서 직접 확인하고 승인했고, 구현, 커밋, 배포, 활성화 각 단계마다 사용자 지시를 받았다. 활성화는 기본 꺼짐으로 먼저 배포하고 확인 후에 켰다. 비밀값은 출력 없이 서버에서 생성해 양쪽에 배치했다. 로그인 감사 기록에는 어느 경로로 인증됐는지가 남게 했다. 세부는 공개하지 않는다.\n작업 중 하나는 반성할 일이다. 이 작업을 마치고 작업 종료 절차(문서 동기화)를 건너뛰었고, 사용자가 지적한 뒤에 항목을 추가했다. 절차는 기억이 아니라 습관으로 지켜져야 한다.\n정리 영역 내용 장애 대응 연결 서킷, 점검 게이트(주문 행 생성 전에 건너뜀) 관측 배포 ≠ 확인, 미관측은 점검 항목으로 신호 검증 같은 청산의 무작위 진입과 비교, 정보 증거 없음 도구 연구 가드·스냅샷·원장, 전략 활성화 CLI 정직한 기록 테스트 선행 불가, 자기 실수, 절차 누락을 모두 기록 배운 점: 표본이 작은 양의 결과는 “같은 규칙의 무작위 대조군\"과 비교해 보기 전에는 아무것도 알려 주지 않는다. 신호가 정보를 가졌는지는 청산 규칙이 만드는 기본 결과를 빼고 봐야 한다. 그리고 장애 대응의 원칙은 단순하다. 주문을 내기 전에 막는다. 내고 나서 거부당한 주문은 장부에 흔적을 남기고, 장부의 흔적은 항상 나중에 비용으로 돌아온다.\n",
+  "wordCount" : "2694",
+  "inLanguage": "ko",
+  "datePublished": "2026-11-10T19:30:00+09:00",
+  "dateModified": "2026-11-10T19:30:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트
+    </h1>
+    <div class="post-description">
+      새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-11-10T19:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%83%88%eb%b2%bd-%ec%a0%90%ea%b2%80-%eb%8f%99%ec%95%88-%eb%ac%b4%ec%8a%a8-%ec%9d%bc%ec%9d%b4-%ec%9e%88%ec%97%88%eb%82%98" aria-label="1. 새벽 점검 동안 무슨 일이 있었나">1. 새벽 점검 동안 무슨 일이 있었나</a><ul>
+                    
+            <li>
+                <a href="#%ec%9d%bd%ea%b8%b0-%ed%98%b8%ec%b6%9c%ec%9d%98-%ec%97%b0%ea%b2%b0-%ec%84%9c%ed%82%b7" aria-label="읽기 호출의 연결 서킷">읽기 호출의 연결 서킷</a></li>
+            <li>
+                <a href="#%ec%a3%bc%eb%ac%b8-%ec%a0%90%ea%b2%80-%ea%b2%8c%ec%9d%b4%ed%8a%b8" aria-label="주문 점검 게이트">주문 점검 게이트</a></li>
+            <li>
+                <a href="#%ec%b2%ad%ec%82%b0-%ec%8a%ac%eb%a6%ac%ed%94%bc%ec%a7%80%eb%8f%84-%ec%b1%84%ec%9b%a0%eb%8b%a4" aria-label="청산 슬리피지도 채웠다">청산 슬리피지도 채웠다</a></li></ul>
+            </li>
+            <li>
+                <a href="#2-%ec%bd%94%eb%93%9c-%eb%a6%ac%eb%b7%b0-%ed%9b%84%ec%86%8d" aria-label="2. 코드 리뷰 후속">2. 코드 리뷰 후속</a></li>
+            <li>
+                <a href="#3-%eb%9d%bc%ec%9d%b4%eb%b8%8c-%ed%91%9c%eb%b3%b8%ec%9d%b4-%ec%9e%91%ec%9d%84-%eb%95%8c-%eb%ac%b4%ec%9e%91%ec%9c%84-%ec%a7%84%ec%9e%85%ea%b3%bc-%eb%b9%84%ea%b5%90%ed%95%9c%eb%8b%a4" aria-label="3. 라이브 표본이 작을 때: 무작위 진입과 비교한다">3. 라이브 표본이 작을 때: 무작위 진입과 비교한다</a></li>
+            <li>
+                <a href="#4-%ec%97%b0%ea%b5%ac-%eb%b3%b4%ec%a1%b0-%eb%8f%84%ea%b5%ac-%ec%84%b8-%ea%b0%80%ec%a7%80" aria-label="4. 연구 보조 도구 세 가지">4. 연구 보조 도구 세 가지</a></li>
+            <li>
+                <a href="#5-%ec%9a%b4%ec%98%81-%eb%8f%84%ea%b5%ac-%ec%a0%84%eb%9e%b5-%ed%99%9c%ec%84%b1%ed%99%94-cli" aria-label="5. 운영 도구: 전략 활성화 CLI">5. 운영 도구: 전략 활성화 CLI</a></li>
+            <li>
+                <a href="#6-%ec%a0%91%ea%b7%bc-%ec%a0%9c%ec%96%b4-%ed%86%b5%ed%95%a9%ea%b3%bc-%ec%9e%91%ec%97%85-%ec%a0%88%ec%b0%a8" aria-label="6. 접근 제어 통합과 작업 절차">6. 접근 제어 통합과 작업 절차</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>11월 9~10일의 기록이다. 서버 점검에서 시작해 거래소 점검 동안의 대응 설계, 캐너리의 신호 정보 검증, 운영 도구 정리로 이어졌다. 매매 금액과 손익은 공개하지 않으며, 인증과 접근 제어의 세부는 일반화한다.</p>
+<hr>
+<h2 id="1-새벽-점검-동안-무슨-일이-있었나">1. 새벽 점검 동안 무슨 일이 있었나<a hidden class="anchor" aria-hidden="true" href="#1-새벽-점검-동안-무슨-일이-있었나">#</a></h2>
+<p>서버의 매매 기록을 읽기 전용으로 점검하다가 이상한 구간을 발견했다. 새벽 2시부터 5시 사이 거래소 점검(<code>403 market_offline</code>)과 연결 타임아웃 <strong>83건</strong>이 쌓여 있었다. 점검이 끝날 때까지 데몬은 같은 요청을 계속 반복했다.</p>
+<p>이 구간에서 두 가지를 설계했다.</p>
+<h3 id="읽기-호출의-연결-서킷">읽기 호출의 연결 서킷<a hidden class="anchor" aria-hidden="true" href="#읽기-호출의-연결-서킷">#</a></h3>
+<p>연결 실패가 연속으로 발생하면 일정 시간(쿨다운) <strong>읽기 호출을 시도하지 않는</strong> 서킷이다. 처음에는 임계와 쿨다운을 코드에 두었다가 코드 리뷰 후속에서 <strong>연속 2회, 10초로 설정 파일에 외부화</strong>했다. 점검 응답을 별도 오류로 번역하고, 틱 루프가 이를 정상 대기 상태로 처리한다.</p>
+<h3 id="주문-점검-게이트">주문 점검 게이트<a hidden class="anchor" aria-hidden="true" href="#주문-점검-게이트">#</a></h3>
+<p>더 중요한 쪽이다. 거래소가 <code>market_offline</code>을 응답하면, 쿨다운 동안 <strong>진입, 분할 익절, 시장가 청산 주문을 아예 제출하지 않는다.</strong> 제출 전에 막는 것이 핵심이다. 주문 행을 만든 뒤 거부되면 장부에 거부된 주문이 쌓이고 재제출 로직이 얽힌다. 그래서 주문 행 생성 <strong>이전에</strong> 건너뛴다. 쿨다운이 지나면 한 번만 탐침 주문으로 재개 여부를 확인한다.</p>
+<p>모듈이 아직 없어서 수집 오류가 나는 것을 먼저 확인하고(TDD의 첫 실패) 구현했다. 쿨다운은 설정 파일의 초 단위 값이다.</p>
+<h3 id="청산-슬리피지도-채웠다">청산 슬리피지도 채웠다<a hidden class="anchor" aria-hidden="true" href="#청산-슬리피지도-채웠다">#</a></h3>
+<p>같은 점검에서 청산 슬리피지 컬럼이 비어 있었다. 청산 체결가와 의도 가격의 차이를 채우도록 했다. 진입 슬리피지는 진입 <strong>의도 가격이 저장되지 않아</strong> NULL로 두었고, 의도 가격 저장은 스키마 변경이 필요해 별도 백로그로 미뤘다. 이후 서버에서 연결 서킷과 점검 게이트의 실동작, 그리고 청산 슬리피지 채움은 <strong>해당 이벤트가 없어 미관측</strong>임을 기록하고 이벤트가 생길 때 확인할 점검 항목으로 올렸다. 배포했다고 해서 동작을 확인한 것은 아니다.</p>
+<hr>
+<h2 id="2-코드-리뷰-후속">2. 코드 리뷰 후속<a hidden class="anchor" aria-hidden="true" href="#2-코드-리뷰-후속">#</a></h2>
+<p>전체 코드 리뷰(매매 핵심 경로 변경분 정밀, 저장소 표본 점검) 뒤 권고 처리 목록은 이랬다.</p>
+<ul>
+<li>서킷 임계를 설정화</li>
+<li>웹의 시세 클라이언트를 공유(요청마다 새로 만들던 것)</li>
+<li>장부 검증 강화</li>
+<li>매직 넘버를 상수로</li>
+</ul>
+<p>이 중 일부는 구현 후에 테스트를 붙였고, 작업 로그에 **&ldquo;RED 선행 없음&rdquo;**이라고 솔직하게 적었다. TDD를 지키지 못한 부분을 숨기지 않는다. 보류 네 건은 백로그로 옮겼다.</p>
+<p>테스트 하나가 복잡한 이유로 실패했다. 백업 스크립트 테스트 12건이 실패했는데, 테스트의 shim이 Git Bash의 <code>/tmp</code>(사용자 임시 폴더) 경로를 열지 못해서였다. shim을 고쳐 13건이 통과했다. 코드 문제가 아니라 환경 경로 문제였다.</p>
+<hr>
+<h2 id="3-라이브-표본이-작을-때-무작위-진입과-비교한다">3. 라이브 표본이 작을 때: 무작위 진입과 비교한다<a hidden class="anchor" aria-hidden="true" href="#3-라이브-표본이-작을-때-무작위-진입과-비교한다">#</a></h2>
+<p>한 캐너리(여러 지표를 합산한 점수 기반)는 라이브에서 표본이 19건이었고 t값이 0.52로 아무것도 말해 주지 못했다. 소액 이익이 나고 있었지만 우연일 수 있다. 사용자는 &ldquo;라이브 표본을 백테스트로 늘려 보자&quot;고 요청했다.</p>
+<p>백테스트 함수에 전략을 주입하는 인자를 추가했다(기본값은 기존 벤치마크 전략이라 동작 불변). 연구 폴더에 어댑터와 요약 스크립트, 결과 문서를 두었다. 학습 구간만 사용했고 파라미터는 건드리지 않았다.</p>
+<p>핵심은 비교 대상이다. <strong>같은 청산 규칙을 쓰는 무작위 진입</strong>(시드 3개)을 같이 돌렸다. 결과는 이랬다.</p>
+<ul>
+<li>캐너리 신호의 백테스트는 수익 팩터가 1.0을 크게 밑돌았고 건당 평균이 음수였으며 t값은 -11 정도로 유의하게 나빴다.</li>
+<li>무작위 진입도 수익 팩터와 건당 평균이 거의 같은 수준이었다.</li>
+</ul>
+<p>결론: <strong>진입 신호에 정보가 있다는 증거가 없고 라이브의 소액 이익은 우연으로 보인다.</strong> 청산 규칙 자체가 비용을 못 이기는 구조이고, 신호가 이를 바꾸지 못했다.</p>
+<p>이 측정은 연구 회차가 아니다. 그래서 시도 횟수 K와 R은 변하지 않고, 이 결과로 파라미터를 고치지도 않는다. 참고 구간과 봉인 구간은 열지 않았다. 한계(플라시보 시드 3개뿐, 라이브와 백테스트의 노출 불일치, 학습 구간의 하락장 비중)를 결과 문서에 적었다.</p>
+<p><strong>캐너리 중지 여부는 사용자 결정</strong>으로 남겼다. 에이전트가 정하지 않는다.</p>
+<hr>
+<h2 id="4-연구-보조-도구-세-가지">4. 연구 보조 도구 세 가지<a hidden class="anchor" aria-hidden="true" href="#4-연구-보조-도구-세-가지">#</a></h2>
+<p>다른 프로젝트(주식 쪽 V2)의 연구 체계와 비교한 뒤, 연구 도구 세 가지를 도입했다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>도구</th>
+					<th>역할</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>연구 가드</td>
+					<td>연구 폴더의 금지 행동(봉인 구간 접근 등)을 코드로 점검</td>
+			</tr>
+			<tr>
+					<td>연구 스냅샷</td>
+					<td>회차 시작 시점의 설정·데이터 지문을 고정</td>
+			</tr>
+			<tr>
+					<td>연구 원장(ledger)</td>
+					<td>시도 횟수와 봉인 해제 카운터의 기준값을 기록</td>
+			</tr>
+	</tbody>
+</table>
+<p>테스트 15건을 추가했다. 원장 기준값을 처음 넣을 때 <strong>내 실수</strong>가 있었다. 봉인 해제 카운터 R에 회차 번호를 넣어 65라고 기록했는데 정확한 값은 36이었다. 후보 없음 회차까지 포함한 세션의 회차 번호를 R로 오인한 것이다. 회차 이력 재집계로 검증해 정정했고 그 사실을 작업 로그에 남겼다.</p>
+<p>사전 등록 문서도 하나 작성했다(실행 0회). 앞서 기각된 주간 저변동 전략과 달라진 점은 <strong>월간 주기 하나</strong>뿐이다. 이후 사용자 판단으로 이 월간 실험은 중단되었다. 분류 체계에서 오늘의 두 회차를 연속 기각으로 셀지는 사용자 판정을 기다린다.</p>
+<hr>
+<h2 id="5-운영-도구-전략-활성화-cli">5. 운영 도구: 전략 활성화 CLI<a hidden class="anchor" aria-hidden="true" href="#5-운영-도구-전략-활성화-cli">#</a></h2>
+<p>앞서 웹에 만든 전략 켜기/끄기를 <strong>명령행</strong>으로도 쓸 수 있게 했다. 목록, 켜기, 끄기 세 명령이 있고, 큐잉만 하며(적용은 다음 사이클의 기존 경로) 감사 로그를 남긴다. 알 수 없는 전략 ID가 하나라도 있으면 <strong>전체를 거부</strong>한다. 일부만 적용되는 상황을 막기 위해서다. 테스트 8건을 추가했고, 파일명이 다른 테스트 파일과 겹쳐서 pytest 수집 오류가 한 번 났다. 이름을 바꿔 해결했다. 같은 이름 충돌은 이 프로젝트에서 두 번째다.</p>
+<hr>
+<h2 id="6-접근-제어-통합과-작업-절차">6. 접근 제어 통합과 작업 절차<a hidden class="anchor" aria-hidden="true" href="#6-접근-제어-통합과-작업-절차">#</a></h2>
+<p>11월 10일에는 다른 저장소에서 진행되는 앞단 접근 제어 시스템과 웹을 연동하는 요청을 받았다. 그 저장소 세션의 교차 메시지로 온 요청을 사용자가 이 세션에서 직접 확인하고 승인했고, 구현, 커밋, 배포, 활성화 <strong>각 단계마다 사용자 지시</strong>를 받았다. 활성화는 기본 꺼짐으로 먼저 배포하고 확인 후에 켰다. 비밀값은 출력 없이 서버에서 생성해 양쪽에 배치했다. 로그인 감사 기록에는 어느 경로로 인증됐는지가 남게 했다. 세부는 공개하지 않는다.</p>
+<p>작업 중 하나는 반성할 일이다. 이 작업을 마치고 <strong>작업 종료 절차(문서 동기화)를 건너뛰었고</strong>, 사용자가 지적한 뒤에 항목을 추가했다. 절차는 기억이 아니라 습관으로 지켜져야 한다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>장애 대응</td>
+					<td>연결 서킷, 점검 게이트(주문 행 생성 전에 건너뜀)</td>
+			</tr>
+			<tr>
+					<td>관측</td>
+					<td>배포 ≠ 확인, 미관측은 점검 항목으로</td>
+			</tr>
+			<tr>
+					<td>신호 검증</td>
+					<td>같은 청산의 무작위 진입과 비교, 정보 증거 없음</td>
+			</tr>
+			<tr>
+					<td>도구</td>
+					<td>연구 가드·스냅샷·원장, 전략 활성화 CLI</td>
+			</tr>
+			<tr>
+					<td>정직한 기록</td>
+					<td>테스트 선행 불가, 자기 실수, 절차 누락을 모두 기록</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 표본이 작은 양의 결과는 &ldquo;같은 규칙의 무작위 대조군&quot;과 비교해 보기 전에는 아무것도 알려 주지 않는다. 신호가 정보를 가졌는지는 청산 규칙이 만드는 기본 결과를 빼고 봐야 한다. 그리고 장애 대응의 원칙은 단순하다. <strong>주문을 내기 전에 막는다.</strong> 내고 나서 거부당한 주문은 장부에 흔적을 남기고, 장부의 흔적은 항상 나중에 비용으로 돌아온다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

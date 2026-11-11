@@ -10,7 +10,7 @@
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.5a385ef0bceefb6b490abe4342de754d3174fddddd99a021dffa4b1d7a206b2d.css" integrity="sha256-Wjhe8Lzu&#43;2tJCr5DQt51TTF0/d3dmaAh3/pLHXogay0=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -180,46 +180,139 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (11) — 전략의 &#39;기억&#39;을 코어에 두고, 크론을 다섯 줄로 줄이다
     </h2>
   </header>
-  <div class="entry-content"><p>로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.</p>
+  <div class="entry-content"><p>4단계 청산 상태머신을 가진 전략을 붙이려니, 15분마다 새 프로세스로 도는 구조에서 포지션 상태를 다음 사이클로 넘길 방법이 없었다. 범용 상태 영속 메커니즘을 코어에 만든 설계 판단, 서브에이전트가 엉뚱한 브랜치에 커밋한 사고의 복구, 그리고 전략×단계 조합마다 한 줄씩이던 크론을 단계당 한 줄로 바꾼 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-06-09T20:00:00+09:00'>2026년 6월 9일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편" href="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/"></a>
+<span title='2026-07-23T23:00:00+09:00'>2026년 7월 23일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (11) — 전략의 &#39;기억&#39;을 코어에 두고, 크론을 다섯 줄로 줄이다" href="https://nova7zone.github.io/posts/upbit-position-state-persistence-and-crontab-redesign/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가
     </h2>
   </header>
-  <div class="entry-content"><p>Claude Code와 Github 연동으로 KIS 자동매매 프로그램을 1차 완성하고 ATR·시장국면 필터를 추가했다. 같은 구조로 Upbit 버전 개발에 착수하고, 여러 컴퓨터를 오가며 작업할 수 있도록 CLAUDE.md에 작업 시작/종료 절차를 정리한 과정을 기록한다.</p>
+  <div class="entry-content"><p>웹 대시보드에 라이브 매매일지를 추가한 직후, 계좌 현황과 매매일지의 보유 종목이 서로 다르다는 제보가 들어왔다. 세 건을 개별 포렌식으로 가려내고, 체결 확인이 불가능할 때 진입과 청산이 각각 어느 방향으로 틀리는 편이 덜 위험한지를 따져 폴백을 재설계했다. 같은 날 만든 전략 연구 에이전트 시스템도 함께 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-05-31T18:30:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경" href="https://nova7zone.github.io/posts/ai-trading-program-v1-complete/"></a>
+<span title='2026-07-20T23:00:00+09:00'>2026년 7월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (10) — 매매일지 화면과 계좌가 다르다: 체결 확인 불가 시 어느 쪽으로 틀릴 것인가" href="https://nova7zone.github.io/posts/upbit-journal-dashboard-and-position-mismatch/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (9) — 새 전략을 &#39;사전 등록&#39;하고 기각하는 절차를 만들다
     </h2>
   </header>
-  <div class="entry-content"><p>Claude로 시작해서 토큰이 부족하면 ChatGPT와 Gemini로 넘기는 다중 AI 협업 방식으로 자동매매 프롬프트를 완성한 과정. Claude Pro 가입 후 V3 프롬프트 실행까지 기록한다.</p>
+  <div class="entry-content"><p>새 전략 후보를 계속 시도하고 계속 기각하면서, 좋아 보이는 값을 찾는 재최적화의 함정을 구조적으로 막는 절차(사전 등록, PBO, 복수 구간 게이트, 봉인 구간)를 갖추게 된 과정. 같은 코드로 재현하자 뒤집힌 파일럿 후보 사례와, 결과를 보고도 최적화 루프를 만들지 않기로 한 판단을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-05-31T01:24:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성" href="https://nova7zone.github.io/posts/ai-trading-prompt-strategy/"></a>
+<span title='2026-07-18T23:00:00+09:00'>2026년 7월 18일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (9) — 새 전략을 &#39;사전 등록&#39;하고 기각하는 절차를 만들다" href="https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (8) — 한 전략이 다른 전략의 물량까지 팔아 버린 사고
+    </h2>
+  </header>
+  <div class="entry-content"><p>청산이 확인되지 않는 이상 징후를 조사했더니, 두 전략이 같은 코인을 들고 있을 때 먼저 청산하는 쪽이 상대 물량까지 통째로 팔고 있었다. 계좌 잔고를 공유하는 거래소 구조에서 &#39;내 수량&#39;을 장부에 기록하지 않았던 설계 결함을 찾고, 마이그레이션·복구 도구·중복 매수 정리까지 마무리한 과정.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-16T23:00:00+09:00'>2026년 7월 16일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (8) — 한 전략이 다른 전략의 물량까지 팔아 버린 사고" href="https://nova7zone.github.io/posts/upbit-cross-strategy-oversell-incident/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법
+    </h2>
+  </header>
+  <div class="entry-content"><p>실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-15T23:00:00+09:00'>2026년 7월 15일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법" href="https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (6) — 15시간 동안 조용히 멈춘 크론과 전략별 자금 배분
+    </h2>
+  </header>
+  <div class="entry-content"><p>거래가 안 된 이유를 로그로 추적했더니 &#39;종목이 없어서&#39;가 아니라 크론 래퍼가 파이썬이 뜨기도 전에 죽고 있었다. 앱 로그와 알림이 닿지 못하는 사각지대를 독립 감시 프로세스로 메운 과정과, 두 전략에 자금을 나누는 배분 구조를 새로 만든 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-14T23:00:00+09:00'>2026년 7월 14일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (6) — 15시간 동안 조용히 멈춘 크론과 전략별 자금 배분" href="https://nova7zone.github.io/posts/upbit-silent-cron-halt-and-fund-allocation/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (5) — 실거래 개시 전 운영 공백을 메우고, 개시 후 첫 로그를 점검하다
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트 기준을 통과하지 못한 채 소액 실거래를 시작하기까지 이틀. 전략 코드가 아니라 운영 공백(손실 한도, 실체결가, 로깅, 락, 알림, cron 환경)을 감사해 메우고, 개시 직후 서버 로그에서 배포 스크립트의 오탐과 실제 버그를 가려낸 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-13T23:00:00+09:00'>2026년 7월 13일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (5) — 실거래 개시 전 운영 공백을 메우고, 개시 후 첫 로그를 점검하다" href="https://nova7zone.github.io/posts/upbit-live-readiness-gaps-and-post-launch-check/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-11T23:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진" href="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다
+    </h2>
+  </header>
+  <div class="entry-content"><p>코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-11T20:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다" href="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기
+    </h2>
+  </header>
+  <div class="entry-content"><p>지난 편에서 확정한 05:00 KST 기준봉 위에, 이번엔 실제로 Upbit와 통신하는 코드를 만들 차례였다. JWT 서명, 그룹마다 다른 rate limit, 무체결 구간의 캔들 결측까지 — 전부 테스트를 먼저 쓰고 실패를 확인한 뒤에 구현했다. 그 과정에서 &#34;시간에 의존하는 코드를 어떻게 테스트하나&#34;라는 흔한 질문에 부딪혔고, 답을 찾았다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-10T19:30:00+09:00'>2026년 7월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기" href="https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
     <a class="prev" href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/page/2/">
       «&nbsp;이전 페이지&nbsp;
+    </a>
+    <a class="next" href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/page/4/">다음 페이지&nbsp;&nbsp;»
     </a>
   </nav>
 </footer>
