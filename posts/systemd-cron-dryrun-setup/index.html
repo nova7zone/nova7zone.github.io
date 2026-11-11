@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입">
   <meta property="og:description" content="웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.">

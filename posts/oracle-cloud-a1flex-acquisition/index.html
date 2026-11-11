@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록">
   <meta property="og:description" content="Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.">

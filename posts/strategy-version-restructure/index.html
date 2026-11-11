@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/strategy-version-restructure/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/strategy-version-restructure/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (14) — strategy_v1/v2 분리 구조 설계와 3단계 이동">
   <meta property="og:description" content="새 매매 전략(v2)을 추가할 자리를 만들기 위해 코드 전체를 strategy_v1/strategy_v2 구조로 재설계했다. 공유 indicators 패키지 분리부터 설정·스크리닝·매매 코드 이동까지 3단계로 나눠 subagent-driven-development로 진행한 과정을 기록한다.">

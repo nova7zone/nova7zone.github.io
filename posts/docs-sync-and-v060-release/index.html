@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈">
   <meta property="og:description" content="직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.">

@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/volume-rank-pagination-saga/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/volume-rank-pagination-saga/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지">
   <meta property="og:description" content="거래량순위 조회가 1페이지(30건)만 받고 멈추는 문제를 페이지네이션 구현, 응답 헤더 대소문자 버그 수정까지 두 번 고친 끝에 결국 KIS API 자체의 시장당 30건 하드 리밋이라는 결론에 도달해 universe 목표치를 60으로 재조정한 과정을 정리한다.">

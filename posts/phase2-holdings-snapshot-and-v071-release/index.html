@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈">
   <meta property="og:description" content="holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.">

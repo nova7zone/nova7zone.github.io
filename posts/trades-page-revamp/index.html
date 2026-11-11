@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/trades-page-revamp/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/trades-page-revamp/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집">
   <meta property="og:description" content="체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.">

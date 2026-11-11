@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그">
   <meta property="og:description" content="v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.">

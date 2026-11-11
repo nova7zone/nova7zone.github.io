@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설">
   <meta property="og:description" content="IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.">

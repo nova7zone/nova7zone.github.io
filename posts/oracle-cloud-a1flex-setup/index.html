@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅">
   <meta property="og:description" content="A1.Flex 인스턴스 확보 후 PuTTY 접속 설정, 1 OCPU/6GB에서 4 OCPU/24GB로 스펙 업그레이드, 스왑·자동회수 방지·방화벽까지 기본 환경을 구성한 과정을 기록한다.">

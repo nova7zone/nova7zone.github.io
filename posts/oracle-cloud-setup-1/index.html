@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-setup-1/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-setup-1/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공">
   <meta property="og:description" content="Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.">

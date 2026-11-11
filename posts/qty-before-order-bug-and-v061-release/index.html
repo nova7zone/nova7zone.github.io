@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈">
   <meta property="og:description" content="일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.">

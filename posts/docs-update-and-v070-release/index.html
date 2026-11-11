@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈">
   <meta property="og:description" content="strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.">

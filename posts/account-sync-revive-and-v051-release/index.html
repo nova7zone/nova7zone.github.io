@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈">
   <meta property="og:description" content="API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.">

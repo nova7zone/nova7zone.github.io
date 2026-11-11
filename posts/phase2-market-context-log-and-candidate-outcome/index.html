@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome">
   <meta property="og:description" content="매수 사이클마다 시장 상황 전체를 스냅샷으로 남기는 market_context_log와, 매수되지 않은 후보까지 포함한 스크리닝 전체 결과의 사후 수익률을 추적하는 candidate_outcome 테이블을 신설했다. SQLite UNIQUE 제약의 NULL 처리 방식이 만든 재실행 중복 버그도 함께 정리한다.">

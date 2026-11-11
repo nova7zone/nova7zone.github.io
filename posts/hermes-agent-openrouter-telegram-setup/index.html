@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/hermes-agent-openrouter-telegram-setup/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/hermes-agent-openrouter-telegram-setup/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="빈 ARM 서버에 24시간 AI 비서 심기 — Hermes &#43; OpenRouter &#43; Telegram 구축기">
   <meta property="og:description" content="OCI A1.Flex(ARM) 인스턴스에 Nous Research의 Hermes Agent를 설치하고 OpenRouter 무료 모델과 Telegram 게이트웨이를 연동해, 폰에서 대화하는 24시간 AI 비서를 구축한 과정을 기록한다.">

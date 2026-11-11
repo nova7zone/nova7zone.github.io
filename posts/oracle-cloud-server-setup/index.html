@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-server-setup/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-server-setup/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속">
   <meta property="og:description" content="Oracle Cloud 인스턴스 생성 후 필수 초기 설정 — 고정 IP 할당, PuTTY SSH 접속, 가상메모리 4GB 추가, FileZilla SFTP 연결까지 순서대로 기록한다.">

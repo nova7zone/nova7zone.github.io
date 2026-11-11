@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그">
   <meta property="og:description" content="그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.">

@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정">
   <meta property="og:description" content="매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.">

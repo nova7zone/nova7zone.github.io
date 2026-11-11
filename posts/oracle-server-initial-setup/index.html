@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/oracle-server-initial-setup/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/oracle-server-initial-setup/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone">
   <meta property="og:description" content="Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.">

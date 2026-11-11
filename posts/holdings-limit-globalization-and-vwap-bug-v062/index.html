@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈">
   <meta property="og:description" content="보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.">

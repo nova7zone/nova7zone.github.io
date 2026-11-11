@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환">
   <meta property="og:description" content="항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.">

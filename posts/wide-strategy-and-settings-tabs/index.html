@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편">
   <meta property="og:description" content="로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.">

@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/docs-cleanup-and-strategy-version-ui/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/docs-cleanup-and-strategy-version-ui/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (15) — 문서 정리, work-start/end skill화, 전략 버전 선택 UI">
   <meta property="og:description" content="strategy_v1 개발명세서를 분리하고 CLAUDE.md/AI_PROJECT_PROMPT.md의 중복을 정리했다. 작업 시작/종료 절차를 skill로 만들고, 설정 페이지에 전략 버전 선택 드롭박스와 시장필터·1차 스크리닝 편집 카드를 추가한 과정을 기록한다.">

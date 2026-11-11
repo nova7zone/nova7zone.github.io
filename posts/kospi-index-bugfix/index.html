@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/kospi-index-bugfix/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/kospi-index-bugfix/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정">
   <meta property="og:description" content="OCI 서버 상태 점검 후 며칠 만에 paper 모드로 자동매매를 돌렸는데 매매가 한 건도 발생하지 않았다. 로그를 추적해 KOSPI 지수 일봉 조회가 개별종목용 엔드포인트를 잘못 사용하고 있던 구조적 버그를 찾아 수정한 과정을 기록한다.">

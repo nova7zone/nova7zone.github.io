@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈">
   <meta property="og:description" content="전략명에 들어간 언더스코어 때문에 텔레그램 알림이 400 오류로 반복 실패하던 버그와, 이틀 전 고쳤던 reversal/fear_driven 손실 매도 버그가 다른 경로로 재발한 사고를 정리하고, PR #77을 머지해 v0.6.4를 릴리즈한 과정을 다룬다.">

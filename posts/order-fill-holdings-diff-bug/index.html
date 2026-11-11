@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환">
   <meta property="og:description" content="같은 종목 매수 주문이 15분마다 반복 시도되는 로그를 발견했다. 추적해보니 실제로는 매번 체결되고 있었는데 KIS 모의투자 체결조회 API 한계로 봇이 이를 인지하지 못해 수량이 통제 밖에 쌓여 있었다. 체결판단을 holdings-diff 방식으로 전환하고 같은 날 발견한 extra_05 계좌 버그까지 잡은 과정을 기록한다.">

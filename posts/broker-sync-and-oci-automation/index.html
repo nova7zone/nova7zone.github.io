@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화">
   <meta property="og:description" content="v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.">

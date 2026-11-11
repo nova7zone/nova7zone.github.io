@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도">
   <meta property="og:description" content="종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.">

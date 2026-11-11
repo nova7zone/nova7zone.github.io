@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환">
   <meta property="og:description" content="v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.">

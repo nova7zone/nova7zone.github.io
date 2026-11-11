@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders">
   <meta property="og:description" content="매도 판단 과정 전체를 남기는 sell_evaluation_log 테이블과, 주문 생애주기를 append-only 이벤트로 기록하는 orders 테이블을 신설했다. brainstorming부터 설계·계획·subagent 구현까지 전체 절차로 진행한 Phase 2 데이터 수집 계층의 첫 두 테이블을 정리한다.">

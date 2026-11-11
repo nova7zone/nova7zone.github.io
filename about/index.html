@@ -67,7 +67,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/about/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/about/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="소개">
   <meta property="og:description" content="안녕하세요, Evan입니다 이 블로그는 AI(Claude Code)를 이용해 프로그램을 만들어가는 과정을 기록하는 공간이다. 거창한 결과물보다는, 직접 부딪히며 시행착오를 겪은 과정을 그대로 남기는 데 목적이 있다.">

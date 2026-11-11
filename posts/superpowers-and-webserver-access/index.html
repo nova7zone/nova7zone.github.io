@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/superpowers-and-webserver-access/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/superpowers-and-webserver-access/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공">
   <meta property="og:description" content="Claude Code 작업 방식을 체계화하기 위해 superpowers·Context7 플러그인을 도입하고, 클라우드 보안 목록과 서버 방화벽 설정을 거쳐 자동매매 웹서버를 외부에서 접속 가능하게 만든 과정을 기록한다.">

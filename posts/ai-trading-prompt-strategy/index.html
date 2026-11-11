@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/ai-trading-prompt-strategy/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/ai-trading-prompt-strategy/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성">
   <meta property="og:description" content="Claude로 시작해서 토큰이 부족하면 ChatGPT와 Gemini로 넘기는 다중 AI 협업 방식으로 자동매매 프롬프트를 완성한 과정. Claude Pro 가입 후 V3 프롬프트 실행까지 기록한다.">

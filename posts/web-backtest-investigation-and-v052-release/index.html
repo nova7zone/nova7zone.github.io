@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/web-backtest-investigation-and-v052-release/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/web-backtest-investigation-and-v052-release/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈">
   <meta property="og:description" content="웹에서 백테스트를 실행하는 기능을 위해 한국투자증권 공식 백테스팅 엔진을 조사하고, 모의투자 매도 실패 2건을 코드 분석으로 추적해 운영 안정성 공백 두 가지를 기록했다. v0.5.2 릴리즈 직후 holdings.json과 실제 KIS 잔고의 불일치를 발견해 정정한 6월 21일 중반 작업을 정리한다.">

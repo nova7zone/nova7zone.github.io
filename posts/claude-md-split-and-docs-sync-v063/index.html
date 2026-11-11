@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈">
   <meta property="og:description" content="매 세션 전체 로드되는 CLAUDE.md 520줄을 181줄로 줄이며 개발 문서를 docs/development 폴더로 재구성하고, PR #63~#74 구간 docs 재점검·v0.6.3 릴리즈, 그리고 스크리닝 로그가 v2 전환 이후 한 번도 기록되지 않았던 원인을 조사한 하루를 정리한다.">

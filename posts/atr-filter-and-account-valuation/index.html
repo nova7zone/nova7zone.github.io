@@ -64,7 +64,19 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script><meta property="og:url" content="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/">
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Dev Log">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/">
   <meta property="og:site_name" content="Evan&#39;s Dev Log">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시">
   <meta property="og:description" content="매수 후보가 9회 연속 0건이던 원인을 추적해 캐시 만료시간 설정과 ATR 필터의 hard block 설계를 함께 수정했다. 이어서 계좌별 원금·평가금액·수익률을 한눈에 보여주는 표시 기능과 수동 입출금 기능을 추가한 6월 19일 작업을 정리한다.">
