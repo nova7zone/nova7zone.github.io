@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="버그수정">
+<meta name="description" content="IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/irp-pension-valuation-fix/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/irp-pension-valuation-fix/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/irp-pension-valuation-fix/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계">
+  <meta property="og:description" content="IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-20T12:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-20T12:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계">
+  <meta name="twitter:description" content="IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계",
+      "item": "https://nova7zone.github.io/posts/irp-pension-valuation-fix/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계",
+  "description": "IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.",
+  "keywords": [
+    "버그수정"
+  ],
+  "articleBody": "작성일: 2026년 6월 20일\n최종 수정: 2026년 6월 20일\n분야: AI Trading, Development\n난이도: Advanced\n상태: Production Ready\n들어가며 이전 글에서 계좌별 원금/평가금액/수익률 표시 기능을 추가했다. 6월 20일은 그 기능을 IRP(개인형퇴직연금) 계좌에 적용하면서 시작된 세 단계짜리 추적기였다.\n결론부터 말하면, IRP 계좌는 일반 국내주식잔고조회로는 예수금과 디폴트옵션(펀드) 평가금액을 알 수 없어 화면에 실제보다 낮은 금액이 표시되고 있었다. KIS 퇴직연금 전용 API를 연동해 1차 보정을 했는데, 곧 인덱싱 버그를 만났고, 그걸 고친 뒤에도 디폴트옵션 자산만은 여전히 반영되지 않았다. 끝까지 추적한 결과 KIS Open API 자체가 디폴트옵션 자산 정보를 제공하지 않는다는 구조적 한계로 결론이 났고, 결국 수동 입력 기능으로 마무리했다.\n1단계: IRP 계좌 평가금액 보정 + 계좌별 보유종목 상세 페이지 IRP 계좌는 일반 잔고조회(TTTC8434R)로는 예수금·디폴트옵션 평가금액을 조회할 수 없어 /accounts의 평가금액이 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API 2개(잔고조회 036/TTTC2208R 예수금, 체결기준잔고 032/TTTC2202R 디폴트옵션 포함 보유상품 평가금액 합계)를 묶은 KISApiClient.get_pension_balance()를 추가해 두 값을 더한 정확한 총평가금액을 산출하도록 했다.\nutils/reconcile.py::_reconcile_extra_account()에 acnt_prdt_cd == \"29\"(IRP) 분기 추가 — 보유종목 동기화는 기존 get_balance() 그대로, 평가금액 저장 값만 get_pension_balance() 결과로 교체 태스크 리뷰에서 get_pension_balance()가 self.mode 확인 없이 호출되면 paper 모드 클라이언트가 실전 전용 TR을 paper 호스트로 잘못 보낼 수 있다는 걸 발견 — self.mode != \"live\"면 즉시 0-디폴트를 반환하는 가드 추가 /accounts 계좌 레이블 클릭 시 /accounts/{account_id}로 이동하는 신규 페이지 추가 — DB의 매수가/매수량/매수금액에 KIS 실시간 시세를 더해 현재가/평가금액/수익률 계산, 종목 단위 조회 실패는 해당 행만 “—” 처리 pytest tests/ 525개 전체 통과(519 → 525, +6).\n❌ 2단계: get_pension_balance() output2 인덱싱 버그 PR #40 머지 후 OCI에서 --reconcile을 실행한 로그에 IRP 평가금액 조회 실패 (무시) | extra_02 | 0이 찍혀 있었다. str(KeyError(0)) == \"0\"과 정확히 일치하는 데 착안해 추적했다.\nKIS 공식 샘플코드를 확인해보니 퇴직연금 잔고조회(036)는 pd.DataFrame(output2, index=[0])로 output2가 단일 dict임을 명시하고 있었다. 그런데 get_pension_balance()는 체결기준잔고(032, output2가 실제 배열)와 똑같이 summary1[0] 배열 인덱싱을 적용해서, dict에 정수 키 0으로 접근하다 KeyError(0)이 발생하고 있었다. 이 예외는 메서드의 except (ValueError, TypeError, IndexError)에 포함되지 않아 전파되다 reconcile.py 상위 except Exception에서 잡혀 total_eval=0으로 떨어진 것이었다(크래시는 없었지만, 보정 기능 자체가 매번 무효화되고 있었다).\n036 파싱만 dict 직접 접근으로 수정(032는 원래도 정상이라 변경 없음) 내부 except 튜플에 KeyError 추가(방어적 보강) 운영 환경의 실제 응답 모양을 재현하는 회귀 테스트 추가 + 기존 mock 응답도 실제 구조로 교정 pytest tests/ 526개 전체 통과(525 → 526, +1).\n3단계: 디폴트옵션은 수동 입력으로 — KIS API의 구조적 한계 1·2단계 수정을 적용했는데도 “디폴트옵션으로 매수된 자산은 반영 안 됨” 재보고가 들어왔다. 추적해보니 더 깊은 문제가 있었다.\n진단 로그 추가 후 재현 시도: TTTC8434R/TTTC2208R 둘 다 500 에러가 발생했는데, 응답 본문을 직접 확인해보니 {\"rt_cd\":\"1\",\"msg_cd\":\"EGW00123\",\"msg1\":\"기간이 만료된 token 입니다.\"} — KIS가 만료된 토큰을 401이 아니라 500으로도 응답한다는 걸 처음 발견했다. _request_full()은 401만 토큰 재발급 트리거로 인식해서, 무효한 토큰으로 3회 재시도만 반복하고 있었다. 이 부분은 별도 수정(PR #43, 회귀 테스트 3개)으로 먼저 처리했다. 수정 배포 후 032(체결기준잔고) 실제 응답 확보: 보유종목 6건 전부 잔고구분='사용자'(일반 ETF)였고, 디폴트옵션 펀드는 행 자체가 없었다. KIS 퇴직연금 API 5종(036/032/033/034/035) 전체를 공식 샘플코드와 대조한 결과, 어느 것도 디폴트옵션 자산을 제공하지 않는다는 게 확인됐다. 파싱 버그가 아니라 KIS Open API 자체의 구조적 한계였다. 그래서 수동 입력 기능을 만들기로 했다. brainstorming → 설계(docs/superpowers/specs/2026-06-20-irp-manual-asset-eval-design.md) → 계획 → 5개 Task로 subagent-driven-development 진행했다.\naccounts 테이블에 manual_asset_eval/manual_asset_updated_at 컬럼 추가 compute_irp_total_eval() 공용 함수로 cash(036) + ETF(032) + 수동입력값을 합산, reconcile.py 일일 배치(평일 15:40)에 연동 POST /api/config/extra-accounts/{account_id}/manual-asset API — 저장 직후 즉시 재계산해 배치 주기와 무관하게 /accounts에 바로 반영 /accounts/{account_id} 페이지에 모든 계좌 공통 예수금 표시 + IRP 계좌에만 디폴트옵션 입력 폼 추가 최종 리뷰에서 기록만 해둔 사실 하나: get_pension_balance()가 실제로는 예외를 던지지 않고 항상 zero-default를 반환해서, “예외 전파 → 웹 500\"이라는 기존 설계 의도가 운영에서는 한 번도 발동하지 않고 있었다. 정확성에는 무해해서 수정 없이 기록만 남겼다.\npytest tests/ 549개 전체 통과(526 → 549, +23).\n정리 단계 발견 조치 1단계 IRP는 일반 잔고조회로 예수금/디폴트옵션 확인 불가 퇴직연금 전용 API(036/032) 연동 2단계 output2 dict를 배열처럼 인덱싱 → KeyError(0) dict 직접 접근으로 수정 3단계 디폴트옵션 자산은 KIS API 5종 어디에도 없음(API 자체 한계) 수동 입력 기능으로 대체 부수 발견 KIS가 만료 토큰을 500으로도 응답 500 응답도 토큰 재발급 트리거로 인식하도록 수정 세 단계 모두 “고쳤다고 끝나지 않고 다음 증상이 나온” 케이스였는데, 마지막엔 “버그가 아니라 API 자체의 한계\"라는 결론에 도달해서야 끝났다. 코드만 들여다봐서는 알 수 없고, 실제 KIS 공식 샘플과 대조해야 확인할 수 있는 종류의 한계였다.\n다음 글에서는 같은 날 이어서 진행한 추가 계좌 오삭제 방지, position_registry REVIVE 로직, 문서 전체 최신화, v0.5.1 릴리즈를 다룬다.\n",
+  "wordCount" : "2524",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-20T12:00:00+09:00",
+  "dateModified": "2026-06-20T12:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/irp-pension-valuation-fix/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계
+    </h1>
+    <div class="post-description">
+      IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-20T12:00:00+09:00'>2026년 6월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1%eb%8b%a8%ea%b3%84-irp-%ea%b3%84%ec%a2%8c-%ed%8f%89%ea%b0%80%ea%b8%88%ec%95%a1-%eb%b3%b4%ec%a0%95--%ea%b3%84%ec%a2%8c%eb%b3%84-%eb%b3%b4%ec%9c%a0%ec%a2%85%eb%aa%a9-%ec%83%81%ec%84%b8-%ed%8e%98%ec%9d%b4%ec%a7%80" aria-label="1단계: IRP 계좌 평가금액 보정 &#43; 계좌별 보유종목 상세 페이지">1단계: IRP 계좌 평가금액 보정 + 계좌별 보유종목 상세 페이지</a></li>
+            <li>
+                <a href="#-2%eb%8b%a8%ea%b3%84-get_pension_balance-output2-%ec%9d%b8%eb%8d%b1%ec%8b%b1-%eb%b2%84%ea%b7%b8" aria-label="❌ 2단계: get_pension_balance() output2 인덱싱 버그">❌ 2단계: get_pension_balance() output2 인덱싱 버그</a></li>
+            <li>
+                <a href="#3%eb%8b%a8%ea%b3%84-%eb%94%94%ed%8f%b4%ed%8a%b8%ec%98%b5%ec%85%98%ec%9d%80-%ec%88%98%eb%8f%99-%ec%9e%85%eb%a0%a5%ec%9c%bc%eb%a1%9c--kis-api%ec%9d%98-%ea%b5%ac%ec%a1%b0%ec%a0%81-%ed%95%9c%ea%b3%84" aria-label="3단계: 디폴트옵션은 수동 입력으로 — KIS API의 구조적 한계">3단계: 디폴트옵션은 수동 입력으로 — KIS API의 구조적 한계</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 20일<br>
+<strong>최종 수정</strong>: 2026년 6월 20일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Advanced<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/atr-filter-and-account-valuation/">이전 글</a>에서 계좌별 원금/평가금액/수익률 표시 기능을 추가했다. 6월 20일은 그 기능을 IRP(개인형퇴직연금) 계좌에 적용하면서 시작된 <strong>세 단계짜리 추적기</strong>였다.</p>
+<p>결론부터 말하면, IRP 계좌는 일반 국내주식잔고조회로는 예수금과 디폴트옵션(펀드) 평가금액을 알 수 없어 화면에 실제보다 낮은 금액이 표시되고 있었다. KIS 퇴직연금 전용 API를 연동해 1차 보정을 했는데, 곧 인덱싱 버그를 만났고, 그걸 고친 뒤에도 디폴트옵션 자산만은 여전히 반영되지 않았다. 끝까지 추적한 결과 <strong>KIS Open API 자체가 디폴트옵션 자산 정보를 제공하지 않는다</strong>는 구조적 한계로 결론이 났고, 결국 수동 입력 기능으로 마무리했다.</p>
+<hr>
+<h2 id="1단계-irp-계좌-평가금액-보정--계좌별-보유종목-상세-페이지">1단계: IRP 계좌 평가금액 보정 + 계좌별 보유종목 상세 페이지<a hidden class="anchor" aria-hidden="true" href="#1단계-irp-계좌-평가금액-보정--계좌별-보유종목-상세-페이지">#</a></h2>
+<p>IRP 계좌는 일반 잔고조회(<code>TTTC8434R</code>)로는 예수금·디폴트옵션 평가금액을 조회할 수 없어 <code>/accounts</code>의 평가금액이 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API 2개(잔고조회 036/<code>TTTC2208R</code> 예수금, 체결기준잔고 032/<code>TTTC2202R</code> 디폴트옵션 포함 보유상품 평가금액 합계)를 묶은 <code>KISApiClient.get_pension_balance()</code>를 추가해 두 값을 더한 정확한 총평가금액을 산출하도록 했다.</p>
+<ul>
+<li><code>utils/reconcile.py::_reconcile_extra_account()</code>에 <code>acnt_prdt_cd == &quot;29&quot;</code>(IRP) 분기 추가 — 보유종목 동기화는 기존 <code>get_balance()</code> 그대로, 평가금액 저장 값만 <code>get_pension_balance()</code> 결과로 교체</li>
+<li>태스크 리뷰에서 <code>get_pension_balance()</code>가 <code>self.mode</code> 확인 없이 호출되면 paper 모드 클라이언트가 실전 전용 TR을 paper 호스트로 잘못 보낼 수 있다는 걸 발견 — <code>self.mode != &quot;live&quot;</code>면 즉시 0-디폴트를 반환하는 가드 추가</li>
+<li><code>/accounts</code> 계좌 레이블 클릭 시 <code>/accounts/{account_id}</code>로 이동하는 신규 페이지 추가 — DB의 매수가/매수량/매수금액에 KIS 실시간 시세를 더해 현재가/평가금액/수익률 계산, 종목 단위 조회 실패는 해당 행만 &ldquo;—&rdquo; 처리</li>
+</ul>
+<p><code>pytest tests/</code> 525개 전체 통과(519 → 525, +6).</p>
+<hr>
+<h2 id="-2단계-get_pension_balance-output2-인덱싱-버그">❌ 2단계: get_pension_balance() output2 인덱싱 버그<a hidden class="anchor" aria-hidden="true" href="#-2단계-get_pension_balance-output2-인덱싱-버그">#</a></h2>
+<p>PR #40 머지 후 OCI에서 <code>--reconcile</code>을 실행한 로그에 <code>IRP 평가금액 조회 실패 (무시) | extra_02 | 0</code>이 찍혀 있었다. <code>str(KeyError(0)) == &quot;0&quot;</code>과 정확히 일치하는 데 착안해 추적했다.</p>
+<p>KIS 공식 샘플코드를 확인해보니 퇴직연금 잔고조회(036)는 <code>pd.DataFrame(output2, index=[0])</code>로 <strong>output2가 단일 dict</strong>임을 명시하고 있었다. 그런데 <code>get_pension_balance()</code>는 체결기준잔고(032, output2가 실제 배열)와 똑같이 <code>summary1[0]</code> 배열 인덱싱을 적용해서, dict에 정수 키 <code>0</code>으로 접근하다 <code>KeyError(0)</code>이 발생하고 있었다. 이 예외는 메서드의 <code>except (ValueError, TypeError, IndexError)</code>에 포함되지 않아 전파되다 <code>reconcile.py</code> 상위 <code>except Exception</code>에서 잡혀 <code>total_eval=0</code>으로 떨어진 것이었다(크래시는 없었지만, 보정 기능 자체가 매번 무효화되고 있었다).</p>
+<ul>
+<li>036 파싱만 dict 직접 접근으로 수정(032는 원래도 정상이라 변경 없음)</li>
+<li>내부 <code>except</code> 튜플에 <code>KeyError</code> 추가(방어적 보강)</li>
+<li>운영 환경의 실제 응답 모양을 재현하는 회귀 테스트 추가 + 기존 mock 응답도 실제 구조로 교정</li>
+</ul>
+<p><code>pytest tests/</code> 526개 전체 통과(525 → 526, +1).</p>
+<hr>
+<h2 id="3단계-디폴트옵션은-수동-입력으로--kis-api의-구조적-한계">3단계: 디폴트옵션은 수동 입력으로 — KIS API의 구조적 한계<a hidden class="anchor" aria-hidden="true" href="#3단계-디폴트옵션은-수동-입력으로--kis-api의-구조적-한계">#</a></h2>
+<p>1·2단계 수정을 적용했는데도 &ldquo;디폴트옵션으로 매수된 자산은 반영 안 됨&rdquo; 재보고가 들어왔다. 추적해보니 더 깊은 문제가 있었다.</p>
+<ul>
+<li><strong>진단 로그 추가 후 재현 시도</strong>: <code>TTTC8434R</code>/<code>TTTC2208R</code> 둘 다 500 에러가 발생했는데, 응답 본문을 직접 확인해보니 <code>{&quot;rt_cd&quot;:&quot;1&quot;,&quot;msg_cd&quot;:&quot;EGW00123&quot;,&quot;msg1&quot;:&quot;기간이 만료된 token 입니다.&quot;}</code> — <strong>KIS가 만료된 토큰을 401이 아니라 500으로도 응답한다</strong>는 걸 처음 발견했다. <code>_request_full()</code>은 401만 토큰 재발급 트리거로 인식해서, 무효한 토큰으로 3회 재시도만 반복하고 있었다. 이 부분은 별도 수정(PR #43, 회귀 테스트 3개)으로 먼저 처리했다.</li>
+<li><strong>수정 배포 후 032(체결기준잔고) 실제 응답 확보</strong>: 보유종목 6건 전부 <code>잔고구분='사용자'</code>(일반 ETF)였고, 디폴트옵션 펀드는 행 자체가 없었다. KIS 퇴직연금 API 5종(036/032/033/034/035) 전체를 공식 샘플코드와 대조한 결과, <strong>어느 것도 디폴트옵션 자산을 제공하지 않는다</strong>는 게 확인됐다. 파싱 버그가 아니라 KIS Open API 자체의 구조적 한계였다.</li>
+</ul>
+<p>그래서 수동 입력 기능을 만들기로 했다. brainstorming → 설계(<code>docs/superpowers/specs/2026-06-20-irp-manual-asset-eval-design.md</code>) → 계획 → 5개 Task로 <code>subagent-driven-development</code> 진행했다.</p>
+<ul>
+<li><code>accounts</code> 테이블에 <code>manual_asset_eval</code>/<code>manual_asset_updated_at</code> 컬럼 추가</li>
+<li><code>compute_irp_total_eval()</code> 공용 함수로 cash(036) + ETF(032) + 수동입력값을 합산, <code>reconcile.py</code> 일일 배치(평일 15:40)에 연동</li>
+<li><code>POST /api/config/extra-accounts/{account_id}/manual-asset</code> API — 저장 직후 즉시 재계산해 배치 주기와 무관하게 <code>/accounts</code>에 바로 반영</li>
+<li><code>/accounts/{account_id}</code> 페이지에 모든 계좌 공통 예수금 표시 + IRP 계좌에만 디폴트옵션 입력 폼 추가</li>
+</ul>
+<p>최종 리뷰에서 기록만 해둔 사실 하나: <code>get_pension_balance()</code>가 실제로는 예외를 던지지 않고 항상 zero-default를 반환해서, &ldquo;예외 전파 → 웹 500&quot;이라는 기존 설계 의도가 운영에서는 한 번도 발동하지 않고 있었다. 정확성에는 무해해서 수정 없이 기록만 남겼다.</p>
+<p><code>pytest tests/</code> 549개 전체 통과(526 → 549, +23).</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>단계</th>
+					<th>발견</th>
+					<th>조치</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1단계</td>
+					<td>IRP는 일반 잔고조회로 예수금/디폴트옵션 확인 불가</td>
+					<td>퇴직연금 전용 API(036/032) 연동</td>
+			</tr>
+			<tr>
+					<td>2단계</td>
+					<td>output2 dict를 배열처럼 인덱싱 → KeyError(0)</td>
+					<td>dict 직접 접근으로 수정</td>
+			</tr>
+			<tr>
+					<td>3단계</td>
+					<td>디폴트옵션 자산은 KIS API 5종 어디에도 없음(API 자체 한계)</td>
+					<td>수동 입력 기능으로 대체</td>
+			</tr>
+			<tr>
+					<td>부수 발견</td>
+					<td>KIS가 만료 토큰을 500으로도 응답</td>
+					<td>500 응답도 토큰 재발급 트리거로 인식하도록 수정</td>
+			</tr>
+	</tbody>
+</table>
+<p>세 단계 모두 &ldquo;고쳤다고 끝나지 않고 다음 증상이 나온&rdquo; 케이스였는데, 마지막엔 &ldquo;버그가 아니라 API 자체의 한계&quot;라는 결론에 도달해서야 끝났다. 코드만 들여다봐서는 알 수 없고, 실제 KIS 공식 샘플과 대조해야 확인할 수 있는 종류의 한계였다.</p>
+<p>다음 글에서는 같은 날 이어서 진행한 <strong>추가 계좌 오삭제 방지, position_registry REVIVE 로직, 문서 전체 최신화, v0.5.1 릴리즈</strong>를 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

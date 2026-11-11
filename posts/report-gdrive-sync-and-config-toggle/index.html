@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설정">
+<meta name="description" content="일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기">
+  <meta property="og:description" content="일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-05T11:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-05T11:00:00+09:00">
+    <meta property="article:tag" content="설정">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기">
+  <meta name="twitter:description" content="일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
+      "item": "https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
+  "description": "일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.",
+  "keywords": [
+    "설정"
+  ],
+  "articleBody": "작성일: 2026년 6월 5일\n최종 수정: 2026년 6월 5일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 crontab으로 자동매매를 등록하고 dry-run/토큰 차단 처리까지 마쳤다. 이번 글은 6월 4일 후반부터 6월 5일까지 진행한 작업을 정리한다.\n결론부터 말하면, 일간/월간 리포트를 MD 파일로 저장하고 Google Drive와 자동 동기화하는 기능을 추가했고, 웹 설정 페이지에서 YAML 파일을 직접 수정할 수 있는 편집기를 만들었다. 이어서 토큰 캐시의 이중 락 데드락 버그를 수정하고, 스크리닝 결과를 DB에 기록해 웹에서 조회할 수 있게 했으며, 초기자금을 자동으로 추적하는 기능을 추가했다.\n일간/월간 리포트 MD 파일 저장 기존에는 리포트가 텔레그램 메시지로만 발송되어, 과거 기록을 한눈에 모아보기 어려웠다. 그래서 리포트를 MD 파일로도 저장하도록 했다.\nreport/md_writer.py 신규 생성 — 일간/월간 MD 빌드·저장 함수 4개 report/daily_report.py: 16:00 리포트 실행 시 report/daily/YYYY-MM.md에 누적 저장 report/monthly_report.py: 마지막 영업일에 report/monthly/YYYY-MM.md 생성 MD 저장이 실패해도 텔레그램 발송에는 영향이 없도록 try/except로 분리 테스트는 tests/test_md_writer.py(28개) + tests/test_md_report_integration.py(6개), 총 34개를 추가했다.\nGoogle Drive 리포트 동기화 저장한 MD 리포트를 Obsidian Vault와 연동된 Google Drive 폴더로 자동 동기화하도록 했다.\nreport/gdrive_sync.py 신규 생성 — rclone copy 실행, 실패 시 텔레그램 알림 daily_report.py / monthly_report.py: MD 저장 후 Google Drive 자동 동기화 settings/app.yaml에 paths.report_dir, paths.gdrive_report_remote 추가 gdrive_report_remote가 비어있으면 동기화를 건너뜀(opt-in 방식) tests/test_gdrive_sync.py(15개), tests/test_md_report_integration.py(통합 4개 추가, 총 10개) 웹 설정 YAML 편집기 설정 변경을 매번 서버에 ssh로 접속해서 직접 파일을 수정하는 대신, 웹 설정 페이지에서 바로 수정할 수 있는 편집기를 추가했다.\nweb/routers/config_router.py: /api/config/files, /api/config/file(GET/POST) 엔드포인트 추가 화이트리스트 10개 YAML 파일만 접근 허용 (경로 조작 차단) POST 시 yaml.safe_load()로 문법 검증 후 저장, 오류 시 400 응답 모드·프리셋·파일 저장 성공 시 [WEB] 태그 + 요청 IP를 포함한 로그 기록 web/templates/settings.html: 설정 파일 편집 카드 추가 파일 선택 드롭다운 → textarea에 내용 로드 → 저장 버튼 저장하지 않은 변경사항이 있을 때 다른 파일로 전환하면 confirm 경고 실행 모드·매매 프리셋·YAML 저장 각각에 confirm() 확인 팝업 추가 이렇게 해두면 서버에 직접 접속하지 않고도 설정값을 안전하게 바꿀 수 있다.\n문서 전체 최신화 코드가 빠르게 바뀌면서 문서가 따라가지 못하는 부분을 정리했다.\nOCI_QUICKSTART.md: 중복 구간 10곳에 출처 표기(📌), 읽기 순서에 UPDATE.md·WORKFLOW.md 추가, 참고 문서 섹션 7개 추가 WORKFLOW.md: 신규 생성 — Mermaid 시스템 구조도·데이터 흐름 + ASCII 실행/설정 로드 흐름 SETTINGS_GUIDE.md: settings/screening/ → settings/screen_config/ 경로 전체 교체 SETTINGS_REFERENCE.md: KIS_APP_KEY → 모의/실전 모드별 키(KIS_LIVE_*/KIS_PAPER_*) 분리 + WEB_SESSION_SECRET 추가 USAGE.md: token_cache.json → 모드별 파일명(token_cache_live.json/token_cache_paper.json)으로 수정 README.md: 환경변수 live/paper 분리 + WORKFLOW.md 링크 추가 ❌ 버그: 토큰 캐시 이중 락 데드락 운영 중 당일 자동매매가 갑자기 멈추는 현상이 있었는데, 원인은 token_manager.py의 이중 락(double lock) 문제였다.\nget_access_token()이 외부 FileLock으로 token_cache_paper.json.lock을 보유한 상태에서 내부의 save_json_locked()가 같은 lock 파일을 다시 획득하려고 시도 10초 타임아웃 → 캐시 저장 실패 → 토큰을 다시 발급받으려 시도 → KIS 토큰 발급 한도(403) 초과 → 당일 자동매매 중단 해결: get_access_token()과 invalidate_token_cache()에서 동일한 이중 락 패턴을 제거했다. 락을 한 번만 획득하도록 정리하니 더 이상 타임아웃이 발생하지 않았다.\nGoogle Drive 동기화 on/off 토글 리포트 동기화를 항상 켜둘 필요는 없으므로, 설정 페이지에서 켜고 끌 수 있는 토글을 추가했다.\nsettings/app.yaml에 최상위 키 gdrive_enabled: true 추가 web/routers/config_router.py: POST /api/config/gdrive 엔드포인트 추가 report/daily_report.py, monthly_report.py: gdrive_enabled 값을 확인하도록 수정 web/templates/settings.html: 구글 드라이브 토글 카드 + Alpine.js setGdrive() 추가 스크리닝 로그 DB 기록 및 웹 표시 매매가 발생하지 않을 때 “왜 매수 후보가 없었는지\"를 나중에 확인할 수 있도록, 스크리닝 결과를 DB에 남기고 웹에서 볼 수 있게 했다.\ntrading/buy.py: 1차/2차 스크리닝 후 insert_screening_log() 호출 (1차 통과 0개여도 기록) screening/second_stage.py: 선정된 종목명·점수를 INFO 레벨로 강화 로깅 db/repository.py: get_screening_logs() 추가 web/routers/api.py: GET /api/screening-logs 엔드포인트 추가 web/routers/pages.py + web/templates/screening.html: /screening 페이지 신규 추가 (날짜·시장국면·1차/2차 통과 수·종목명 표시) web/templates/layout.html: 사이드바에 스크리닝 메뉴 추가 초기자금 자동 추적 수익률을 계산하려면 “처음에 얼마로 시작했는지\"가 기준이 되어야 하는데, 이 값이 없었다.\nsettings/app.yaml에 paths.initial_capital: \"data/initial_capital.json\" 추가 runner.py: _ensure_initial_capital() 추가 — 최초 실행 시 잔고를 초기자금으로 저장 (backtest·dry-run은 제외) web/routers/config_router.py: GET /api/config/capital 엔드포인트 추가 web/templates/dashboard.html: 초기자금·누적 수익률(%) 카드 추가 문서/코드 정합성 정리 /api/config/capital 엔드포인트를 api_router에서 config_router로 이동 _ensure_initial_capital에 dry-run 모드 제외 조건 추가 buy.py: 1차 스크리닝 통과가 0개여도 screening_log를 DB에 기록하도록 수정 셸 명령어 안내를 python/pip → python3/pip3로 통일 (INSTALL.md, UPDATE.md, OCI_QUICKSTART.md, WEBSERVICE_DEPLOY.md, README.md) CLAUDE.md: 라우터 표에 신규 라우터 6개 추가, --dry-run 명령어 추가, 프로젝트 구조에 api/dry_run_client.py·web/templates/ 반영, 데이터 레이어에 data/initial_capital.json 추가 CLAUDE.md 작업 종료 절차 업데이트 작업 종료 절차의 순서와 항목도 다시 손봤다.\npush 위치를 절차상 더 적절한 순서로 조정 6단계로 PR 요청 단계 추가 6단계 항목의 마크다운 형식 수정 정리 기능 내용 리포트 MD 저장 일간/월간 리포트를 report/daily/, report/monthly/에 누적 저장 Google Drive 동기화 rclone copy 기반, opt-in + on/off 토글 웹 YAML 편집기 화이트리스트 10개 파일, 문법 검증 후 저장 토큰 이중 락 token_manager.py 데드락 수정 → 403 한도초과 재발 방지 스크리닝 로그 DB 기록 + /screening 페이지에서 조회 초기자금 추적 최초 실행 시 잔고 자동 저장, 대시보드에 누적 수익률 표시 다음 글에서는 며칠 뒤(6/7~6/8) 서버 상태를 점검하던 중 발견한 KOSPI 지수 조회 버그 — 매매가 전혀 발생하지 않던 문제를 추적하고 해결한 과정을 다룬다.\n",
+  "wordCount" : "2555",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-05T11:00:00+09:00",
+  "dateModified": "2026-06-05T11:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기
+    </h1>
+    <div class="post-description">
+      일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-05T11:00:00+09:00'>2026년 6월 5일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#%ec%9d%bc%ea%b0%84%ec%9b%94%ea%b0%84-%eb%a6%ac%ed%8f%ac%ed%8a%b8-md-%ed%8c%8c%ec%9d%bc-%ec%a0%80%ec%9e%a5" aria-label="일간/월간 리포트 MD 파일 저장">일간/월간 리포트 MD 파일 저장</a></li>
+            <li>
+                <a href="#google-drive-%eb%a6%ac%ed%8f%ac%ed%8a%b8-%eb%8f%99%ea%b8%b0%ed%99%94" aria-label="Google Drive 리포트 동기화">Google Drive 리포트 동기화</a></li>
+            <li>
+                <a href="#%ec%9b%b9-%ec%84%a4%ec%a0%95-yaml-%ed%8e%b8%ec%a7%91%ea%b8%b0" aria-label="웹 설정 YAML 편집기">웹 설정 YAML 편집기</a></li>
+            <li>
+                <a href="#%eb%ac%b8%ec%84%9c-%ec%a0%84%ec%b2%b4-%ec%b5%9c%ec%8b%a0%ed%99%94" aria-label="문서 전체 최신화">문서 전체 최신화</a></li>
+            <li>
+                <a href="#-%eb%b2%84%ea%b7%b8-%ed%86%a0%ed%81%b0-%ec%ba%90%ec%8b%9c-%ec%9d%b4%ec%a4%91-%eb%9d%bd-%eb%8d%b0%eb%93%9c%eb%9d%bd" aria-label="❌ 버그: 토큰 캐시 이중 락 데드락">❌ 버그: 토큰 캐시 이중 락 데드락</a></li>
+            <li>
+                <a href="#google-drive-%eb%8f%99%ea%b8%b0%ed%99%94-onoff-%ed%86%a0%ea%b8%80" aria-label="Google Drive 동기화 on/off 토글">Google Drive 동기화 on/off 토글</a></li>
+            <li>
+                <a href="#%ec%8a%a4%ed%81%ac%eb%a6%ac%eb%8b%9d-%eb%a1%9c%ea%b7%b8-db-%ea%b8%b0%eb%a1%9d-%eb%b0%8f-%ec%9b%b9-%ed%91%9c%ec%8b%9c" aria-label="스크리닝 로그 DB 기록 및 웹 표시">스크리닝 로그 DB 기록 및 웹 표시</a></li>
+            <li>
+                <a href="#%ec%b4%88%ea%b8%b0%ec%9e%90%ea%b8%88-%ec%9e%90%eb%8f%99-%ec%b6%94%ec%a0%81" aria-label="초기자금 자동 추적">초기자금 자동 추적</a></li>
+            <li>
+                <a href="#%eb%ac%b8%ec%84%9c%ec%bd%94%eb%93%9c-%ec%a0%95%ed%95%a9%ec%84%b1-%ec%a0%95%eb%a6%ac" aria-label="문서/코드 정합성 정리">문서/코드 정합성 정리</a></li>
+            <li>
+                <a href="#claudemd-%ec%9e%91%ec%97%85-%ec%a2%85%eb%a3%8c-%ec%a0%88%ec%b0%a8-%ec%97%85%eb%8d%b0%ec%9d%b4%ed%8a%b8" aria-label="CLAUDE.md 작업 종료 절차 업데이트">CLAUDE.md 작업 종료 절차 업데이트</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 5일<br>
+<strong>최종 수정</strong>: 2026년 6월 5일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/systemd-cron-dryrun-setup/">이전 글</a>에서 crontab으로 자동매매를 등록하고 dry-run/토큰 차단 처리까지 마쳤다. 이번 글은 6월 4일 후반부터 6월 5일까지 진행한 작업을 정리한다.</p>
+<p>결론부터 말하면, 일간/월간 리포트를 <strong>MD 파일</strong>로 저장하고 <strong>Google Drive</strong>와 자동 동기화하는 기능을 추가했고, 웹 설정 페이지에서 YAML 파일을 직접 수정할 수 있는 편집기를 만들었다. 이어서 토큰 캐시의 <strong>이중 락 데드락 버그</strong>를 수정하고, 스크리닝 결과를 DB에 기록해 웹에서 조회할 수 있게 했으며, 초기자금을 자동으로 추적하는 기능을 추가했다.</p>
+<hr>
+<h2 id="일간월간-리포트-md-파일-저장">일간/월간 리포트 MD 파일 저장<a hidden class="anchor" aria-hidden="true" href="#일간월간-리포트-md-파일-저장">#</a></h2>
+<p>기존에는 리포트가 텔레그램 메시지로만 발송되어, 과거 기록을 한눈에 모아보기 어려웠다. 그래서 리포트를 MD 파일로도 저장하도록 했다.</p>
+<ul>
+<li><code>report/md_writer.py</code> 신규 생성 — 일간/월간 MD 빌드·저장 함수 4개</li>
+<li><code>report/daily_report.py</code>: 16:00 리포트 실행 시 <code>report/daily/YYYY-MM.md</code>에 누적 저장</li>
+<li><code>report/monthly_report.py</code>: 마지막 영업일에 <code>report/monthly/YYYY-MM.md</code> 생성</li>
+<li>MD 저장이 실패해도 텔레그램 발송에는 영향이 없도록 <code>try/except</code>로 분리</li>
+</ul>
+<p>테스트는 <code>tests/test_md_writer.py</code>(28개) + <code>tests/test_md_report_integration.py</code>(6개), 총 34개를 추가했다.</p>
+<hr>
+<h2 id="google-drive-리포트-동기화">Google Drive 리포트 동기화<a hidden class="anchor" aria-hidden="true" href="#google-drive-리포트-동기화">#</a></h2>
+<p>저장한 MD 리포트를 Obsidian Vault와 연동된 Google Drive 폴더로 자동 동기화하도록 했다.</p>
+<ul>
+<li><code>report/gdrive_sync.py</code> 신규 생성 — <code>rclone copy</code> 실행, 실패 시 텔레그램 알림</li>
+<li><code>daily_report.py</code> / <code>monthly_report.py</code>: MD 저장 후 Google Drive 자동 동기화</li>
+<li><code>settings/app.yaml</code>에 <code>paths.report_dir</code>, <code>paths.gdrive_report_remote</code> 추가</li>
+<li><code>gdrive_report_remote</code>가 비어있으면 동기화를 건너뜀(opt-in 방식)</li>
+<li><code>tests/test_gdrive_sync.py</code>(15개), <code>tests/test_md_report_integration.py</code>(통합 4개 추가, 총 10개)</li>
+</ul>
+<hr>
+<h2 id="웹-설정-yaml-편집기">웹 설정 YAML 편집기<a hidden class="anchor" aria-hidden="true" href="#웹-설정-yaml-편집기">#</a></h2>
+<p>설정 변경을 매번 서버에 ssh로 접속해서 직접 파일을 수정하는 대신, 웹 설정 페이지에서 바로 수정할 수 있는 편집기를 추가했다.</p>
+<ul>
+<li><code>web/routers/config_router.py</code>: <code>/api/config/files</code>, <code>/api/config/file</code>(GET/POST) 엔드포인트 추가
+<ul>
+<li><strong>화이트리스트 10개 YAML 파일</strong>만 접근 허용 (경로 조작 차단)</li>
+<li>POST 시 <code>yaml.safe_load()</code>로 문법 검증 후 저장, 오류 시 400 응답</li>
+<li>모드·프리셋·파일 저장 성공 시 <code>[WEB]</code> 태그 + 요청 IP를 포함한 로그 기록</li>
+</ul>
+</li>
+<li><code>web/templates/settings.html</code>: 설정 파일 편집 카드 추가
+<ul>
+<li>파일 선택 드롭다운 → textarea에 내용 로드 → 저장 버튼</li>
+<li>저장하지 않은 변경사항이 있을 때 다른 파일로 전환하면 confirm 경고</li>
+<li>실행 모드·매매 프리셋·YAML 저장 각각에 confirm() 확인 팝업 추가</li>
+</ul>
+</li>
+</ul>
+<p>이렇게 해두면 서버에 직접 접속하지 않고도 설정값을 안전하게 바꿀 수 있다.</p>
+<hr>
+<h2 id="문서-전체-최신화">문서 전체 최신화<a hidden class="anchor" aria-hidden="true" href="#문서-전체-최신화">#</a></h2>
+<p>코드가 빠르게 바뀌면서 문서가 따라가지 못하는 부분을 정리했다.</p>
+<ul>
+<li><code>OCI_QUICKSTART.md</code>: 중복 구간 10곳에 출처 표기(📌), 읽기 순서에 <code>UPDATE.md</code>·<code>WORKFLOW.md</code> 추가, 참고 문서 섹션 7개 추가</li>
+<li><code>WORKFLOW.md</code>: 신규 생성 — Mermaid 시스템 구조도·데이터 흐름 + ASCII 실행/설정 로드 흐름</li>
+<li><code>SETTINGS_GUIDE.md</code>: <code>settings/screening/</code> → <code>settings/screen_config/</code> 경로 전체 교체</li>
+<li><code>SETTINGS_REFERENCE.md</code>: <code>KIS_APP_KEY</code> → 모의/실전 모드별 키(<code>KIS_LIVE_*</code>/<code>KIS_PAPER_*</code>) 분리 + <code>WEB_SESSION_SECRET</code> 추가</li>
+<li><code>USAGE.md</code>: <code>token_cache.json</code> → 모드별 파일명(<code>token_cache_live.json</code>/<code>token_cache_paper.json</code>)으로 수정</li>
+<li><code>README.md</code>: 환경변수 live/paper 분리 + <code>WORKFLOW.md</code> 링크 추가</li>
+</ul>
+<hr>
+<h2 id="-버그-토큰-캐시-이중-락-데드락">❌ 버그: 토큰 캐시 이중 락 데드락<a hidden class="anchor" aria-hidden="true" href="#-버그-토큰-캐시-이중-락-데드락">#</a></h2>
+<p>운영 중 당일 자동매매가 갑자기 멈추는 현상이 있었는데, 원인은 <code>token_manager.py</code>의 <strong>이중 락(double lock)</strong> 문제였다.</p>
+<ul>
+<li><code>get_access_token()</code>이 외부 <code>FileLock</code>으로 <code>token_cache_paper.json.lock</code>을 보유한 상태에서</li>
+<li>내부의 <code>save_json_locked()</code>가 <strong>같은 lock 파일을 다시 획득</strong>하려고 시도</li>
+<li>10초 타임아웃 → 캐시 저장 실패 → 토큰을 다시 발급받으려 시도 → KIS 토큰 발급 한도(403) 초과 → <strong>당일 자동매매 중단</strong></li>
+</ul>
+<p><strong>해결</strong>: <code>get_access_token()</code>과 <code>invalidate_token_cache()</code>에서 동일한 이중 락 패턴을 제거했다. 락을 한 번만 획득하도록 정리하니 더 이상 타임아웃이 발생하지 않았다.</p>
+<hr>
+<h2 id="google-drive-동기화-onoff-토글">Google Drive 동기화 on/off 토글<a hidden class="anchor" aria-hidden="true" href="#google-drive-동기화-onoff-토글">#</a></h2>
+<p>리포트 동기화를 항상 켜둘 필요는 없으므로, 설정 페이지에서 켜고 끌 수 있는 토글을 추가했다.</p>
+<ul>
+<li><code>settings/app.yaml</code>에 최상위 키 <code>gdrive_enabled: true</code> 추가</li>
+<li><code>web/routers/config_router.py</code>: <code>POST /api/config/gdrive</code> 엔드포인트 추가</li>
+<li><code>report/daily_report.py</code>, <code>monthly_report.py</code>: <code>gdrive_enabled</code> 값을 확인하도록 수정</li>
+<li><code>web/templates/settings.html</code>: 구글 드라이브 토글 카드 + Alpine.js <code>setGdrive()</code> 추가</li>
+</ul>
+<hr>
+<h2 id="스크리닝-로그-db-기록-및-웹-표시">스크리닝 로그 DB 기록 및 웹 표시<a hidden class="anchor" aria-hidden="true" href="#스크리닝-로그-db-기록-및-웹-표시">#</a></h2>
+<p>매매가 발생하지 않을 때 &ldquo;왜 매수 후보가 없었는지&quot;를 나중에 확인할 수 있도록, 스크리닝 결과를 DB에 남기고 웹에서 볼 수 있게 했다.</p>
+<ul>
+<li><code>trading/buy.py</code>: 1차/2차 스크리닝 후 <code>insert_screening_log()</code> 호출 (1차 통과 0개여도 기록)</li>
+<li><code>screening/second_stage.py</code>: 선정된 종목명·점수를 INFO 레벨로 강화 로깅</li>
+<li><code>db/repository.py</code>: <code>get_screening_logs()</code> 추가</li>
+<li><code>web/routers/api.py</code>: <code>GET /api/screening-logs</code> 엔드포인트 추가</li>
+<li><code>web/routers/pages.py</code> + <code>web/templates/screening.html</code>: <code>/screening</code> 페이지 신규 추가 (날짜·시장국면·1차/2차 통과 수·종목명 표시)</li>
+<li><code>web/templates/layout.html</code>: 사이드바에 스크리닝 메뉴 추가</li>
+</ul>
+<hr>
+<h2 id="초기자금-자동-추적">초기자금 자동 추적<a hidden class="anchor" aria-hidden="true" href="#초기자금-자동-추적">#</a></h2>
+<p>수익률을 계산하려면 &ldquo;처음에 얼마로 시작했는지&quot;가 기준이 되어야 하는데, 이 값이 없었다.</p>
+<ul>
+<li><code>settings/app.yaml</code>에 <code>paths.initial_capital: &quot;data/initial_capital.json&quot;</code> 추가</li>
+<li><code>runner.py</code>: <code>_ensure_initial_capital()</code> 추가 — 최초 실행 시 잔고를 초기자금으로 저장 (backtest·dry-run은 제외)</li>
+<li><code>web/routers/config_router.py</code>: <code>GET /api/config/capital</code> 엔드포인트 추가</li>
+<li><code>web/templates/dashboard.html</code>: 초기자금·누적 수익률(%) 카드 추가</li>
+</ul>
+<hr>
+<h2 id="문서코드-정합성-정리">문서/코드 정합성 정리<a hidden class="anchor" aria-hidden="true" href="#문서코드-정합성-정리">#</a></h2>
+<ul>
+<li><code>/api/config/capital</code> 엔드포인트를 <code>api_router</code>에서 <code>config_router</code>로 이동</li>
+<li><code>_ensure_initial_capital</code>에 dry-run 모드 제외 조건 추가</li>
+<li><code>buy.py</code>: 1차 스크리닝 통과가 0개여도 screening_log를 DB에 기록하도록 수정</li>
+<li>셸 명령어 안내를 <code>python</code>/<code>pip</code> → <code>python3</code>/<code>pip3</code>로 통일 (<code>INSTALL.md</code>, <code>UPDATE.md</code>, <code>OCI_QUICKSTART.md</code>, <code>WEBSERVICE_DEPLOY.md</code>, <code>README.md</code>)</li>
+<li>CLAUDE.md: 라우터 표에 신규 라우터 6개 추가, <code>--dry-run</code> 명령어 추가, 프로젝트 구조에 <code>api/dry_run_client.py</code>·<code>web/templates/</code> 반영, 데이터 레이어에 <code>data/initial_capital.json</code> 추가</li>
+</ul>
+<hr>
+<h2 id="claudemd-작업-종료-절차-업데이트">CLAUDE.md 작업 종료 절차 업데이트<a hidden class="anchor" aria-hidden="true" href="#claudemd-작업-종료-절차-업데이트">#</a></h2>
+<p>작업 종료 절차의 순서와 항목도 다시 손봤다.</p>
+<ul>
+<li>push 위치를 절차상 더 적절한 순서로 조정</li>
+<li>6단계로 <strong>PR 요청</strong> 단계 추가</li>
+<li>6단계 항목의 마크다운 형식 수정</li>
+</ul>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>기능</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>리포트 MD 저장</td>
+					<td>일간/월간 리포트를 <code>report/daily/</code>, <code>report/monthly/</code>에 누적 저장</td>
+			</tr>
+			<tr>
+					<td>Google Drive 동기화</td>
+					<td><code>rclone copy</code> 기반, opt-in + on/off 토글</td>
+			</tr>
+			<tr>
+					<td>웹 YAML 편집기</td>
+					<td>화이트리스트 10개 파일, 문법 검증 후 저장</td>
+			</tr>
+			<tr>
+					<td>토큰 이중 락</td>
+					<td><code>token_manager.py</code> 데드락 수정 → 403 한도초과 재발 방지</td>
+			</tr>
+			<tr>
+					<td>스크리닝 로그</td>
+					<td>DB 기록 + <code>/screening</code> 페이지에서 조회</td>
+			</tr>
+			<tr>
+					<td>초기자금 추적</td>
+					<td>최초 실행 시 잔고 자동 저장, 대시보드에 누적 수익률 표시</td>
+			</tr>
+	</tbody>
+</table>
+<p>다음 글에서는 며칠 뒤(6/7~6/8) 서버 상태를 점검하던 중 발견한 <strong>KOSPI 지수 조회 버그</strong> — 매매가 전혀 발생하지 않던 문제를 추적하고 해결한 과정을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/kospi-index-bugfix/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

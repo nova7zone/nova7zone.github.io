@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설계">
+<meta name="description" content="새 매매 전략 strategy_v2 개발을 3단계로 나눠 진행했다. v1 매매 흐름에 position_registry를 추가 연동하고, strategy_v2 전용 buy/sell 모듈과 사전 평가 cron을 만들고, 마지막으로 추가 계좌를 조회 전용으로 reconcile하는 다중 계좌 기능을 추가한 과정을 기록한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/strategy-v2-development/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/strategy-v2-development/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v2-development/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile">
+  <meta property="og:description" content="새 매매 전략 strategy_v2 개발을 3단계로 나눠 진행했다. v1 매매 흐름에 position_registry를 추가 연동하고, strategy_v2 전용 buy/sell 모듈과 사전 평가 cron을 만들고, 마지막으로 추가 계좌를 조회 전용으로 reconcile하는 다중 계좌 기능을 추가한 과정을 기록한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-13T20:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-13T20:00:00+09:00">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile">
+  <meta name="twitter:description" content="새 매매 전략 strategy_v2 개발을 3단계로 나눠 진행했다. v1 매매 흐름에 position_registry를 추가 연동하고, strategy_v2 전용 buy/sell 모듈과 사전 평가 cron을 만들고, 마지막으로 추가 계좌를 조회 전용으로 reconcile하는 다중 계좌 기능을 추가한 과정을 기록한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile",
+      "item": "https://nova7zone.github.io/posts/strategy-v2-development/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile",
+  "description": "새 매매 전략 strategy_v2 개발을 3단계로 나눠 진행했다. v1 매매 흐름에 position_registry를 추가 연동하고, strategy_v2 전용 buy/sell 모듈과 사전 평가 cron을 만들고, 마지막으로 추가 계좌를 조회 전용으로 reconcile하는 다중 계좌 기능을 추가한 과정을 기록한다.",
+  "keywords": [
+    "설계"
+  ],
+  "articleBody": "작성일: 2026년 6월 13일\n최종 수정: 2026년 6월 13일\n분야: AI Trading, Development\n난이도: Advanced\n상태: Production Ready\n들어가며 이전 글에서 strategy_v1/strategy_v2가 공존할 수 있는 구조와 전략 버전 선택 UI를 준비했다. 이번 글은 그 구조 위에서 진행한 strategy_v2 본격 개발을 다룬다.\n결론부터 말하면, 6월 13일은 Phase 1 → Phase 2 → Phase 3 3단계로 나눠 진행했다. Phase 1에서는 v1의 매매 흐름에 영향을 주지 않으면서 포지션을 추적하는 position_registry 테이블과 정합성 점검(--reconcile)을 추가했다. Phase 2에서는 strategy_v2 전용 매수/매도 모듈과 장 시작 전 사전 평가(--pre-market) cron을 만들었다. Phase 3에서는 봇이 관리하지 않는 추가 계좌를 조회 전용으로 동기화하는 다중 계좌 기능을 추가했다. 세 단계 모두 기존 v1 로직은 건드리지 않고 **추가적(additive)**으로만 구현해서, 매 단계마다 pytest 전체 통과로 회귀 없음을 확인했다.\nPhase 1: position_registry 신설 + v1 DB 연동 명세: strategy_v2/specs/20_phase1_v1_db_migration_spec.md, 21_phase1_implementation_plan.md\nstrategy_v2가 슬롯·전략·손절가 등을 추적하려면, v1에는 없던 포지션 단위의 영속 데이터가 필요했다. 이를 위해 position_registry 테이블을 신설하고, v1 매매 흐름에 “추가만” 하는 훅을 연결했다.\n스키마 + repository db/schema.py: position_registry/position_strategy_history 테이블 신설 PK는 (code, account_id), account_id는 {mode}_main 형태 진입/청산/MFE·MAE/손절가 등 약 35개 컬럼 + 인덱스(idx_pr_status/sector/strategy/date/mode) init_db()와 _connect()에 PRAGMA foreign_keys = ON 추가 db/repository.py: position_registry 헬퍼 8개 추가 upsert_position_registry(INSERT OR IGNORE — 재진입 시 최초 진입가 유지) close_position_registry(SQL로 profit_pct/profit_amount/hold_days 계산) update_mfe_mae, update_stop_price(역행 방지 WHERE), update_sector get_holding_codes, get_all_holding_registry, get_sector_counts 모두 (db_path, mode, ...) 시그니처로 기존 insert_trade 패턴과 통일 v1 매도 사유 코드 분리 strategy_v1/trading/sell.py의 _check_sell_signal 반환형을 Optional[str] → Optional[tuple[str, str]](reason_code, message)로 변경 reason_code(영문, position_registry.sell_reason용): stop_loss/target_reached/intraday_close/time_stop/consecutive_down/trend_break message(한글, trades.sell_reason용)는 기존 그대로 — UI/동작에는 변화 없음 매수/매도 체결 시 훅 연결 trading/order_manager.py/strategy_v1/trading/sell.py에 position_registry 연동 훅을 추가했다. 모두 try/except + logger.warning으로 감싸서, 실패해도 매매 흐름은 멈추지 않는다(insert_trade와 동일한 failure-isolation 패턴). _on_buy_filled: 매수 체결 시 upsert_position_registry 호출 — stop_price = entry_price * (1 + stop_loss_pct), stop_pct = stop_loss_pct * 100 _on_sell_filled: 매도 체결 시 close_position_registry 호출 — sell_reason은 add_pending_order로 전달된 sell_reason_code run_sell() 보유 루프에서는 매도 판정 전 update_mfe_mae 호출 마이그레이션 + 정합성 점검 utils/migrate_position_registry.py 신규 — data/holdings.json → position_registry 1회 초기 마이그레이션 python -m utils.migrate_position_registry --mode paper 이미 holding 데이터가 있으면 스킵(멱등) utils/reconcile.py 신규 + runner.py --reconcile 플래그 추가 holdings.json ↔ position_registry 정합성 점검 — 누락 종목은 삽입, 초과 종목은 status='sold', sell_reason='manual'로 종료(손익 NULL), sector='unknown' 종목은 get_stock_sector()로 보강 장 마감 후 cron 추가 예정: 0 16 * * 1-5 cd /path/to/bot \u0026\u0026 python runner.py --reconcile api/kis_api.py에 get_stock_sector(code) 추가 — api_constants.py에 등록되어 있던 미사용 상수(STOCK_INFO_PATH/TrId.STOCK_INFO)를 활용, search-stock-info 응답의 bstp_kor_isnm 반환 테스트: tests/test_position_registry.py 신규(26개) — 스키마/FK, repository 헬퍼 8개, 마이그레이션(신규/멱등/빈 holdings/db_path 미설정), order_manager 훅(매수 upsert/매도 close/MFE·MAE/DB 실패 시 failure isolation), reconcile(누락삽입/초과종료/섹터갱신/멱등) 전체를 커버한다.\n검증: pytest tests/ 218개 전체 통과(기존 192개 + 신규 26개, 회귀 없음). python runner.py --dry-run은 로컬 .env 미설정으로 환경변수 검증 단계에서 종료되는데, 이는 기존과 동일하며 OCI/.env 설정 환경에서만 통과 가능하다.\nPhase 2: strategy_v2/trading/{buy,sell}.py + runner.py –pre-market 명세: strategy_v2/DEVELOPMENT_SPEC.md §11(구현 우선순위), §10-3/10-4(매수/매도 흐름)\nPhase 1로 DB 기반이 갖춰진 뒤, strategy_v2의 매수/매도 본체를 v1과 완전히 독립된 파일로 구현했다.\nstrategy_v2/trading/buy.py 슬롯 게이팅(get_pending_slots()) → 시장필터/레짐/공포단계 평가 → 일일손실한도·보유한도 체크 → 캐시 로드 슬롯별 그룹(A/B/C/D)에서 _select_target_strategy로 2차 스크리닝 프로파일 선택 → run_group_screening() 호출(레짐/공포/필터 delta·scale 전달) 주문 접수 + position_registry.upsert()로 entry_strategy/entry_group/entry_score/stop_price 등 v2 메타 기록 + mark_slot_executed() v1 헬퍼(_get_holdings, _calc_qty, _order_type_code, _calc_limit_price 등)는 독립적으로 복제 — strategy_v1 파일은 미수정 strategy_v2/trading/sell.py 매도 우선순위: ① stop_price 이탈(직접 처리) → ②~⑥ strategy_sell.evaluate() VKOSPI 강제 fear_driven 전환: fear_level이 extreme_fear/crisis_rising이면, fear_driven이 아닌 모든 보유 종목을 무조건 position_registry.update_strategy(..., reason=\"vkospi_crisis\")로 전환 (전환 자체는 매도 신호가 아니다) 매도 체결 시 position_registry.close()에 exit_regime/exit_vkospi/exit_score 기록 runner.py –pre-market --pre-market 플래그 추가 — active_strategy_version != \"v2\"면 스킵 strategy_v2.daily_reeval.run() 실행 후 cache_manager.build() → save()로 당일 캐시를 영속화 (08:00 cron 용도) active_strategy_version 분기에 v2 추가: v1 → strategy_v1.trading.{buy,sell}, v2 → strategy_v2.trading.{buy,sell}, 그 외는 ValueError 테스트: tests/test_v2_trading.py 신규(25개) — _calc_qty/_order_type_code/_select_target_strategy/_load_profile 단위 테스트, run_buy의 슬롯/한도/공포 게이팅 5종, 전체 흐름(주문 접수 + position_registry 메타 기록 검증) 3종, run_sell의 게이팅 2종 + stop_price 이탈 2종 + VKOSPI 강제전환 1종.\n검증: pytest tests/ 393개 전체 통과(기존 368개 + 신규 25개, 회귀 없음). v1 스크리닝/매수/매도/order_manager 파일은 미수정 — strategy_v2는 모두 독립 파일로 구현했다.\n이 시점에서 strategy_v2/DEVELOPMENT_SPEC.md §11의 Phase 2 1~13단계 코드가 모두 완료됐다. 남은 14단계(OCI 배포: 0 8 * * 1-5 python runner.py --pre-market cron 추가 + settings/app.yaml의 active_strategy_version: \"v2\" 전환)는 OCI 서버에서 수동으로 진행해야 한다.\nPhase 3: 다중 계좌(조회 전용) reconcile 통합 명세: strategy_v2/specs/90_multi_account_spec.md\n봇이 직접 관리하지 않는 추가 계좌(가족 계좌 등)의 잔고도 같은 DB에서 조회할 수 있도록, 조회 전용 다중 계좌 reconcile을 추가했다.\ndb/schema.py: accounts 테이블 신설(account_id PK, cano/acnt_prdt_cd/label/mode/managed_by/env_prefix/is_active) + trades.account_id 컬럼 추가 position_registry는 Phase 1에서 이미 PK (code, account_id)로 설계해뒀기 때문에 마이그레이션이 불필요했다 db/repository.py: *_by_account 함수 신설 — get_all_holding_registry_by_account, upsert_position_registry_by_account, close_position_registry_by_account, update_sector_by_account + accounts CRUD(get_accounts, upsert_account). 봇 경로(live_main/paper_main)의 mode 기반 함수는 시그니처 변경 없음 utils/config_loader.py: load_extra_accounts() 신규 — KIS_EXTRA_01~10_* 환경변수 중 APP_KEY가 등록된 슬롯만 감지해 config[\"extra_accounts\"]에 주입 (load_config() 마지막 단계) utils/reconcile.py: 봇 관리 계좌 reconcile 이후 _register_accounts()로 accounts 테이블에 등록(봇 계좌는 managed_by='bot', 추가 계좌는 managed_by='manual') + 추가 계좌별로 _reconcile_extra_account()를 호출해 KIS API 잔고조회 → position_registry(account_id=extra_NN) INSERT/CLOSE/섹터보강. 한 계좌가 실패해도 다른 계좌·전체 처리를 막지 않도록 try/except로 격리 api/token_manager.py는 변경이 필요 없었다 — 기존 get_access_token(..., token_cache_path=...)가 이미 계좌별 토큰 캐시 분리를 지원해서, 추가 계좌는 KISApiClient 인스턴스를 새로 만들어 paths.token_cache=data/token_cache_extra_NN.json만 지정하면 된다 테스트: tests/test_multi_account.py 신규(10개) — load_extra_accounts 4종, accounts 테이블 등록(봇/추가 계좌) 2종, 추가 계좌 reconcile(INSERT/CLOSE/섹터보강/계좌별 실패 격리) 4종.\n검증: pytest tests/ 403개 전체 통과(기존 393개 + 신규 10개, 회귀 없음). strategy_v1/buy/sell, trading/order_manager.py 등 봇 매매 경로는 수정하지 않았다 — 추가 계좌는 조회 전용이라 buy/sell 흐름에 진입하지 않는다.\n남은 작업(명세 §11 8~9단계, 코드 외):\n실제 APP_KEY 등록 후 추가 계좌 reconcile 실거래 검증 (OCI) 대시보드에 accounts 테이블 노출 (별도 작업) 정리 Phase 내용 테스트 Phase 1 position_registry/position_strategy_history 신설, v1 매수/매도 체결 시 추가 기록 훅, 마이그레이션 + --reconcile 218개 (+26) Phase 2 strategy_v2/trading/{buy,sell}.py 신규(독립 구현), runner.py --pre-market + v2 분기 393개 (+25) Phase 3 accounts 테이블, 추가 계좌 조회 전용 reconcile, KIS_EXTRA_NN_* 환경변수 자동 감지 403개 (+10) 세 단계 모두 v1 핵심 로직은 변경하지 않고 추가적으로만 구현했기 때문에, 기존 매매 흐름에 대한 회귀 위험 없이 진행할 수 있었다. 다음 글에서는 6월 14일 진행한 매매설정 API의 버전 분기 처리, 매매설정 v2 카드 프론트엔드, 세션 보안 강화와 코드 보안 점검 작업을 다룬다.\n",
+  "wordCount" : "3374",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-13T20:00:00+09:00",
+  "dateModified": "2026-06-13T20:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/strategy-v2-development/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile
+    </h1>
+    <div class="post-description">
+      새 매매 전략 strategy_v2 개발을 3단계로 나눠 진행했다. v1 매매 흐름에 position_registry를 추가 연동하고, strategy_v2 전용 buy/sell 모듈과 사전 평가 cron을 만들고, 마지막으로 추가 계좌를 조회 전용으로 reconcile하는 다중 계좌 기능을 추가한 과정을 기록한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-13T20:00:00+09:00'>2026년 6월 13일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#phase-1-position_registry-%ec%8b%a0%ec%84%a4--v1-db-%ec%97%b0%eb%8f%99" aria-label="Phase 1: position_registry 신설 &#43; v1 DB 연동">Phase 1: position_registry 신설 + v1 DB 연동</a><ul>
+                    
+            <li>
+                <a href="#%ec%8a%a4%ed%82%a4%eb%a7%88--repository" aria-label="스키마 &#43; repository">스키마 + repository</a></li>
+            <li>
+                <a href="#v1-%eb%a7%a4%eb%8f%84-%ec%82%ac%ec%9c%a0-%ec%bd%94%eb%93%9c-%eb%b6%84%eb%a6%ac" aria-label="v1 매도 사유 코드 분리">v1 매도 사유 코드 분리</a></li>
+            <li>
+                <a href="#%eb%a7%a4%ec%88%98%eb%a7%a4%eb%8f%84-%ec%b2%b4%ea%b2%b0-%ec%8b%9c-%ed%9b%85-%ec%97%b0%ea%b2%b0" aria-label="매수/매도 체결 시 훅 연결">매수/매도 체결 시 훅 연결</a></li>
+            <li>
+                <a href="#%eb%a7%88%ec%9d%b4%ea%b7%b8%eb%a0%88%ec%9d%b4%ec%85%98--%ec%a0%95%ed%95%a9%ec%84%b1-%ec%a0%90%ea%b2%80" aria-label="마이그레이션 &#43; 정합성 점검">마이그레이션 + 정합성 점검</a></li></ul>
+            </li>
+            <li>
+                <a href="#phase-2-strategy_v2tradingbuysellpy--runnerpy-pre-market" aria-label="Phase 2: strategy_v2/trading/{buy,sell}.py &#43; runner.py &ndash;pre-market">Phase 2: strategy_v2/trading/{buy,sell}.py + runner.py &ndash;pre-market</a><ul>
+                    
+            <li>
+                <a href="#strategy_v2tradingbuypy" aria-label="strategy_v2/trading/buy.py">strategy_v2/trading/buy.py</a></li>
+            <li>
+                <a href="#strategy_v2tradingsellpy" aria-label="strategy_v2/trading/sell.py">strategy_v2/trading/sell.py</a></li>
+            <li>
+                <a href="#runnerpy-pre-market" aria-label="runner.py &ndash;pre-market">runner.py &ndash;pre-market</a></li></ul>
+            </li>
+            <li>
+                <a href="#phase-3-%eb%8b%a4%ec%a4%91-%ea%b3%84%ec%a2%8c%ec%a1%b0%ed%9a%8c-%ec%a0%84%ec%9a%a9-reconcile-%ed%86%b5%ed%95%a9" aria-label="Phase 3: 다중 계좌(조회 전용) reconcile 통합">Phase 3: 다중 계좌(조회 전용) reconcile 통합</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 13일<br>
+<strong>최종 수정</strong>: 2026년 6월 13일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Advanced<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/docs-cleanup-and-strategy-version-ui/">이전 글</a>에서 <code>strategy_v1</code>/<code>strategy_v2</code>가 공존할 수 있는 구조와 전략 버전 선택 UI를 준비했다. 이번 글은 그 구조 위에서 진행한 <strong>strategy_v2 본격 개발</strong>을 다룬다.</p>
+<p>결론부터 말하면, 6월 13일은 <strong>Phase 1 → Phase 2 → Phase 3</strong> 3단계로 나눠 진행했다. Phase 1에서는 v1의 매매 흐름에 영향을 주지 않으면서 포지션을 추적하는 <code>position_registry</code> 테이블과 정합성 점검(<code>--reconcile</code>)을 추가했다. Phase 2에서는 strategy_v2 전용 매수/매도 모듈과 장 시작 전 사전 평가(<code>--pre-market</code>) cron을 만들었다. Phase 3에서는 봇이 관리하지 않는 추가 계좌를 조회 전용으로 동기화하는 다중 계좌 기능을 추가했다. 세 단계 모두 기존 v1 로직은 건드리지 않고 **추가적(additive)**으로만 구현해서, 매 단계마다 <code>pytest</code> 전체 통과로 회귀 없음을 확인했다.</p>
+<hr>
+<h2 id="phase-1-position_registry-신설--v1-db-연동">Phase 1: position_registry 신설 + v1 DB 연동<a hidden class="anchor" aria-hidden="true" href="#phase-1-position_registry-신설--v1-db-연동">#</a></h2>
+<p>명세: <code>strategy_v2/specs/20_phase1_v1_db_migration_spec.md</code>, <code>21_phase1_implementation_plan.md</code></p>
+<p>strategy_v2가 슬롯·전략·손절가 등을 추적하려면, v1에는 없던 포지션 단위의 영속 데이터가 필요했다. 이를 위해 <code>position_registry</code> 테이블을 신설하고, v1 매매 흐름에 &ldquo;추가만&rdquo; 하는 훅을 연결했다.</p>
+<h3 id="스키마--repository">스키마 + repository<a hidden class="anchor" aria-hidden="true" href="#스키마--repository">#</a></h3>
+<ul>
+<li><code>db/schema.py</code>: <code>position_registry</code>/<code>position_strategy_history</code> 테이블 신설
+<ul>
+<li>PK는 <code>(code, account_id)</code>, <code>account_id</code>는 <code>{mode}_main</code> 형태</li>
+<li>진입/청산/MFE·MAE/손절가 등 약 35개 컬럼 + 인덱스(<code>idx_pr_status/sector/strategy/date/mode</code>)</li>
+<li><code>init_db()</code>와 <code>_connect()</code>에 <code>PRAGMA foreign_keys = ON</code> 추가</li>
+</ul>
+</li>
+<li><code>db/repository.py</code>: position_registry 헬퍼 8개 추가
+<ul>
+<li><code>upsert_position_registry</code>(INSERT OR IGNORE — 재진입 시 최초 진입가 유지)</li>
+<li><code>close_position_registry</code>(SQL로 <code>profit_pct</code>/<code>profit_amount</code>/<code>hold_days</code> 계산)</li>
+<li><code>update_mfe_mae</code>, <code>update_stop_price</code>(역행 방지 WHERE), <code>update_sector</code></li>
+<li><code>get_holding_codes</code>, <code>get_all_holding_registry</code>, <code>get_sector_counts</code></li>
+<li>모두 <code>(db_path, mode, ...)</code> 시그니처로 기존 <code>insert_trade</code> 패턴과 통일</li>
+</ul>
+</li>
+</ul>
+<h3 id="v1-매도-사유-코드-분리">v1 매도 사유 코드 분리<a hidden class="anchor" aria-hidden="true" href="#v1-매도-사유-코드-분리">#</a></h3>
+<ul>
+<li><code>strategy_v1/trading/sell.py</code>의 <code>_check_sell_signal</code> 반환형을 <code>Optional[str]</code> → <code>Optional[tuple[str, str]]</code>(reason_code, message)로 변경
+<ul>
+<li><code>reason_code</code>(영문, <code>position_registry.sell_reason</code>용): <code>stop_loss</code>/<code>target_reached</code>/<code>intraday_close</code>/<code>time_stop</code>/<code>consecutive_down</code>/<code>trend_break</code></li>
+<li><code>message</code>(한글, <code>trades.sell_reason</code>용)는 기존 그대로 — UI/동작에는 변화 없음</li>
+</ul>
+</li>
+</ul>
+<h3 id="매수매도-체결-시-훅-연결">매수/매도 체결 시 훅 연결<a hidden class="anchor" aria-hidden="true" href="#매수매도-체결-시-훅-연결">#</a></h3>
+<ul>
+<li><code>trading/order_manager.py</code>/<code>strategy_v1/trading/sell.py</code>에 position_registry 연동 훅을 추가했다. 모두 <code>try/except</code> + <code>logger.warning</code>으로 감싸서, 실패해도 매매 흐름은 멈추지 않는다(<code>insert_trade</code>와 동일한 failure-isolation 패턴).
+<ul>
+<li><code>_on_buy_filled</code>: 매수 체결 시 <code>upsert_position_registry</code> 호출 — <code>stop_price = entry_price * (1 + stop_loss_pct)</code>, <code>stop_pct = stop_loss_pct * 100</code></li>
+<li><code>_on_sell_filled</code>: 매도 체결 시 <code>close_position_registry</code> 호출 — <code>sell_reason</code>은 <code>add_pending_order</code>로 전달된 <code>sell_reason_code</code></li>
+<li><code>run_sell()</code> 보유 루프에서는 매도 판정 전 <code>update_mfe_mae</code> 호출</li>
+</ul>
+</li>
+</ul>
+<h3 id="마이그레이션--정합성-점검">마이그레이션 + 정합성 점검<a hidden class="anchor" aria-hidden="true" href="#마이그레이션--정합성-점검">#</a></h3>
+<ul>
+<li><code>utils/migrate_position_registry.py</code> 신규 — <code>data/holdings.json</code> → <code>position_registry</code> 1회 초기 마이그레이션
+<ul>
+<li><code>python -m utils.migrate_position_registry --mode paper</code></li>
+<li>이미 holding 데이터가 있으면 스킵(멱등)</li>
+</ul>
+</li>
+<li><code>utils/reconcile.py</code> 신규 + <code>runner.py --reconcile</code> 플래그 추가
+<ul>
+<li><code>holdings.json</code> ↔ <code>position_registry</code> 정합성 점검 — 누락 종목은 삽입, 초과 종목은 <code>status='sold', sell_reason='manual'</code>로 종료(손익 NULL), <code>sector='unknown'</code> 종목은 <code>get_stock_sector()</code>로 보강</li>
+<li>장 마감 후 cron 추가 예정: <code>0 16 * * 1-5 cd /path/to/bot &amp;&amp; python runner.py --reconcile</code></li>
+</ul>
+</li>
+<li><code>api/kis_api.py</code>에 <code>get_stock_sector(code)</code> 추가 — <code>api_constants.py</code>에 등록되어 있던 미사용 상수(<code>STOCK_INFO_PATH</code>/<code>TrId.STOCK_INFO</code>)를 활용, <code>search-stock-info</code> 응답의 <code>bstp_kor_isnm</code> 반환</li>
+</ul>
+<p><strong>테스트</strong>: <code>tests/test_position_registry.py</code> 신규(26개) — 스키마/FK, repository 헬퍼 8개, 마이그레이션(신규/멱등/빈 holdings/db_path 미설정), order_manager 훅(매수 upsert/매도 close/MFE·MAE/DB 실패 시 failure isolation), reconcile(누락삽입/초과종료/섹터갱신/멱등) 전체를 커버한다.</p>
+<p><strong>검증</strong>: <code>pytest tests/</code> 218개 전체 통과(기존 192개 + 신규 26개, 회귀 없음). <code>python runner.py --dry-run</code>은 로컬 <code>.env</code> 미설정으로 환경변수 검증 단계에서 종료되는데, 이는 기존과 동일하며 OCI/<code>.env</code> 설정 환경에서만 통과 가능하다.</p>
+<hr>
+<h2 id="phase-2-strategy_v2tradingbuysellpy--runnerpy-pre-market">Phase 2: strategy_v2/trading/{buy,sell}.py + runner.py &ndash;pre-market<a hidden class="anchor" aria-hidden="true" href="#phase-2-strategy_v2tradingbuysellpy--runnerpy-pre-market">#</a></h2>
+<p>명세: <code>strategy_v2/DEVELOPMENT_SPEC.md</code> §11(구현 우선순위), §10-3/10-4(매수/매도 흐름)</p>
+<p>Phase 1로 DB 기반이 갖춰진 뒤, strategy_v2의 매수/매도 본체를 <strong>v1과 완전히 독립된 파일</strong>로 구현했다.</p>
+<h3 id="strategy_v2tradingbuypy">strategy_v2/trading/buy.py<a hidden class="anchor" aria-hidden="true" href="#strategy_v2tradingbuypy">#</a></h3>
+<ul>
+<li>슬롯 게이팅(<code>get_pending_slots()</code>) → 시장필터/레짐/공포단계 평가 → 일일손실한도·보유한도 체크 → 캐시 로드</li>
+<li>슬롯별 그룹(A/B/C/D)에서 <code>_select_target_strategy</code>로 2차 스크리닝 프로파일 선택 → <code>run_group_screening()</code> 호출(레짐/공포/필터 delta·scale 전달)</li>
+<li>주문 접수 + <code>position_registry.upsert()</code>로 <code>entry_strategy</code>/<code>entry_group</code>/<code>entry_score</code>/<code>stop_price</code> 등 v2 메타 기록 + <code>mark_slot_executed()</code></li>
+<li>v1 헬퍼(<code>_get_holdings</code>, <code>_calc_qty</code>, <code>_order_type_code</code>, <code>_calc_limit_price</code> 등)는 독립적으로 복제 — <code>strategy_v1</code> 파일은 미수정</li>
+</ul>
+<h3 id="strategy_v2tradingsellpy">strategy_v2/trading/sell.py<a hidden class="anchor" aria-hidden="true" href="#strategy_v2tradingsellpy">#</a></h3>
+<ul>
+<li>매도 우선순위: ① <code>stop_price</code> 이탈(직접 처리) → ②~⑥ <code>strategy_sell.evaluate()</code></li>
+<li>VKOSPI 강제 fear_driven 전환: <code>fear_level</code>이 <code>extreme_fear</code>/<code>crisis_rising</code>이면, <code>fear_driven</code>이 아닌 모든 보유 종목을 무조건 <code>position_registry.update_strategy(..., reason=&quot;vkospi_crisis&quot;)</code>로 전환 (전환 자체는 매도 신호가 아니다)</li>
+<li>매도 체결 시 <code>position_registry.close()</code>에 <code>exit_regime</code>/<code>exit_vkospi</code>/<code>exit_score</code> 기록</li>
+</ul>
+<h3 id="runnerpy-pre-market">runner.py &ndash;pre-market<a hidden class="anchor" aria-hidden="true" href="#runnerpy-pre-market">#</a></h3>
+<ul>
+<li><code>--pre-market</code> 플래그 추가 — <code>active_strategy_version != &quot;v2&quot;</code>면 스킵</li>
+<li><code>strategy_v2.daily_reeval.run()</code> 실행 후 <code>cache_manager.build()</code> → <code>save()</code>로 당일 캐시를 영속화 (08:00 cron 용도)</li>
+<li><code>active_strategy_version</code> 분기에 v2 추가: <code>v1</code> → <code>strategy_v1.trading.{buy,sell}</code>, <code>v2</code> → <code>strategy_v2.trading.{buy,sell}</code>, 그 외는 <code>ValueError</code></li>
+</ul>
+<p><strong>테스트</strong>: <code>tests/test_v2_trading.py</code> 신규(25개) — <code>_calc_qty</code>/<code>_order_type_code</code>/<code>_select_target_strategy</code>/<code>_load_profile</code> 단위 테스트, <code>run_buy</code>의 슬롯/한도/공포 게이팅 5종, 전체 흐름(주문 접수 + position_registry 메타 기록 검증) 3종, <code>run_sell</code>의 게이팅 2종 + <code>stop_price</code> 이탈 2종 + VKOSPI 강제전환 1종.</p>
+<p><strong>검증</strong>: <code>pytest tests/</code> 393개 전체 통과(기존 368개 + 신규 25개, 회귀 없음). v1 스크리닝/매수/매도/<code>order_manager</code> 파일은 미수정 — strategy_v2는 모두 독립 파일로 구현했다.</p>
+<p>이 시점에서 <code>strategy_v2/DEVELOPMENT_SPEC.md</code> §11의 Phase 2 1~13단계 코드가 모두 완료됐다. 남은 14단계(OCI 배포: <code>0 8 * * 1-5 python runner.py --pre-market</code> cron 추가 + <code>settings/app.yaml</code>의 <code>active_strategy_version: &quot;v2&quot;</code> 전환)는 OCI 서버에서 수동으로 진행해야 한다.</p>
+<hr>
+<h2 id="phase-3-다중-계좌조회-전용-reconcile-통합">Phase 3: 다중 계좌(조회 전용) reconcile 통합<a hidden class="anchor" aria-hidden="true" href="#phase-3-다중-계좌조회-전용-reconcile-통합">#</a></h2>
+<p>명세: <code>strategy_v2/specs/90_multi_account_spec.md</code></p>
+<p>봇이 직접 관리하지 않는 <strong>추가 계좌</strong>(가족 계좌 등)의 잔고도 같은 DB에서 조회할 수 있도록, 조회 전용 다중 계좌 reconcile을 추가했다.</p>
+<ul>
+<li><code>db/schema.py</code>: <code>accounts</code> 테이블 신설(<code>account_id</code> PK, <code>cano</code>/<code>acnt_prdt_cd</code>/<code>label</code>/<code>mode</code>/<code>managed_by</code>/<code>env_prefix</code>/<code>is_active</code>) + <code>trades.account_id</code> 컬럼 추가
+<ul>
+<li><code>position_registry</code>는 Phase 1에서 이미 PK <code>(code, account_id)</code>로 설계해뒀기 때문에 마이그레이션이 불필요했다</li>
+</ul>
+</li>
+<li><code>db/repository.py</code>: <code>*_by_account</code> 함수 신설 — <code>get_all_holding_registry_by_account</code>, <code>upsert_position_registry_by_account</code>, <code>close_position_registry_by_account</code>, <code>update_sector_by_account</code> + <code>accounts</code> CRUD(<code>get_accounts</code>, <code>upsert_account</code>). 봇 경로(live_main/paper_main)의 mode 기반 함수는 시그니처 변경 없음</li>
+<li><code>utils/config_loader.py</code>: <code>load_extra_accounts()</code> 신규 — <code>KIS_EXTRA_01~10_*</code> 환경변수 중 <code>APP_KEY</code>가 등록된 슬롯만 감지해 <code>config[&quot;extra_accounts&quot;]</code>에 주입 (<code>load_config()</code> 마지막 단계)</li>
+<li><code>utils/reconcile.py</code>: 봇 관리 계좌 reconcile 이후 <code>_register_accounts()</code>로 <code>accounts</code> 테이블에 등록(봇 계좌는 <code>managed_by='bot'</code>, 추가 계좌는 <code>managed_by='manual'</code>) + 추가 계좌별로 <code>_reconcile_extra_account()</code>를 호출해 KIS API 잔고조회 → <code>position_registry(account_id=extra_NN)</code> INSERT/CLOSE/섹터보강. 한 계좌가 실패해도 다른 계좌·전체 처리를 막지 않도록 <code>try/except</code>로 격리</li>
+<li><code>api/token_manager.py</code>는 변경이 필요 없었다 — 기존 <code>get_access_token(..., token_cache_path=...)</code>가 이미 계좌별 토큰 캐시 분리를 지원해서, 추가 계좌는 <code>KISApiClient</code> 인스턴스를 새로 만들어 <code>paths.token_cache=data/token_cache_extra_NN.json</code>만 지정하면 된다</li>
+</ul>
+<p><strong>테스트</strong>: <code>tests/test_multi_account.py</code> 신규(10개) — <code>load_extra_accounts</code> 4종, <code>accounts</code> 테이블 등록(봇/추가 계좌) 2종, 추가 계좌 reconcile(INSERT/CLOSE/섹터보강/계좌별 실패 격리) 4종.</p>
+<p><strong>검증</strong>: <code>pytest tests/</code> 403개 전체 통과(기존 393개 + 신규 10개, 회귀 없음). <code>strategy_v1/buy/sell</code>, <code>trading/order_manager.py</code> 등 봇 매매 경로는 수정하지 않았다 — 추가 계좌는 조회 전용이라 buy/sell 흐름에 진입하지 않는다.</p>
+<p>남은 작업(명세 §11 8~9단계, 코드 외):</p>
+<ul>
+<li>실제 <code>APP_KEY</code> 등록 후 추가 계좌 reconcile 실거래 검증 (OCI)</li>
+<li>대시보드에 <code>accounts</code> 테이블 노출 (별도 작업)</li>
+</ul>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>Phase</th>
+					<th>내용</th>
+					<th>테스트</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Phase 1</td>
+					<td><code>position_registry</code>/<code>position_strategy_history</code> 신설, v1 매수/매도 체결 시 추가 기록 훅, 마이그레이션 + <code>--reconcile</code></td>
+					<td>218개 (+26)</td>
+			</tr>
+			<tr>
+					<td>Phase 2</td>
+					<td><code>strategy_v2/trading/{buy,sell}.py</code> 신규(독립 구현), <code>runner.py --pre-market</code> + v2 분기</td>
+					<td>393개 (+25)</td>
+			</tr>
+			<tr>
+					<td>Phase 3</td>
+					<td><code>accounts</code> 테이블, 추가 계좌 조회 전용 reconcile, <code>KIS_EXTRA_NN_*</code> 환경변수 자동 감지</td>
+					<td>403개 (+10)</td>
+			</tr>
+	</tbody>
+</table>
+<p>세 단계 모두 v1 핵심 로직은 변경하지 않고 추가적으로만 구현했기 때문에, 기존 매매 흐름에 대한 회귀 위험 없이 진행할 수 있었다. 다음 글에서는 6월 14일 진행한 매매설정 API의 버전 분기 처리, 매매설정 v2 카드 프론트엔드, 세션 보안 강화와 코드 보안 점검 작업을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/docs-cleanup-and-strategy-version-ui/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (15) — 문서 정리, work-start/end skill화, 전략 버전 선택 UI</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

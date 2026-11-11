@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>배포 on Evan&#39;s Dev Log</title>
+    <link>https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/</link>
+    <description>Recent content in 배포 on Evan&#39;s Dev Log</description>
+    <generator>Hugo</generator>
+    <language>ko-KR</language>
+    <lastBuildDate>Tue, 23 Jun 2026 12:00:00 +0900</lastBuildDate>
+    <atom:link href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화</title>
+      <link>https://nova7zone.github.io/posts/broker-sync-and-oci-automation/</link>
+      <pubDate>Tue, 23 Jun 2026 12:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/broker-sync-and-oci-automation/</guid>
+      <description>v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설</title>
+      <link>https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/</link>
+      <pubDate>Sun, 21 Jun 2026 10:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/</guid>
+      <description>IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입</title>
+      <link>https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/</link>
+      <pubDate>Thu, 04 Jun 2026 10:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/</guid>
+      <description>웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>설계 on Evan&#39;s Dev Log</title>
+    <link>https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/</link>
+    <description>Recent content in 설계 on Evan&#39;s Dev Log</description>
+    <generator>Hugo</generator>
+    <language>ko-KR</language>
+    <lastBuildDate>Sun, 05 Jul 2026 09:00:00 +0900</lastBuildDate>
+    <atom:link href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome</title>
+      <link>https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/</link>
+      <pubDate>Sun, 05 Jul 2026 09:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/</guid>
+      <description>매수 사이클마다 시장 상황 전체를 스냅샷으로 남기는 market_context_log와, 매수되지 않은 후보까지 포함한 스크리닝 전체 결과의 사후 수익률을 추적하는 candidate_outcome 테이블을 신설했다. SQLite UNIQUE 제약의 NULL 처리 방식이 만든 재실행 중복 버그도 함께 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders</title>
+      <link>https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/</link>
+      <pubDate>Sat, 04 Jul 2026 10:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/</guid>
+      <description>매도 판단 과정 전체를 남기는 sell_evaluation_log 테이블과, 주문 생애주기를 append-only 이벤트로 기록하는 orders 테이블을 신설했다. brainstorming부터 설계·계획·subagent 구현까지 전체 절차로 진행한 Phase 2 데이터 수집 계층의 첫 두 테이블을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환</title>
+      <link>https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/</link>
+      <pubDate>Thu, 02 Jul 2026 10:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/</guid>
+      <description>v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그</title>
+      <link>https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/</link>
+      <pubDate>Wed, 01 Jul 2026 16:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/</guid>
+      <description>v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그</title>
+      <link>https://nova7zone.github.io/posts/strategy-v3-implementation-complete/</link>
+      <pubDate>Wed, 01 Jul 2026 10:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/strategy-v3-implementation-complete/</guid>
+      <description>그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고</title>
+      <link>https://nova7zone.github.io/posts/sell-qty-before-local-holdings-and-cancel-order-3state/</link>
+      <pubDate>Thu, 25 Jun 2026 17:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/sell-qty-before-local-holdings-and-cancel-order-3state/</guid>
+      <description>매도 주문 하나가 29시간 동안 40회나 취소 시도만 반복하던 좀비 주문 사고를 추적해, qty_before 캡처를 API 재조회 대신 로컬 holdings 기반으로 바꾸고 cancel_order 응답을 3-state로 구분해 재시도해도 해소되지 않는 케이스를 걸러낸 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈</title>
+      <link>https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/</link>
+      <pubDate>Thu, 25 Jun 2026 11:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/</guid>
+      <description>보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도</title>
+      <link>https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/</link>
+      <pubDate>Wed, 24 Jun 2026 10:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/</guid>
+      <description>종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기</title>
+      <link>https://nova7zone.github.io/posts/web-backtest-implementation-and-bugfixes/</link>
+      <pubDate>Sun, 21 Jun 2026 18:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/web-backtest-implementation-and-bugfixes/</guid>
+      <description>웹에서 백테스트를 실행하고 결과를 확인하는 기능을 9개 Task로 구현했다. 재검토 중 발견한 preset 경로탈출 취약점을 막고, 백테스트 데이터 다운로드의 무한 페이지네이션과 모의투자 30거래일 하드캡을 두 번에 걸쳐 추적해 진짜 원인(빈 시작일 파라미터)을 찾아낸 6월 21일 마지막 작업을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈</title>
+      <link>https://nova7zone.github.io/posts/web-backtest-investigation-and-v052-release/</link>
+      <pubDate>Sun, 21 Jun 2026 14:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/web-backtest-investigation-and-v052-release/</guid>
+      <description>웹에서 백테스트를 실행하는 기능을 위해 한국투자증권 공식 백테스팅 엔진을 조사하고, 모의투자 매도 실패 2건을 코드 분석으로 추적해 운영 안정성 공백 두 가지를 기록했다. v0.5.2 릴리즈 직후 holdings.json과 실제 KIS 잔고의 불일치를 발견해 정정한 6월 21일 중반 작업을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시</title>
+      <link>https://nova7zone.github.io/posts/atr-filter-and-account-valuation/</link>
+      <pubDate>Fri, 19 Jun 2026 19:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/atr-filter-and-account-valuation/</guid>
+      <description>매수 후보가 9회 연속 0건이던 원인을 추적해 캐시 만료시간 설정과 ATR 필터의 hard block 설계를 함께 수정했다. 이어서 계좌별 원금·평가금액·수익률을 한눈에 보여주는 표시 기능과 수동 입출금 기능을 추가한 6월 19일 작업을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환</title>
+      <link>https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/</link>
+      <pubDate>Thu, 18 Jun 2026 22:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/</guid>
+      <description>항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (21) — 매매설정 v2 카드 확장(3·4단계), next-pre-market 분리</title>
+      <link>https://nova7zone.github.io/posts/v2-settings-cards-and-next-premarket-split/</link>
+      <pubDate>Wed, 17 Jun 2026 21:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/v2-settings-cards-and-next-premarket-split/</guid>
+      <description>거래량순위 API가 장 개시 전엔 빈 응답을 준다는 걸 발견해 pre-market 캐시 빌드를 18:00 next-pre-market으로 분리했다. 이어서 매매설정 탭에 v2 전용 카드 4종과 캐시 매니저·계좌 관리 페이지를 추가한 6월 17일 작업을 정리한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)</title>
+      <link>https://nova7zone.github.io/posts/premarket-optimization-and-order-fill-pr29/</link>
+      <pubDate>Tue, 16 Jun 2026 18:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/premarket-optimization-and-order-fill-pr29/</guid>
+      <description>pre-market 실행 시 모의투자 API 제약을 우회하고 KOSPI 지수 일봉을 영구 캐시로 전환해 API 호출을 줄였다. 이어서 주문 체결 검증 로직에 CANCELLED 처리와 2단계 fallback 조회를 추가해 더 정확하게 판단하도록 개선한 PR #29 작업을 정리한다.</description>
+    </item>
+    <item>
+      <title>Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록</title>
+      <link>https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/</link>
+      <pubDate>Tue, 16 Jun 2026 09:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/</guid>
+      <description>Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건</title>
+      <link>https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/</link>
+      <pubDate>Mon, 15 Jun 2026 20:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/</guid>
+      <description>v1/v2 전략의 매수·매도 흐름을 Mermaid 플로우차트로 보여주는 전략확인 페이지를 신설했다. 이어서 OCI 실행 중 발견한 모의투자 API 500 오류와, 비교연산자 때문에 다이어그램이 깨지던 렌더링 버그 두 건을 같은 날 바로 수정한 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile</title>
+      <link>https://nova7zone.github.io/posts/strategy-v2-development/</link>
+      <pubDate>Sat, 13 Jun 2026 20:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/strategy-v2-development/</guid>
+      <description>새 매매 전략 strategy_v2 개발을 3단계로 나눠 진행했다. v1 매매 흐름에 position_registry를 추가 연동하고, strategy_v2 전용 buy/sell 모듈과 사전 평가 cron을 만들고, 마지막으로 추가 계좌를 조회 전용으로 reconcile하는 다중 계좌 기능을 추가한 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (15) — 문서 정리, work-start/end skill화, 전략 버전 선택 UI</title>
+      <link>https://nova7zone.github.io/posts/docs-cleanup-and-strategy-version-ui/</link>
+      <pubDate>Fri, 12 Jun 2026 18:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/docs-cleanup-and-strategy-version-ui/</guid>
+      <description>strategy_v1 개발명세서를 분리하고 CLAUDE.md/AI_PROJECT_PROMPT.md의 중복을 정리했다. 작업 시작/종료 절차를 skill로 만들고, 설정 페이지에 전략 버전 선택 드롭박스와 시장필터·1차 스크리닝 편집 카드를 추가한 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (14) — strategy_v1/v2 분리 구조 설계와 3단계 이동</title>
+      <link>https://nova7zone.github.io/posts/strategy-version-restructure/</link>
+      <pubDate>Thu, 11 Jun 2026 18:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/strategy-version-restructure/</guid>
+      <description>새 매매 전략(v2)을 추가할 자리를 만들기 위해 코드 전체를 strategy_v1/strategy_v2 구조로 재설계했다. 공유 indicators 패키지 분리부터 설정·스크리닝·매매 코드 이동까지 3단계로 나눠 subagent-driven-development로 진행한 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집</title>
+      <link>https://nova7zone.github.io/posts/trades-page-revamp/</link>
+      <pubDate>Wed, 10 Jun 2026 16:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/trades-page-revamp/</guid>
+      <description>체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편</title>
+      <link>https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/</link>
+      <pubDate>Tue, 09 Jun 2026 20:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/</guid>
+      <description>로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경</title>
+      <link>https://nova7zone.github.io/posts/ai-trading-program-v1-complete/</link>
+      <pubDate>Sun, 31 May 2026 18:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/ai-trading-program-v1-complete/</guid>
+      <description>Claude Code와 Github 연동으로 KIS 자동매매 프로그램을 1차 완성하고 ATR·시장국면 필터를 추가했다. 같은 구조로 Upbit 버전 개발에 착수하고, 여러 컴퓨터를 오가며 작업할 수 있도록 CLAUDE.md에 작업 시작/종료 절차를 정리한 과정을 기록한다.</description>
+    </item>
+    <item>
+      <title>AI를 이용한 자동매매 프로그램 작성 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성</title>
+      <link>https://nova7zone.github.io/posts/ai-trading-prompt-strategy/</link>
+      <pubDate>Sun, 31 May 2026 01:24:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/ai-trading-prompt-strategy/</guid>
+      <description>Claude로 시작해서 토큰이 부족하면 ChatGPT와 Gemini로 넘기는 다중 AI 협업 방식으로 자동매매 프롬프트를 완성한 과정. Claude Pro 가입 후 V3 프롬프트 실행까지 기록한다.</description>
+    </item>
+  </channel>
+</rss>

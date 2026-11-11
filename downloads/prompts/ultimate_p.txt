@@ -1,0 +1,292 @@
+KIWOOM REST API AUTOMATED TRADING SYSTEM
+ULTIMATE PROMPT (PRODUCTION-GRADE)
+
+ROLE
+You are a senior quantitative trading architect, Python engineer,
+and DevOps specialist who designs real-money automated trading systems.
+
+Your task is to design and implement a PRODUCTION-READY automated
+stock trading framework, not a toy example.
+
+==================================================
+1. CORE OBJECTIVE
+==================================================
+
+- Kiwoom Securities REST API based automated trading system
+- Domestic Korean stock market
+- Cron-based execution (every 5 minutes)
+- Execute once and EXIT (NO daemon, NO infinite loop)
+- Designed for long-term unattended server operation
+
+==================================================
+2. EXECUTION ENVIRONMENT 
+==================================================
+
+- OS: Ubuntu 22.04
+- Python: 3.8+
+- Headless server (NO GUI)
+- Internet access required
+
+==================================================
+3. EXECUTION MODEL (STRICT)
+==================================================
+
+- Single entry point: runner.py
+- Triggered by crontab every 5 minutes
+- Execution flow:
+  1) Load configuration
+  2) Load account state
+  3) Screen candidate stocks
+  4) Score conditions
+  5) Decide buy/sell
+  6) Send orders
+  7) Record logs & reports
+  8) Exit process
+
+- NO while True
+- NO sleep-based waiting
+- NO long-running process
+
+==================================================
+4. PROJECT STRUCTURE 
+==================================================
+
+kiwoom-auto-trading-bot/
+├── runner.py
+├── requirements.txt
+│
+├── api/
+│   └── kiwoom_api.py
+│
+├── trading/
+│   ├── buy.py
+│   └── sell.py
+│
+├── screening/
+│   ├── first_stage.py
+│   └── conditions/
+│       ├── __init__.py
+│       ├── volume_spike.py
+│       ├── ma_cross.py
+│       ├── bollinger_band.py
+│       ├── stochastic.py
+│       └── (additional conditions allowed)
+│
+├── backtest/
+│   └── backtest_runner.py
+│
+├── report/
+│   ├── daily_report.py
+│   └── monthly_report.py
+│
+├── settings/
+│   ├── settings.yaml
+│   ├── presets/
+│   │   ├── conservative.yaml
+│   │   ├── neutral.yaml
+│   │   └── aggressive.yaml
+│   ├── secrets.yaml
+│   └── secrets.py
+│
+├── tests/
+│   ├── test_api.py
+│   ├── test_screening.py
+│   └── test_trading.py
+│
+├── logs/
+│   └── app.log
+│
+└── utils/
+    └── time_utils.py
+
+==================================================
+5. CONFIGURATION RULES (VERY IMPORTANT)
+==================================================
+
+settings.yaml:
+- Strategy presets only
+- Enabled condition list only
+- No secrets allowed
+
+secrets.yaml:
+- Account number
+- Kiwoom API credentials
+- Telegram token/chat_id
+- MUST be excluded from version control
+
+==================================================
+6. SCREENING & SCORING SYSTEM
+==================================================
+
+First-stage screening:
+- Liquidity
+- Trading availability
+- Basic market filters
+
+Second-stage scoring:
+- One condition = one Python file
+- Each condition implements:
+
+  def evaluate(stock_data) -> int
+
+- Return positive score if condition met
+- Return 0 otherwise
+- Total score = sum of all enabled conditions
+- Support: MA cross, Volume spike, Bollinger Band, Stochastic
+
+==================================================
+7. PRESET SYSTEM (MANDATORY)
+==================================================
+
+Presets:
+- conservative (min_score: 25)
+- neutral (min_score: 20)
+- aggressive (min_score: 15)
+
+Preset controls:
+- Minimum score to trade
+- Maximum number of positions
+- Capital per trade
+- Stop-loss
+- Take-profit
+- Holding period
+
+NO hardcoding.
+Presets must be configurable.
+
+==================================================
+8. BUY LOGIC
+==================================================
+
+- Select highest scored stocks only
+- Market order by default
+- Prevent:
+  - Duplicate buys
+  - Over-allocation
+  - Buying outside market hours
+
+==================================================
+9. SELL LOGIC
+==================================================
+
+- Stop-loss
+- Take-profit
+- Max holding period
+- Market sell
+- Partial sell NOT required
+
+==================================================
+10. KIWOOM REST API (STRICT)
+==================================================
+
+- Use REAL Kiwoom REST API specification
+- OAuth2 authentication with automatic token refresh
+- Balance, order, holdings separated
+- All API calls MUST exist ONLY in api/kiwoom_api.py
+- Trading logic must not know API internals
+- Retry logic for failed API calls
+
+==================================================
+11. BACKTEST MODE (REQUIRED)
+==================================================
+
+- Backtest and live trading MUST share logic
+- Mode switch via settings.yaml
+- Backtest uses historical data (CSV)
+- No live API calls in backtest mode
+- Output: Monthly returns, MDD, Win rate, Trade count
+
+==================================================
+12. REPORTING
+==================================================
+
+Daily report:
+- Trades
+- PnL
+- Holdings
+
+Monthly report:
+- Monthly return
+- Win rate
+- Max drawdown
+- Trade count
+
+Investment Journal:
+- Buy record: timestamp, symbol, quantity, price, conditions_met, initial_cost
+- Sell record: timestamp, symbol, quantity, price, hold_days, profit_pct, sell_reason
+
+==================================================
+13. TELEGRAM NOTIFICATION
+==================================================
+
+- Send daily and monthly reports
+- Failure must NOT crash trading process
+
+==================================================
+14. STABILITY & FAIL-SAFE DESIGN
+==================================================
+
+- Fail fast
+- Log error
+- Exit process
+- Recover next cron run
+
+==================================================
+15. CODE QUALITY RULES (STRICT)
+==================================================
+
+- Every file has module docstring
+- Every function has docstring with type hints
+- Explain WHY, not only WHAT
+- Clean, readable, maintainable code
+- No global variables
+- No hardcoding
+- All configuration from settings/*.yaml
+
+==================================================
+16. TESTING REQUIREMENTS
+==================================================
+
+- unittest or pytest based
+- Core logic tested (not API calls)
+- API calls mocked in tests
+- Tests in separate tests/ folder
+- Error handling tested
+
+==================================================
+17. DOCUMENTATION (MANDATORY)
+==================================================
+
+- README.md (Project overview)
+- INSTALL.md (RedHat/Ubuntu setup)
+- USAGE.md (Strategy usage)
+- SYSTEM_REQUIREMENTS.md (System requirements)
+- SETTINGS_GUIDE.md (settings.yaml details)
+- ADD_CONDITION.md (How to add new conditions)
+- CONDITIONS.md (Each condition explained)
+- BACKTEST.md (Backtest method)
+- RISK_CHECKLIST.md (AI code validation checklist)
+- POST_DEPLOYMENT.md (Post-deployment review)
+
+==================================================
+18. AI FAILURE PREVENTION CHECKLIST
+==================================================
+
+DO NOT:
+- Use infinite loops
+- Ignore cron-based execution
+- Mix API logic with strategy logic
+- Hardcode secrets
+- Skip error handling
+- Skip documentation
+- Build toy examples
+- Use global variables
+- Skip tests
+
+==================================================
+FINAL OBJECTIVE
+==================================================
+
+Produce a scalable, safe, production-grade automated trading framework
+that can be deployed on a real trading server (Oracle Cloud Ubuntu 22.04)
+and operated unattended via crontab.

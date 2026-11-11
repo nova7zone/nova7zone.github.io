@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="릴리스">
+<meta name="description" content="holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈">
+  <meta property="og:description" content="holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-05T15:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-05T15:00:00+09:00">
+    <meta property="article:tag" content="릴리스">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈">
+  <meta name="twitter:description" content="holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈",
+      "item": "https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈",
+  "description": "holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.",
+  "keywords": [
+    "릴리스"
+  ],
+  "articleBody": "작성일: 2026년 7월 5일\n최종 수정: 2026년 7월 5일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 market_context_log와 candidate_outcome을 완료했다. 오늘은 Phase 2의 마지막 테이블을 연결하고, docs 전체를 다시 한번 점검한 뒤 릴리즈까지 마무리하는 날이다.\n결론부터 말하면, holdings_snapshot을 journal_writer.py에 연결해 next-tasks.md에 남아있던 Phase 2 마지막 항목을 끝내고 T2-1~T2-5 전체를 완료했다. 이어서 docs/ 폴더와 CLAUDE.md/README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정하고, orphan 상태로 방치돼 있던 문서 하나를 archive로 옮겼다. 마지막으로 v0.7.1을 정식 릴리즈했다.\nnext-tasks.md 오래된 항목 정정 사용자가 “남은 작업\"을 물어 next-tasks.md를 훑던 중, 6월 29일에 요청된 “투자원금 입출금 이력(ledger) + 원금 직접수정 잠금” 항목이 “다음 세션 시작” 상태로 미완료 표시돼 있었다. 그런데 실제 코드는 이미 전부 구현·배포돼 있었다(어느 세션에서 구현됐는지는 work-log.md에 별도 기록이 남아있지 않은 문서 갱신 누락 케이스였다).\ndb/schema.py의 capital_ledger 테이블, db/repository.py::add_capital_ledger_entry()/get_capital_ledger()/get_capital_balance(), web/routers/config_router.py::_resolve_capital_flow()(봉/추가계좌 공통, 최초등록 중복·미등록 입출금 모두 400 거부), web/templates/settings.html의 최초등록/입출금 폼 전환까지 코드로 직접 확인했다. next-tasks.md의 해당 섹션을 1~3번 완료로 갱신하고, 실제로는 미구현 상태로 남아있는 4번(계좌별 일별 평가액 history — 그래프용)만 남은 항목으로 명확히 분리 표시했다. 코드 변경은 없이 문서만 정정했다.\nholdings_snapshot 연결 — Phase 2 완료 next-tasks.md에 남아있던 Phase 2 마지막 항목이었다. --update-journal(15:35 cron)이 이미 종목별로 계산 중인 code/name/qty/avg_price/current_price/unrealized_pnl/sector 값을 재사용해 holdings_snapshot 테이블에 적재하도록 연결했다(추가 API 호출 없음). insert_holdings_snapshot()은 같은 (mode, snapshot_date) 재호출 시 기존 행을 삭제 후 재삽입하도록 했다 — 스냅샷 성격상(로그가 아니라 “그날의 현재 상태”) 재실행 시 중복 적재를 막기 위함이다(수정 전까지 호출부가 전혀 없어 회귀 위험은 없었다).\ntests/test_db.py에 재실행 시 교체 확인 회귀 테스트 2건, tests/test_journal_writer.py를 신규 추가했다(DB 연결 시 정상 삽입/값 일치, DB 미설정 시 스킵, 보유 종목 없을 때 빈 스냅샷, DB 실패해도 Excel 저장은 유지 4건). pytest tests/ 전체 통과를 확인했다.\n최종 whole-branch 리뷰에서 발견한 Important 1건 (커밋 474c8bb로 해결): 보유 종목이 없는 날 insert_holdings_snapshot(..., [])을 호출하면 오늘 날짜 행은 정확히 0개가 되는데, get_latest_holdings_snapshot()은 MAX(snapshot_date)로 “행이 존재하는 가장 최근 날짜\"를 찾는 구조라서 오늘이 0개면 어제(혹은 그 이전) 데이터로 폴백한다 — 설계 문서의 “전날 스냅샷이 남아 있는 것처럼 보이는 걸 방지” 표현이 부정확했던 것이다. 현재 이 함수를 실제로 호출하는 웹 대시보드 소비자가 없어서(web/routers/api.py가 import만 하고 미사용) 당장 영향받는 사용자는 없었다 — 사용자 결정으로 동작 변경 대신 설계 문서를 정확히 수정(알려진 한계로 명시, 향후 소비자 연결 시 필요한 대응 방안 2가지 기록)하고, 테스트도 완전히 빈 DB가 아니라 전일 데이터가 있는 실제 시나리오로 재작성했다.\n이로써 Phase 2(T2-1~T2-5) 전체가 완료됐다. Phase 3(수익률 로직 보완)으로 진행할 수 있는 상태가 됐다.\ndocs/ 전체 + CLAUDE.md/README.md staleness 점검 사용자 요청: “docs/ 폴더의 문서와 claude.md, readme.md를 최신화 업데이트 해줘.” docs-sync skill의 재작성 절차는 이미 6월 23일 전후로 완료된 상태(docs/README.md 21개 문서 전부 [x])라, 전면 재작성이 아니라 staleness 점검·수정으로 범위를 잡았다. 5개 카테고리로 나눠 Explore 성격의 general-purpose subagent 5개를 병렬 디스패치해, 각각 코드/설정/work-log.md와 직접 대조해 stale 내용을 찾아 보고하도록 했고, 발견된 항목은 컨트롤러가 직접 수정했다.\n발견·수정한 실제 코드 버그도 있었다(문서 밖 결함): journal/journal_writer.py의 docstring이 --update-journal 실행 시각을 “15:35\"로 기록하고 있었지만 실제 cron은 6월 23일에 16:15로 변경된 뒤 docstring만 갱신이 누락돼 있었다. docs/APP_SETTINGS.md가 max_calls_per_run 초과 시 “경고 로그만 기록(차단 아님)“이라고 설명했는데, 실제 api/kis_api.py는 경고 로그 후 None을 반환하는 하드 스톱이었다 — 정정했다. db/schema.py docstring의 테이블 목록에 capital_ledger가 누락돼 있던 것도 발견했다.\n문서 내용 갱신도 여러 건 진행했다. docs/WORKFLOW.md의 데이터 흐름 다이어그램에 Phase 2 신규 테이블 4종과 capital_ledger 노드를 추가하고, journal_writer.py → holdings_snapshot 엣지도 추가했다. docs/TESTING_GUIDE.md의 테스트 파일 표가 50개만 나열하고 있어 실제 62개 전체와 diff해 누락된 11개를 추가하고, 최종 diff로 62/62 전부 문서화됨을 확인했다. docs/STRATEGY_V2_trading_flow.md/STRATEGY_V3_trading_flow.md에는 v2/v3 공존 시 매도 로직 비대칭(v2는 managed_by='v3' 종목 매도 자체를 skip, v3는 매도는 하되 managed_by='v2' 종목만 로그 기록을 skip)을 명시했다.\norphan 문서 archive: docs/STRATEGY_V2_full_detail.md(6월 25일 작성, 677줄 코드 레벨 v2 전수 점검 — docs/README.md 인덱스에 없던 미등록 문서)를 재검증한 결과, config/weights/threshold 수치는 여전히 정확했지만 매도 흐름 서술이 이후 3개 변경사항을 전혀 반영하지 못해 docs/archive/로 이동하고, 문서 최상단에 archive 사유와 최신 문서 링크를 추가했다.\n문서 개수 변경도 반영했다 — orphan archive로 docs/(development 제외) 문서가 22개→21개로 줄어 README.md/CLAUDE.md의 개수 표기를 정정하고, DB 테이블 개수(9→14개)·테스트 파일 개수(42→62개) 표기도 정정했다.\npytest tests/ 전체 1035개 통과를 확인했다(문서·주석만 변경, 코드 로직 변경 없음).\nv0.7.1 릴리즈 사용자 요청: “릴리즈업 해줘.” 버전 번호를 확인했다 — v0.8.0 vs v0.7.1 중, Phase 0/1 리스크 버그 수정 + Phase 2 데이터 수집 계층 완료를 v0.7.0(v3 전환)의 후속 안정화·계측 성격으로 판단해 v0.7.1을 사용자가 확정했다.\nv0.7.0 이후 merge된 PR #85~#89(v3 운영 로그 Critical 버그 3건 수정 → VKOSPI 긴급 수정+리스크 버그 5건(Phase 0/1) → 데이터 수집 테이블 3종(T2-1~T2-3) → candidate_outcome(T2-4) → holdings_snapshot 연결(T2-5, Phase 2 완료) → docs staleness 점검(#89)) 기준으로 release-notes-draft-v0.7.1.md를 작성했다.\ngit tag -a v0.7.1(origin/master HEAD 0e5c987) → git push origin v0.7.1 → gh release create로 정식 GitHub Release를 발행했다. “github에 태그 생성해줘\"라는 후속 요청으로 정식 발행까지 이어졌다. GitHub 정식 릴리즈 노트 본문의 “# v0.7.1 (draft)” 헤더에서 “(draft)“를 제거해 발행했다(관례대로 로컬 draft 파일명·본문은 “draft” 표기 유지). 코드 변경은 없었고(릴리즈 발행 전용), pytest tests/ 영향도 없었다.\n정리 항목 내용 holdings_snapshot journal_writer 연결, Phase 2(T2-1~T2-5) 전체 완료 whole-branch 리뷰 빈 스냅샷 날 MAX(snapshot_date) 폴백 한계 발견, 설계문서 정정 docs staleness 점검 실제 코드 버그 3건, 문서 내용 갱신 다수, orphan 문서 1건 archive v0.7.1 릴리즈 PR #85~#89 기준, v3 안정화+데이터 수집 계층 완료 성격 6월 24일부터 이어진 이 구간은 실거래 사고를 쫓아 버그를 고치는 작업(qty_before, VWAP, 텔레그램)에서 시작해, strategy_v3라는 세 번째 전략 엔진을 완성하고 메인 전략으로 전환한 뒤, 그 위에 판단 과정 자체를 데이터로 남기는 Phase 2 데이터 수집 계층까지 쌓아 올린 12일이었다. v0.7.1 릴리즈로 이번 구간을 마무리한다. 다음 시리즈에서는 Phase 3(수익률 로직 보완)과, 이번에 쌓기 시작한 데이터를 실제로 활용하는 작업을 다룰 예정이다.\n",
+  "wordCount" : "3294",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-05T15:00:00+09:00",
+  "dateModified": "2026-07-05T15:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈
+    </h1>
+    <div class="post-description">
+      holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-05T15:00:00+09:00'>2026년 7월 5일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#next-tasksmd-%ec%98%a4%eb%9e%98%eb%90%9c-%ed%95%ad%eb%aa%a9-%ec%a0%95%ec%a0%95" aria-label="next-tasks.md 오래된 항목 정정">next-tasks.md 오래된 항목 정정</a></li>
+            <li>
+                <a href="#holdings_snapshot-%ec%97%b0%ea%b2%b0--phase-2-%ec%99%84%eb%a3%8c" aria-label="holdings_snapshot 연결 — Phase 2 완료">holdings_snapshot 연결 — Phase 2 완료</a></li>
+            <li>
+                <a href="#docs-%ec%a0%84%ec%b2%b4--claudemdreadmemd-staleness-%ec%a0%90%ea%b2%80" aria-label="docs/ 전체 &#43; CLAUDE.md/README.md staleness 점검">docs/ 전체 + CLAUDE.md/README.md staleness 점검</a></li>
+            <li>
+                <a href="#v071-%eb%a6%b4%eb%a6%ac%ec%a6%88" aria-label="v0.7.1 릴리즈">v0.7.1 릴리즈</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 5일<br>
+<strong>최종 수정</strong>: 2026년 7월 5일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/phase2-market-context-log-and-candidate-outcome/">이전 글</a>에서 market_context_log와 candidate_outcome을 완료했다. 오늘은 Phase 2의 마지막 테이블을 연결하고, docs 전체를 다시 한번 점검한 뒤 릴리즈까지 마무리하는 날이다.</p>
+<p>결론부터 말하면, <code>holdings_snapshot</code>을 <code>journal_writer.py</code>에 연결해 next-tasks.md에 남아있던 Phase 2 마지막 항목을 끝내고 T2-1~T2-5 전체를 완료했다. 이어서 docs/ 폴더와 CLAUDE.md/README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정하고, orphan 상태로 방치돼 있던 문서 하나를 archive로 옮겼다. 마지막으로 v0.7.1을 정식 릴리즈했다.</p>
+<hr>
+<h2 id="next-tasksmd-오래된-항목-정정">next-tasks.md 오래된 항목 정정<a hidden class="anchor" aria-hidden="true" href="#next-tasksmd-오래된-항목-정정">#</a></h2>
+<p>사용자가 &ldquo;남은 작업&quot;을 물어 next-tasks.md를 훑던 중, 6월 29일에 요청된 &ldquo;투자원금 입출금 이력(ledger) + 원금 직접수정 잠금&rdquo; 항목이 &ldquo;다음 세션 시작&rdquo; 상태로 미완료 표시돼 있었다. 그런데 실제 코드는 이미 전부 구현·배포돼 있었다(어느 세션에서 구현됐는지는 work-log.md에 별도 기록이 남아있지 않은 문서 갱신 누락 케이스였다).</p>
+<p><code>db/schema.py</code>의 <code>capital_ledger</code> 테이블, <code>db/repository.py::add_capital_ledger_entry()</code>/<code>get_capital_ledger()</code>/<code>get_capital_balance()</code>, <code>web/routers/config_router.py::_resolve_capital_flow()</code>(봉/추가계좌 공통, 최초등록 중복·미등록 입출금 모두 400 거부), <code>web/templates/settings.html</code>의 최초등록/입출금 폼 전환까지 코드로 직접 확인했다. next-tasks.md의 해당 섹션을 1~3번 완료로 갱신하고, 실제로는 미구현 상태로 남아있는 4번(계좌별 일별 평가액 history — 그래프용)만 남은 항목으로 명확히 분리 표시했다. 코드 변경은 없이 문서만 정정했다.</p>
+<hr>
+<h2 id="holdings_snapshot-연결--phase-2-완료">holdings_snapshot 연결 — Phase 2 완료<a hidden class="anchor" aria-hidden="true" href="#holdings_snapshot-연결--phase-2-완료">#</a></h2>
+<p>next-tasks.md에 남아있던 Phase 2 마지막 항목이었다. <code>--update-journal</code>(15:35 cron)이 이미 종목별로 계산 중인 code/name/qty/avg_price/current_price/unrealized_pnl/sector 값을 재사용해 <code>holdings_snapshot</code> 테이블에 적재하도록 연결했다(추가 API 호출 없음). <code>insert_holdings_snapshot()</code>은 같은 <code>(mode, snapshot_date)</code> 재호출 시 기존 행을 삭제 후 재삽입하도록 했다 — 스냅샷 성격상(로그가 아니라 &ldquo;그날의 현재 상태&rdquo;) 재실행 시 중복 적재를 막기 위함이다(수정 전까지 호출부가 전혀 없어 회귀 위험은 없었다).</p>
+<p><code>tests/test_db.py</code>에 재실행 시 교체 확인 회귀 테스트 2건, <code>tests/test_journal_writer.py</code>를 신규 추가했다(DB 연결 시 정상 삽입/값 일치, DB 미설정 시 스킵, 보유 종목 없을 때 빈 스냅샷, DB 실패해도 Excel 저장은 유지 4건). <code>pytest tests/</code> 전체 통과를 확인했다.</p>
+<p><strong>최종 whole-branch 리뷰에서 발견한 Important 1건 (커밋 <code>474c8bb</code>로 해결)</strong>: 보유 종목이 없는 날 <code>insert_holdings_snapshot(..., [])</code>을 호출하면 오늘 날짜 행은 정확히 0개가 되는데, <code>get_latest_holdings_snapshot()</code>은 <code>MAX(snapshot_date)</code>로 &ldquo;행이 존재하는 가장 최근 날짜&quot;를 찾는 구조라서 오늘이 0개면 어제(혹은 그 이전) 데이터로 폴백한다 — 설계 문서의 &ldquo;전날 스냅샷이 남아 있는 것처럼 보이는 걸 방지&rdquo; 표현이 부정확했던 것이다. 현재 이 함수를 실제로 호출하는 웹 대시보드 소비자가 없어서(<code>web/routers/api.py</code>가 import만 하고 미사용) 당장 영향받는 사용자는 없었다 — 사용자 결정으로 동작 변경 대신 설계 문서를 정확히 수정(알려진 한계로 명시, 향후 소비자 연결 시 필요한 대응 방안 2가지 기록)하고, 테스트도 완전히 빈 DB가 아니라 전일 데이터가 있는 실제 시나리오로 재작성했다.</p>
+<p><strong>이로써 Phase 2(T2-1~T2-5) 전체가 완료됐다.</strong> Phase 3(수익률 로직 보완)으로 진행할 수 있는 상태가 됐다.</p>
+<hr>
+<h2 id="docs-전체--claudemdreadmemd-staleness-점검">docs/ 전체 + CLAUDE.md/README.md staleness 점검<a hidden class="anchor" aria-hidden="true" href="#docs-전체--claudemdreadmemd-staleness-점검">#</a></h2>
+<p>사용자 요청: &ldquo;docs/ 폴더의 문서와 claude.md, readme.md를 최신화 업데이트 해줘.&rdquo; docs-sync skill의 재작성 절차는 이미 6월 23일 전후로 완료된 상태(<code>docs/README.md</code> 21개 문서 전부 <code>[x]</code>)라, 전면 재작성이 아니라 <strong>staleness 점검·수정</strong>으로 범위를 잡았다. 5개 카테고리로 나눠 Explore 성격의 general-purpose subagent 5개를 병렬 디스패치해, 각각 코드/설정/work-log.md와 직접 대조해 stale 내용을 찾아 보고하도록 했고, 발견된 항목은 컨트롤러가 직접 수정했다.</p>
+<p><strong>발견·수정한 실제 코드 버그도 있었다(문서 밖 결함)</strong>: <code>journal/journal_writer.py</code>의 docstring이 <code>--update-journal</code> 실행 시각을 &ldquo;15:35&quot;로 기록하고 있었지만 실제 cron은 6월 23일에 16:15로 변경된 뒤 docstring만 갱신이 누락돼 있었다. <code>docs/APP_SETTINGS.md</code>가 <code>max_calls_per_run</code> 초과 시 &ldquo;경고 로그만 기록(차단 아님)&ldquo;이라고 설명했는데, 실제 <code>api/kis_api.py</code>는 경고 로그 후 <code>None</code>을 반환하는 하드 스톱이었다 — 정정했다. <code>db/schema.py</code> docstring의 테이블 목록에 <code>capital_ledger</code>가 누락돼 있던 것도 발견했다.</p>
+<p>문서 내용 갱신도 여러 건 진행했다. <code>docs/WORKFLOW.md</code>의 데이터 흐름 다이어그램에 Phase 2 신규 테이블 4종과 <code>capital_ledger</code> 노드를 추가하고, <code>journal_writer.py → holdings_snapshot</code> 엣지도 추가했다. <code>docs/TESTING_GUIDE.md</code>의 테스트 파일 표가 50개만 나열하고 있어 실제 62개 전체와 diff해 누락된 11개를 추가하고, 최종 diff로 62/62 전부 문서화됨을 확인했다. <code>docs/STRATEGY_V2_trading_flow.md</code>/<code>STRATEGY_V3_trading_flow.md</code>에는 v2/v3 공존 시 매도 로직 비대칭(v2는 <code>managed_by='v3'</code> 종목 매도 자체를 skip, v3는 매도는 하되 <code>managed_by='v2'</code> 종목만 로그 기록을 skip)을 명시했다.</p>
+<p><strong>orphan 문서 archive</strong>: <code>docs/STRATEGY_V2_full_detail.md</code>(6월 25일 작성, 677줄 코드 레벨 v2 전수 점검 — <code>docs/README.md</code> 인덱스에 없던 미등록 문서)를 재검증한 결과, config/weights/threshold 수치는 여전히 정확했지만 매도 흐름 서술이 이후 3개 변경사항을 전혀 반영하지 못해 <code>docs/archive/</code>로 이동하고, 문서 최상단에 archive 사유와 최신 문서 링크를 추가했다.</p>
+<p>문서 개수 변경도 반영했다 — orphan archive로 <code>docs/</code>(development 제외) 문서가 22개→21개로 줄어 README.md/CLAUDE.md의 개수 표기를 정정하고, DB 테이블 개수(9→14개)·테스트 파일 개수(42→62개) 표기도 정정했다.</p>
+<p><code>pytest tests/</code> 전체 1035개 통과를 확인했다(문서·주석만 변경, 코드 로직 변경 없음).</p>
+<hr>
+<h2 id="v071-릴리즈">v0.7.1 릴리즈<a hidden class="anchor" aria-hidden="true" href="#v071-릴리즈">#</a></h2>
+<p>사용자 요청: &ldquo;릴리즈업 해줘.&rdquo; 버전 번호를 확인했다 — v0.8.0 vs v0.7.1 중, Phase 0/1 리스크 버그 수정 + Phase 2 데이터 수집 계층 완료를 v0.7.0(v3 전환)의 후속 안정화·계측 성격으로 판단해 v0.7.1을 사용자가 확정했다.</p>
+<p>v0.7.0 이후 merge된 PR #85~#89(v3 운영 로그 Critical 버그 3건 수정 → VKOSPI 긴급 수정+리스크 버그 5건(Phase 0/1) → 데이터 수집 테이블 3종(T2-1~T2-3) → candidate_outcome(T2-4) → holdings_snapshot 연결(T2-5, Phase 2 완료) → docs staleness 점검(#89)) 기준으로 <code>release-notes-draft-v0.7.1.md</code>를 작성했다.</p>
+<p><code>git tag -a v0.7.1</code>(origin/master HEAD <code>0e5c987</code>) → <code>git push origin v0.7.1</code> → <code>gh release create</code>로 정식 GitHub Release를 발행했다. &ldquo;github에 태그 생성해줘&quot;라는 후속 요청으로 정식 발행까지 이어졌다. GitHub 정식 릴리즈 노트 본문의 &ldquo;# v0.7.1 (draft)&rdquo; 헤더에서 &ldquo;(draft)&ldquo;를 제거해 발행했다(관례대로 로컬 draft 파일명·본문은 &ldquo;draft&rdquo; 표기 유지). 코드 변경은 없었고(릴리즈 발행 전용), <code>pytest tests/</code> 영향도 없었다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>holdings_snapshot</td>
+					<td>journal_writer 연결, Phase 2(T2-1~T2-5) 전체 완료</td>
+			</tr>
+			<tr>
+					<td>whole-branch 리뷰</td>
+					<td>빈 스냅샷 날 MAX(snapshot_date) 폴백 한계 발견, 설계문서 정정</td>
+			</tr>
+			<tr>
+					<td>docs staleness 점검</td>
+					<td>실제 코드 버그 3건, 문서 내용 갱신 다수, orphan 문서 1건 archive</td>
+			</tr>
+			<tr>
+					<td>v0.7.1 릴리즈</td>
+					<td>PR #85~#89 기준, v3 안정화+데이터 수집 계층 완료 성격</td>
+			</tr>
+	</tbody>
+</table>
+<p>6월 24일부터 이어진 이 구간은 실거래 사고를 쫓아 버그를 고치는 작업(qty_before, VWAP, 텔레그램)에서 시작해, strategy_v3라는 세 번째 전략 엔진을 완성하고 메인 전략으로 전환한 뒤, 그 위에 판단 과정 자체를 데이터로 남기는 Phase 2 데이터 수집 계층까지 쌓아 올린 12일이었다. v0.7.1 릴리즈로 이번 구간을 마무리한다. 다음 시리즈에서는 Phase 3(수익률 로직 보완)과, 이번에 쌓기 시작한 데이터를 실제로 활용하는 작업을 다룰 예정이다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">릴리스</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="next" href="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

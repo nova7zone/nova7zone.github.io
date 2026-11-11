@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설정, 설계">
+<meta name="description" content="로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편">
+  <meta property="og:description" content="로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-09T20:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-09T20:00:00+09:00">
+    <meta property="article:tag" content="설정">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편">
+  <meta name="twitter:description" content="로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편",
+      "item": "https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편",
+  "description": "로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.",
+  "keywords": [
+    "설정", "설계"
+  ],
+  "articleBody": "작성일: 2026년 6월 9일\n최종 수정: 2026년 6월 9일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 매매가 전혀 발생하지 않던 KOSPI 지수 조회 버그를 고쳤다. 이번 글부터는 build-docs/work-log.md에 남긴 커밋 단위 작업 기록을 기반으로, 하루치 작업을 한 편씩 정리한다.\n결론부터 말하면, 6월 9일에는 잔여 버그 4건을 정리하고, 기존 전략보다 진입 기준을 크게 낮춘 wide 2차 스크리닝 전략을 새로 추가했다. 그리고 매매설정 페이지를 메인/매매/서버 설정 3개 탭으로 나누고, 2차 스크리닝 전략과 시장 필터 임계값을 웹에서 직접 편집할 수 있도록 개편했다.\n잔여 버그 4건 정리 로그 포맷 버그 (%,.2f) screening/market_filter.py의 logger.info()에서 %,.2f 포맷을 사용하고 있었는데, Python의 % 스타일 로깅은 이 포맷을 지원하지 않아 ValueError: unsupported format character ','가 발생하고 있었다.\n%,.2f → %s + f-string(f\"{value:,.2f}\") 방식으로 수정 (차단·통과 로그 2곳) OCI 서버 cron.log에서 반복 출력되던 --- Logging error --- 트레이스백 해결 매도 체결 시 sector 누락 trading/sell.py에서 add_pending_order() 호출 시 sector 파라미터를 전달하지 않아, 매도 체결 기록의 sector 필드가 항상 공백이었다.\nsector=holding.get(\"sector\", \"\") 이 한 줄을 추가해 매도 체결 기록에도 섹터 정보가 남도록 수정했다.\ndead code 정리 screening/first_stage.py의 _is_valid_stock() 함수가 정의는 되어 있지만 run_first_stage() 루프에서는 호출되지 않고, 동일한 로직이 루프 안에 인라인으로 중복 구현되어 있었다.\n루프 내부의 인라인 필터 로직을 제거하고 _is_valid_stock() 호출로 교체 로그 메시지를 통과=%d | 제외=%d 형태로 단순화 초기자금 수동 재설정 기능 이전 글에서 초기자금을 자동 추적하도록 했는데, 최초 1회만 저장되다 보니 수동으로 재설정할 방법이 없었다. 이를 추가했다.\nweb/routers/config_router.py: CapitalUpdate 모델 + POST /api/config/capital 엔드포인트 추가 from_balance: true 요청 시 KISApiClient.get_balance()로 현재 잔고를 자동 조회해 저장 amount 직접 지정 시 최소 금액 이상인지 검증 후 저장 현재 활성 모드(app.yaml의 mode)에 해당하는 값만 data/initial_capital.json에 갱신 web/templates/settings.html: 설정 페이지에 초기자금 카드 추가 현재 초기자금·설정일 표시 (페이지 로드 시 GET /api/config/capital 자동 조회) “잔고 자동조회로 재설정” 버튼(confirm → POST {from_balance: true}) 직접 입력 필드 + 저장 버튼(confirm → POST {amount: N}) pytest tests/ 164개 전체 통과를 확인했다.\n시장 필터 매수 차단 임계값 설정화 기존에는 KOSPI가 이동평균선 아래로 떨어지면 즉시 매수를 차단했는데, 약간의 이탈만으로 차단되는 것이 너무 보수적이었다. block_threshold_pct라는 임계값을 설정 페이지에서 직접 조정할 수 있도록 만들었다.\n설정 페이지에 “시장 필터 매수 차단 임계값” 카드 추가 (초기자금 카드 아래) 현재값 표시, 숫자 입력(-20 ~ 0, 0.5 단위), 저장 버튼 페이지 로드 시 GET /api/config/market-filter 자동 조회 wide 2차 스크리닝 전략 추가 기존 balanced/momentum/trend_following 전략은 진입 기준이 비교적 엄격해서, 시장 데이터가 충분히 쌓이지 않은 모의투자 환경에서는 통과 종목이 거의 없었다. 그래서 기준을 크게 완화한 wide 전략을 추가했다.\nmin_score = 35 (기존 balanced = 50 대비 대폭 완화) 모든 조건 임계값 완화 RSI 과매도: 30 → 40 거래량 배율: 1.5 → 1.2 볼린저 std: 2.0 → 1.5 스토캐스틱 과매도: 20 → 35 CCI 과매도: -100 → -70 모멘텀 기간: 10 → 5일 신고가 기간: 52 → 26주 가중치는 balanced와 동일하게 유지 API와 설정 페이지도 함께 보강했다.\nGET /api/config 응답에 preset_details 추가 (프리셋별 손절%, 익절%, 최대종목, 보유기간) GET /api/config/screening-strategy 신규 — 활성 전략의 조건별 가중치 반환 설정 페이지 프리셋 카드에 손절%·익절%·최대종목·보유기간 표시 “2차 스크리닝 전략” 카드 추가 — 활성 전략명, min_score, 10개 조건 가중치를 막대 그래프로 시각화 매매설정 페이지 3분할 + 직접 편집 설정 페이지를 메인 / 매매 / 서버 3개 탭으로 나눴다.\n탭 내용 메인 설정 실행모드, 초기자금 매매 설정 시장 필터 임계값, 매매 프리셋, 2차 스크리닝 전략 서버 설정 Google Drive 동기화, YAML 편집기 매매 설정 탭에서는 2차 스크리닝 전략 선택과 조건 파라미터 편집이 가능하다.\n전략 선택 버튼: balanced / momentum / trend_following / wide 8개 조건 파라미터 인라인 편집 (RSI 과매도, 거래량 배율, 볼린저 std, 스토캐스틱, CCI, 모멘텀 기간, 신고가 기간 등) POST /api/config/screening-strategy — 활성 전략 변경 PATCH /api/config/screening-strategy/params — 조건 파라미터 저장 (yaml.dump 기반) 가중치 막대 그래프는 최대값 기준 비례 계산으로 overflow 방지 아울러 wide 전략의 ATR 필터도 함께 완화했다.\nhard_block_pct: 5.0 → 15.0 soft_block_pct: 3.0 → 8.0 min_score_penalty: 20 → 10 배경은, 5% 기준으로는 후보로 올라온 24개 종목(삼성전자 포함)이 전부 ATR 필터에 걸려 차단되고 있었기 때문이다.\n2차 스크리닝 탈락 로그 강화 + min_score 추가 완화 screening/second_stage.py: 탈락 로그를 logger.debug → logger.info로 상향, 탈락 시 상위 3개 조건 점수를 함께 출력 (예: moving_average=0.85 obv=0.72 volume_surge=0.50) — 다음 cron부터 종목별 점수를 로그에서 바로 확인 가능 wide 전략 min_score를 35 → 25로 추가 완화 (CHOP 시장 +5 보정 후 실효 기준 30점) 배경: 모의투자 서버의 데이터가 부족(50/203일)해서 시장 국면이 항상 CHOP으로 판정되고, ETF 위주 후보들에서 평균회귀 신호(RSI\u003c40 등)가 거의 발동되지 않아 40점 기준으로는 전 종목이 탈락하고 있었다 YAML 편집기의 화이트리스트에서 settings/app.yaml 제거 — 모드·프리셋·시크릿 등 앱 핵심 설정은 전용 API로만 변경하도록 제한 pytest tests/ 164개 전체 통과를 확인했다.\n정리 작업 내용 버그 수정 4건 로그 포맷 / 매도 sector 누락 / dead code / 초기자금 재설정 시장필터 임계값 block_threshold_pct를 설정 페이지에서 직접 조정 wide 전략 min_score 35(→25 추가 완화), 8개 조건 임계값 대폭 완화, ATR 완화 설정 페이지 메인/매매/서버 3탭 + 2차 스크리닝 전략·파라미터 편집 UI 로그 개선 2차 스크리닝 탈락 시 상위 3개 조건 점수 INFO 로그 보안 정리 YAML 편집기에서 app.yaml 제거 다음 글에서는 거래량 순위 조회(KOSDAQ) 오류와 호가단위 오류 같은 실거래 버그를 수정하고, CLAUDE.md 작업 절차를 다시 정비하는 과정을 다룬다.\n",
+  "wordCount" : "2326",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-09T20:00:00+09:00",
+  "dateModified": "2026-06-09T20:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편
+    </h1>
+    <div class="post-description">
+      로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-09T20:00:00+09:00'>2026년 6월 9일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#%ec%9e%94%ec%97%ac-%eb%b2%84%ea%b7%b8-4%ea%b1%b4-%ec%a0%95%eb%a6%ac" aria-label="잔여 버그 4건 정리">잔여 버그 4건 정리</a><ul>
+                    
+            <li>
+                <a href="#%eb%a1%9c%ea%b7%b8-%ed%8f%ac%eb%a7%b7-%eb%b2%84%ea%b7%b8-2f" aria-label="로그 포맷 버그 (%,.2f)">로그 포맷 버그 (%,.2f)</a></li>
+            <li>
+                <a href="#%eb%a7%a4%eb%8f%84-%ec%b2%b4%ea%b2%b0-%ec%8b%9c-sector-%eb%88%84%eb%9d%bd" aria-label="매도 체결 시 sector 누락">매도 체결 시 sector 누락</a></li>
+            <li>
+                <a href="#dead-code-%ec%a0%95%eb%a6%ac" aria-label="dead code 정리">dead code 정리</a></li>
+            <li>
+                <a href="#%ec%b4%88%ea%b8%b0%ec%9e%90%ea%b8%88-%ec%88%98%eb%8f%99-%ec%9e%ac%ec%84%a4%ec%a0%95-%ea%b8%b0%eb%8a%a5" aria-label="초기자금 수동 재설정 기능">초기자금 수동 재설정 기능</a></li></ul>
+            </li>
+            <li>
+                <a href="#%ec%8b%9c%ec%9e%a5-%ed%95%84%ed%84%b0-%eb%a7%a4%ec%88%98-%ec%b0%a8%eb%8b%a8-%ec%9e%84%ea%b3%84%ea%b0%92-%ec%84%a4%ec%a0%95%ed%99%94" aria-label="시장 필터 매수 차단 임계값 설정화">시장 필터 매수 차단 임계값 설정화</a></li>
+            <li>
+                <a href="#wide-2%ec%b0%a8-%ec%8a%a4%ed%81%ac%eb%a6%ac%eb%8b%9d-%ec%a0%84%eb%9e%b5-%ec%b6%94%ea%b0%80" aria-label="wide 2차 스크리닝 전략 추가">wide 2차 스크리닝 전략 추가</a></li>
+            <li>
+                <a href="#%eb%a7%a4%eb%a7%a4%ec%84%a4%ec%a0%95-%ed%8e%98%ec%9d%b4%ec%a7%80-3%eb%b6%84%ed%95%a0--%ec%a7%81%ec%a0%91-%ed%8e%b8%ec%a7%91" aria-label="매매설정 페이지 3분할 &#43; 직접 편집">매매설정 페이지 3분할 + 직접 편집</a></li>
+            <li>
+                <a href="#2%ec%b0%a8-%ec%8a%a4%ed%81%ac%eb%a6%ac%eb%8b%9d-%ed%83%88%eb%9d%bd-%eb%a1%9c%ea%b7%b8-%ea%b0%95%ed%99%94--min_score-%ec%b6%94%ea%b0%80-%ec%99%84%ed%99%94" aria-label="2차 스크리닝 탈락 로그 강화 &#43; min_score 추가 완화">2차 스크리닝 탈락 로그 강화 + min_score 추가 완화</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 9일<br>
+<strong>최종 수정</strong>: 2026년 6월 9일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/kospi-index-bugfix/">이전 글</a>에서 매매가 전혀 발생하지 않던 KOSPI 지수 조회 버그를 고쳤다. 이번 글부터는 <code>build-docs/work-log.md</code>에 남긴 커밋 단위 작업 기록을 기반으로, 하루치 작업을 한 편씩 정리한다.</p>
+<p>결론부터 말하면, 6월 9일에는 잔여 버그 4건을 정리하고, 기존 전략보다 진입 기준을 크게 낮춘 <strong>wide 2차 스크리닝 전략</strong>을 새로 추가했다. 그리고 매매설정 페이지를 <strong>메인/매매/서버 설정 3개 탭</strong>으로 나누고, 2차 스크리닝 전략과 시장 필터 임계값을 웹에서 직접 편집할 수 있도록 개편했다.</p>
+<hr>
+<h2 id="잔여-버그-4건-정리">잔여 버그 4건 정리<a hidden class="anchor" aria-hidden="true" href="#잔여-버그-4건-정리">#</a></h2>
+<h3 id="로그-포맷-버그-2f">로그 포맷 버그 (<code>%,.2f</code>)<a hidden class="anchor" aria-hidden="true" href="#로그-포맷-버그-2f">#</a></h3>
+<p><code>screening/market_filter.py</code>의 <code>logger.info()</code>에서 <code>%,.2f</code> 포맷을 사용하고 있었는데, Python의 <code>%</code> 스타일 로깅은 이 포맷을 지원하지 않아 <code>ValueError: unsupported format character ','</code>가 발생하고 있었다.</p>
+<ul>
+<li><code>%,.2f</code> → <code>%s</code> + f-string(<code>f&quot;{value:,.2f}&quot;</code>) 방식으로 수정 (차단·통과 로그 2곳)</li>
+<li>OCI 서버 <code>cron.log</code>에서 반복 출력되던 <code>--- Logging error ---</code> 트레이스백 해결</li>
+</ul>
+<h3 id="매도-체결-시-sector-누락">매도 체결 시 sector 누락<a hidden class="anchor" aria-hidden="true" href="#매도-체결-시-sector-누락">#</a></h3>
+<p><code>trading/sell.py</code>에서 <code>add_pending_order()</code> 호출 시 <code>sector</code> 파라미터를 전달하지 않아, 매도 체결 기록의 sector 필드가 항상 공백이었다.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">sector</span><span class="o">=</span><span class="n">holding</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;sector&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><p>이 한 줄을 추가해 매도 체결 기록에도 섹터 정보가 남도록 수정했다.</p>
+<h3 id="dead-code-정리">dead code 정리<a hidden class="anchor" aria-hidden="true" href="#dead-code-정리">#</a></h3>
+<p><code>screening/first_stage.py</code>의 <code>_is_valid_stock()</code> 함수가 정의는 되어 있지만 <code>run_first_stage()</code> 루프에서는 호출되지 않고, 동일한 로직이 루프 안에 인라인으로 중복 구현되어 있었다.</p>
+<ul>
+<li>루프 내부의 인라인 필터 로직을 제거하고 <code>_is_valid_stock()</code> 호출로 교체</li>
+<li>로그 메시지를 <code>통과=%d | 제외=%d</code> 형태로 단순화</li>
+</ul>
+<h3 id="초기자금-수동-재설정-기능">초기자금 수동 재설정 기능<a hidden class="anchor" aria-hidden="true" href="#초기자금-수동-재설정-기능">#</a></h3>
+<p><a href="/posts/report-gdrive-sync-and-config-toggle/">이전 글</a>에서 초기자금을 자동 추적하도록 했는데, 최초 1회만 저장되다 보니 수동으로 재설정할 방법이 없었다. 이를 추가했다.</p>
+<ul>
+<li><code>web/routers/config_router.py</code>: <code>CapitalUpdate</code> 모델 + <code>POST /api/config/capital</code> 엔드포인트 추가
+<ul>
+<li><code>from_balance: true</code> 요청 시 <code>KISApiClient.get_balance()</code>로 현재 잔고를 자동 조회해 저장</li>
+<li><code>amount</code> 직접 지정 시 최소 금액 이상인지 검증 후 저장</li>
+<li>현재 활성 모드(<code>app.yaml</code>의 <code>mode</code>)에 해당하는 값만 <code>data/initial_capital.json</code>에 갱신</li>
+</ul>
+</li>
+<li><code>web/templates/settings.html</code>: 설정 페이지에 초기자금 카드 추가
+<ul>
+<li>현재 초기자금·설정일 표시 (페이지 로드 시 <code>GET /api/config/capital</code> 자동 조회)</li>
+<li>&ldquo;잔고 자동조회로 재설정&rdquo; 버튼(confirm → <code>POST {from_balance: true}</code>)</li>
+<li>직접 입력 필드 + 저장 버튼(confirm → <code>POST {amount: N}</code>)</li>
+</ul>
+</li>
+</ul>
+<p><code>pytest tests/</code> 164개 전체 통과를 확인했다.</p>
+<hr>
+<h2 id="시장-필터-매수-차단-임계값-설정화">시장 필터 매수 차단 임계값 설정화<a hidden class="anchor" aria-hidden="true" href="#시장-필터-매수-차단-임계값-설정화">#</a></h2>
+<p>기존에는 KOSPI가 이동평균선 아래로 떨어지면 즉시 매수를 차단했는데, 약간의 이탈만으로 차단되는 것이 너무 보수적이었다. <code>block_threshold_pct</code>라는 임계값을 설정 페이지에서 직접 조정할 수 있도록 만들었다.</p>
+<ul>
+<li>설정 페이지에 &ldquo;시장 필터 매수 차단 임계값&rdquo; 카드 추가 (초기자금 카드 아래)</li>
+<li>현재값 표시, 숫자 입력(-20 ~ 0, 0.5 단위), 저장 버튼</li>
+<li>페이지 로드 시 <code>GET /api/config/market-filter</code> 자동 조회</li>
+</ul>
+<hr>
+<h2 id="wide-2차-스크리닝-전략-추가">wide 2차 스크리닝 전략 추가<a hidden class="anchor" aria-hidden="true" href="#wide-2차-스크리닝-전략-추가">#</a></h2>
+<p>기존 <code>balanced</code>/<code>momentum</code>/<code>trend_following</code> 전략은 진입 기준이 비교적 엄격해서, 시장 데이터가 충분히 쌓이지 않은 모의투자 환경에서는 통과 종목이 거의 없었다. 그래서 기준을 크게 완화한 <code>wide</code> 전략을 추가했다.</p>
+<ul>
+<li><code>min_score = 35</code> (기존 <code>balanced = 50</code> 대비 대폭 완화)</li>
+<li>모든 조건 임계값 완화
+<ul>
+<li>RSI 과매도: 30 → 40</li>
+<li>거래량 배율: 1.5 → 1.2</li>
+<li>볼린저 std: 2.0 → 1.5</li>
+<li>스토캐스틱 과매도: 20 → 35</li>
+<li>CCI 과매도: -100 → -70</li>
+<li>모멘텀 기간: 10 → 5일</li>
+<li>신고가 기간: 52 → 26주</li>
+</ul>
+</li>
+<li>가중치는 <code>balanced</code>와 동일하게 유지</li>
+</ul>
+<p>API와 설정 페이지도 함께 보강했다.</p>
+<ul>
+<li><code>GET /api/config</code> 응답에 <code>preset_details</code> 추가 (프리셋별 손절%, 익절%, 최대종목, 보유기간)</li>
+<li><code>GET /api/config/screening-strategy</code> 신규 — 활성 전략의 조건별 가중치 반환</li>
+<li>설정 페이지 프리셋 카드에 손절%·익절%·최대종목·보유기간 표시</li>
+<li>&ldquo;2차 스크리닝 전략&rdquo; 카드 추가 — 활성 전략명, min_score, 10개 조건 가중치를 막대 그래프로 시각화</li>
+</ul>
+<hr>
+<h2 id="매매설정-페이지-3분할--직접-편집">매매설정 페이지 3분할 + 직접 편집<a hidden class="anchor" aria-hidden="true" href="#매매설정-페이지-3분할--직접-편집">#</a></h2>
+<p>설정 페이지를 <strong>메인 / 매매 / 서버</strong> 3개 탭으로 나눴다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>탭</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>메인 설정</td>
+					<td>실행모드, 초기자금</td>
+			</tr>
+			<tr>
+					<td>매매 설정</td>
+					<td>시장 필터 임계값, 매매 프리셋, 2차 스크리닝 전략</td>
+			</tr>
+			<tr>
+					<td>서버 설정</td>
+					<td>Google Drive 동기화, YAML 편집기</td>
+			</tr>
+	</tbody>
+</table>
+<p>매매 설정 탭에서는 2차 스크리닝 전략 선택과 조건 파라미터 편집이 가능하다.</p>
+<ul>
+<li>전략 선택 버튼: <code>balanced</code> / <code>momentum</code> / <code>trend_following</code> / <code>wide</code></li>
+<li>8개 조건 파라미터 인라인 편집 (RSI 과매도, 거래량 배율, 볼린저 std, 스토캐스틱, CCI, 모멘텀 기간, 신고가 기간 등)</li>
+<li><code>POST /api/config/screening-strategy</code> — 활성 전략 변경</li>
+<li><code>PATCH /api/config/screening-strategy/params</code> — 조건 파라미터 저장 (<code>yaml.dump</code> 기반)</li>
+<li>가중치 막대 그래프는 최대값 기준 비례 계산으로 overflow 방지</li>
+</ul>
+<p>아울러 <code>wide</code> 전략의 ATR 필터도 함께 완화했다.</p>
+<ul>
+<li><code>hard_block_pct: 5.0 → 15.0</code></li>
+<li><code>soft_block_pct: 3.0 → 8.0</code></li>
+<li><code>min_score_penalty: 20 → 10</code></li>
+</ul>
+<p>배경은, 5% 기준으로는 후보로 올라온 24개 종목(삼성전자 포함)이 전부 ATR 필터에 걸려 차단되고 있었기 때문이다.</p>
+<hr>
+<h2 id="2차-스크리닝-탈락-로그-강화--min_score-추가-완화">2차 스크리닝 탈락 로그 강화 + min_score 추가 완화<a hidden class="anchor" aria-hidden="true" href="#2차-스크리닝-탈락-로그-강화--min_score-추가-완화">#</a></h2>
+<ul>
+<li><code>screening/second_stage.py</code>: 탈락 로그를 <code>logger.debug</code> → <code>logger.info</code>로 상향, 탈락 시 상위 3개 조건 점수를 함께 출력 (예: <code>moving_average=0.85 obv=0.72 volume_surge=0.50</code>) — 다음 cron부터 종목별 점수를 로그에서 바로 확인 가능</li>
+<li><code>wide</code> 전략 <code>min_score</code>를 35 → <strong>25</strong>로 추가 완화 (CHOP 시장 +5 보정 후 실효 기준 30점)
+<ul>
+<li>배경: 모의투자 서버의 데이터가 부족(50/203일)해서 시장 국면이 항상 CHOP으로 판정되고, ETF 위주 후보들에서 평균회귀 신호(RSI&lt;40 등)가 거의 발동되지 않아 40점 기준으로는 전 종목이 탈락하고 있었다</li>
+</ul>
+</li>
+<li>YAML 편집기의 화이트리스트에서 <code>settings/app.yaml</code> 제거 — 모드·프리셋·시크릿 등 앱 핵심 설정은 전용 API로만 변경하도록 제한</li>
+</ul>
+<p><code>pytest tests/</code> 164개 전체 통과를 확인했다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>작업</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>버그 수정 4건</td>
+					<td>로그 포맷 / 매도 sector 누락 / dead code / 초기자금 재설정</td>
+			</tr>
+			<tr>
+					<td>시장필터 임계값</td>
+					<td><code>block_threshold_pct</code>를 설정 페이지에서 직접 조정</td>
+			</tr>
+			<tr>
+					<td>wide 전략</td>
+					<td>min_score 35(→25 추가 완화), 8개 조건 임계값 대폭 완화, ATR 완화</td>
+			</tr>
+			<tr>
+					<td>설정 페이지</td>
+					<td>메인/매매/서버 3탭 + 2차 스크리닝 전략·파라미터 편집 UI</td>
+			</tr>
+			<tr>
+					<td>로그 개선</td>
+					<td>2차 스크리닝 탈락 시 상위 3개 조건 점수 INFO 로그</td>
+			</tr>
+			<tr>
+					<td>보안 정리</td>
+					<td>YAML 편집기에서 <code>app.yaml</code> 제거</td>
+			</tr>
+	</tbody>
+</table>
+<p>다음 글에서는 거래량 순위 조회(KOSDAQ) 오류와 호가단위 오류 같은 실거래 버그를 수정하고, CLAUDE.md 작업 절차를 다시 정비하는 과정을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/kospi-index-bugfix/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>KIS 자동매매 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="">
+<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/index.xml" title="rss">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="KIS 자동매매">
+  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="website">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="KIS 자동매매">
+  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+
+</head>
+<body class="list" id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+<header class="page-header"><nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/categories/">Categories</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+  <h1>
+    KIS 자동매매
+  </h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 5일
+최종 수정: 2026년 7월 5일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 market_context_log와 candidate_outcome을 완료했다. 오늘은 Phase 2의 마지막 테이블을 연결하고, docs 전체를 다시 한번 점검한 뒤 릴리즈까지 마무리하는 날이다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-05T15:00:00+09:00'>2026년 7월 5일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈" href="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 5일
+최종 수정: 2026년 7월 5일
+분야: AI Trading, Development
+난이도: Advanced
+상태: Production Ready
+들어가며 이전 글에서 sell_evaluation_log와 orders 테이블을 신설했다. Phase 2 데이터 수집 계층의 나머지 두 테이블은 각각 “그때 시장이 어떤 상태였는가&#34;와 “사지 않은 종목은 어떻게 됐는가&#34;를 남기는 작업이다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-05T09:00:00+09:00'>2026년 7월 5일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome" href="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 4일
+최종 수정: 2026년 7월 4일
+분야: AI Trading, Development
+난이도: Advanced
+상태: Production Ready
+들어가며 이전 글에서 VKOSPI 오조회 버그와 리스크 버그 5건을 고쳤다. 7월 3일 작업 지시서의 Phase 2는 “데이터 수집 계층&#34;이라 불리는 신규 테이블 4종을 만드는 작업이다 — 지금까지는 매매 결과만 남기고 있었는데, 왜 그렇게 판단했는지의 과정을 데이터베이스에 남기기 시작하는 단계다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-04T10:00:00+09:00'>2026년 7월 4일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders" href="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 3일
+최종 수정: 2026년 7월 3일
+분야: AI Trading, Development
+난이도: Advanced
+상태: Production Ready
+들어가며 이전 글에서 v0.7.0을 릴리즈하며 v3를 메인 전략으로 전환했다. 7월 3일은 v3가 실제로 돌아가기 시작한 지 이틀째 되는 날로, 운영 로그 검증과 외부에서 준비된 작업 지시서 기반의 긴급 수정이 함께 진행됐다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-03T10:00:00+09:00'>2026년 7월 3일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증" href="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 2일
+최종 수정: 2026년 7월 2일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 매시간 재선정을 구현하고 메인 전략을 v3로 전환했다. 새 전략 엔진이 실거래에 들어가기 전, 문서를 정리하고 정식 버전을 릴리즈하는 마무리 작업이 이어졌다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-02T17:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈" href="https://nova7zone.github.io/posts/docs-update-and-v070-release/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 2일
+최종 수정: 2026년 7월 2일
+분야: AI Trading, Development
+난이도: Advanced
+상태: Production Ready
+들어가며 이전 글에서 config_loader 이중 중첩 버그를 잡아 strategy_sell.yaml 설정값이 실제로 반영되게 만들었다. 7월 2일은 v3의 마지막 핵심 기능인 매시간 재선정을 구현하고, 외부 리뷰 문서의 후속 보강을 마친 뒤, 드디어 메인 전략을 v3로 전환하는 날이다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-02T10:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 1일
+최종 수정: 2026년 7월 1일
+분야: AI Trading, Development
+난이도: Advanced
+상태: Production Ready
+들어가며 이전 글에서 strategy_v3 구현을 마무리하며 매수 전면 중단 Critical 버그를 발견·수정했다. 이어서 실제 운영을 위해 v3를 웹 대시보드에 통합하는 작업으로 넘어갔는데, 여기서 훨씬 더 근본적인 문제 하나를 발견하게 된다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-01T16:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그" href="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 7월 1일
+최종 수정: 2026년 7월 1일
+분야: AI Trading, Development
+난이도: Advanced
+상태: In Progress
+들어가며 이전 글에서 텔레그램 알림 버그와 손실 매도 버그를 고치고 v0.6.4를 릴리즈했다. 7월 1일부터는 그동안 v1/v2와는 별개로 준비해오던 세 번째 전략 엔진, strategy_v3의 마무리 작업으로 넘어간다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-01T10:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 30일
+최종 수정: 2026년 6월 30일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 CLAUDE.md를 분리하고 v0.6.3을 릴리즈했다. 6월 30일은 텔레그램 알림이 실패하는 문제와, 6월 25일 고쳤던 손실 매도 버그가 다른 경로로 재발한 사고를 함께 처리했다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-30T12:00:00+09:00'>2026년 6월 30일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈" href="https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 29일
+최종 수정: 2026년 6월 29일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 Alpine.js 반응성 버그와 캐시 날짜 버그를 고쳤다. 6월 29일 후반은 문서 구조 자체를 손보는 작업으로 이어졌다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-29T16:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈" href="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/"></a>
+</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="https://nova7zone.github.io/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/page/2/">다음 페이지&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

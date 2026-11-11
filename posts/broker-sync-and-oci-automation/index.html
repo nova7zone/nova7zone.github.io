@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="배포">
+<meta name="description" content="v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화">
+  <meta property="og:description" content="v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-23T12:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-23T12:00:00+09:00">
+    <meta property="article:tag" content="배포">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화">
+  <meta name="twitter:description" content="v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
+      "item": "https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
+  "description": "v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.",
+  "keywords": [
+    "배포"
+  ],
+  "articleBody": "작성일: 2026년 6월 23일\n최종 수정: 2026년 6월 23일\n분야: AI Trading, Development\n난이도: Advanced\n상태: Production Ready\n들어가며 이전 글에서 매수 무한반복 사고를 발견하고 체결판단을 holdings-diff 방식으로 전환했다. 하지만 그 수정은 이미 쌓여있던 특정 종목을 자동으로 회복시켜주진 않는다. 6월 23일은 그 phantom position을 실제로 정정하는 작업으로 마무리되는데, 그 전에 v2 백테스트 기능 확장과 OCI 운영 자동화도 진행했다.\n결론부터 말하면, v2 백테스트에 시장국면(bull/chop/bear)에 따라 전략 프로파일이 날짜별로 바뀌는 동적 국면전환 시뮬레이션을 추가했다. OCI 서버 업데이트를 자동화하는 스크립트를 만들어 실제로 검증했다. 그리고 sync_broker_holdings()를 새로 만들어 매 cron마다 실제 KIS 잔고와 자동 대조하도록 했고, 직접 실행해서 수량이 정확히 정정되는 것을 확인했다. 마지막으로 매수 수량이 0이 되어 스킵되던 케이스에 1주 예외매수를 추가했다.\nv2 백테스트 동적 국면전환(시장 regime 기반) 시뮬레이션 추가 (6-Task) v1 백테스트는 second_stage 프로필을 미리 선택해야 그 선택에 따른 수익률을 확인할 수 있는데(정상 동작), v2는 실거래에서 시장국면에 따라 second_stage가 날짜마다 동적으로 바뀌는데도 백테스트 엔진은 처음 로드된 정적 설정 하나로만 전체 기간을 도는 근본적 한계가 있었다.\nbrainstorming으로 범위를 확정했다 — 4그룹 스크리닝·VKOSPI 공포 필터·동적 손절·Hysteresis 매도는 백테스트용 데이터(VKOSPI 히스토리·섹터 매핑·수급 데이터)가 없어 이번 범위에서 제외하고, KOSPI 지수 기반 시장국면(bull/chop/bear) 감지로 trend_following/momentum/balanced 프로파일을 날짜별로 전환하는 것까지만 구현했다.\nbacktest/data_downloader.py: download_index_candles() 추가 — KOSPI 지수 캔들을 종목 캔들과 동일한 CSV 스키마로 저장 backtest/v2_regime_screening.py 신규 — 순수 계산 헬퍼. strategy_v2/screening/{market_regime,second_stage,atr_filter}.py의 실거래 공식을 직접 import해 재사용(해당 파일들은 한 글자도 수정하지 않음 — 읽기 전용 의존) backtest_runner.py::run_backtest()에 strategy_version 파라미터 추가 — v2는 매 시뮬레이션일마다 KOSPI 종가로 국면을 재감지해 프로파일을 전환하며 매수 평가 매수 거래 레코드에 regime/target_strategy 필드 추가, 웹 /backtest/{run_id} 상세 페이지에 국면/프로파일 분포 표시 추가 구현 중 기존 결함도 하나 발견해 함께 수정했다 — test_renders_with_no_history 테스트가 _load_app_yaml을 mock하지 않아 실제 data/trading.db(기존 백테스트 이력 포함)를 읽어버려 “이력 없음” 분기가 트리거되지 않고 실패하던 테스트 격리 누락 버그였다.\npytest tests/ 691개 전체 통과. 로컬엔 실제 KIS API 키·백테스트 CSV가 없어 unit/통합 테스트로만 검증했고, OCI 배포 후 실데이터 기준 확인이 필요한 항목으로 남겼다.\nOCI 서버 업데이트 자동화 스크립트 추가 (7-Task) docs/UPDATE.md/docs/WEBSERVICE_DEPLOY.md에 문서화된 OCI 서버 수동 업데이트 절차(venv 확인, 의존성 확인, git pull, kis-web 재시작, DB 확인)를 하나의 쉘스크립트로 자동화했다.\nbrainstorming으로 범위를 확정했다 — pull 브랜치는 master만, app.yaml 충돌은 자동 stash, DB 확인은 파일존재+integrity_check, 의존성은 매번 무조건 설치, kis-web.service 변경은 자동 감지·적용, 실패 시 즉시 중단, 텔레그램 알림은 없음.\nscripts/update_oci.sh를 함수 단위로 구성했다(check_branch, check_venv, check_local_changes_and_stash, do_git_pull, install_dependencies, sync_service_file_if_changed, restart_web_service, verify_db_integrity 등). UPDATE_OCI_REPO_ROOT 환경변수로 REPO_ROOT를 오버라이드할 수 있게 해 로컬에서 임시 git 저장소로 테스트할 수 있도록 설계했다.\n최종 리뷰에서 Important 1건을 발견했다 — verify_db_integrity()가 set -euo pipefail 하에서 sqlite3가 비정상 종료(DB 손상 시 흔한 패턴)하면 “DB 손상은 경고만 하고 절대 스크립트를 중단하지 않는다\"는 설계 원칙을 깨고 스크립트 전체가 죽어버리는 버그였다. result=\"$(sqlite3 ... 2\u003e\u00261 || true)\"로 수정 후 재리뷰 “Ready to merge: Yes”.\n이 스크립트는 sudo/systemctl/git을 직접 다뤄 pytest 대상이 아니다 — bash -n 문법 검사 + 스텁(sudo/systemctl/sqlite3/pip) 기반 임시 git 저장소 시나리오 테스트로 검증했다. pytest tests/ 691개는 이 작업과 무관하게 통과(회귀 없음). docs/UPDATE.md에 “자동화 스크립트(권장)” 섹션을 추가했다.\n✅ 본계좌 실시간 KIS 잔고 동기화 (4-Task, PR #63 merge) 전날(6/22)의 매수 무한반복 사고로 holdings-diff 전환은 끝냈지만, 어제저녁 --reconcile 실행 후 봇 대시보드(특정 종목)와 실제 KIS 모의투자 계좌(특정 종목)가 다르다는 보고가 있었다. systematic-debugging으로 다시 조사했다.\n로그·DB·get_balance() 직접 조회로 원인을 확정했다 — 6/22 특정 종목 손절매도와 특정 종목 26회 매수 시도 전부 실제로는 체결됐으나 구버전 체결판단 로직이 매번 오판해 holdings.json이 갱신되지 않았던 것이다. 같은 날 holdings-diff 전환으로 재발 방지는 됐지만, “봇 자신의 계좌는 KIS 실제 잔고 대조 장치가 없다\"는 공백(6/21에 기록해뒀던 운영 안정성 공백 2건 중 하나)은 여전히 미해결로 남아있던 구조적 원인이었다.\nbrainstorming → 설계 → 계획(4 Task) → 구현했다.\nutils/reconcile.py에 v1/v2 라우팅 헬퍼(_upsert_holding/_close_holding) 추가, 기존 run()의 누락/복구/초과 종목 처리를 헬퍼 사용으로 교체 sync_broker_holdings() 신규 — 매 15분 cron마다 get_balance()로 실제 KIS 잔고와 holdings.json/position_registry를 대조해 자동 보정, 드리프트 발견 시 텔레그램 알림 runner.py에 연동(미확인 주문 처리 직후, --dry-run 가드 포함) 부수 발견: 본계좌 reconcile 경로가 active_strategy_version(v1/v2)과 무관하게 항상 v1 스키마로 기록하던 별도 버그도 같은 라우팅 헬퍼로 해결 최종 whole-branch 리뷰 “Ready to merge: Yes”. 직접 실행해 실제 효과를 확인했다(서브에이전트가 아니라 컨트롤러가 직접 수행 — 실제 데이터/텔레그램 영향 때문):\n--dry-run → holdings.json 무변화 확인 실제 python runner.py 1회 → holdings.json이 실제 KIS 잔고(특정 종목)와 정확히 일치하도록 자동 정정됨 정정 직후 봇이 정상적으로 “연속 하락 7일” 조건을 인식해 수량 매도 주문을 접수(주문번호 \u003c주문번호\u003e) pytest tests/ 704/704 통과. PR #63 머지 후 feature/build를 master에 동기화했다.\nOCI 업데이트 자동화 스크립트 실서버 실행 검증 2/3 완료 scripts/update_oci.sh를 OCI 서버에서 직접 실행해 브랜치/venv 사전점검·git pull(fast-forward)·app.yaml 자동 stash/복원·의존성 설치·서비스 재시작(active 확인)·DB 무결성 확인(ok)까지 전체 단계가 에러 없이 정상 완료됨을 확인했다. 미검증 1건은 남았다 — 이번 실행은 kis-web.service 파일 변경이 없는 PR이었어서, 서비스 파일이 실제로 바뀐 PR을 반영할 때 systemd 갱신이 의도대로 동작하는지는 다음에 해당 파일을 바꾸는 PR이 머지되면 확인하기로 했다.\ndocs-sync skill 신설 (2-Task) docs/ 폴더 18개 문서의 양식·점검순서·전략버전별 분리 기준이 제각각이라 통일하고 싶다는 요청이 있었다. brainstorming으로 “문서 구조 설계 먼저, 자동화 skill은 그 다음” 두 단계로 분리했다.\n설계: 카테고리 5개(시작하기/설정/매매전략/운영·테스트/안전) + 추천 읽기순서, 공통 메타(최종업데이트/대상독자/한줄요약/관련문서), TRADING_FLOW.md → STRATEGY_V1/V2_trading_flow.md 분리, 기존 문서는 docs/archive/에 보관 Task 1: docs/README.md 19개 문서 체크리스트 골격 + docs/archive/ 폴더 Task 2: .claude/skills/docs-sync/skill.md — 문서별 읽기전용 서브에이전트 디스패치 → 컨트롤러 검토·최종작성 → 원본 아카이브 → README 체크 갱신 → 링크 무결성 점검 절차 사용자 피드백으로 stale 점검 시 코드만 보지 말고 work-log.md(최근 변경 맥락)·설계문서(설계 의도)도 함께 참고하도록 skill.md에 보강했다. 실제 18→19개 문서 재작성 실행은 이번 범위 밖으로, skill을 호출해 별도 세션에서 진행하기로 했다(다음 글에서 다룬다).\n매수 수량 0 — 1주 예외매수 + 로그 정확도 개선 (2-Task) logs/trader.log 점검 중 “매수 수량 0 — 잔고 부족 스킵” 로그가 반복 발견됐다(예: 잔고가 충분한데도 고가 종목 1주를 “잔고 부족\"으로 스킵). 추적 결과 실제 원인은 계좌 잔고가 아니라 종목당 매수예산(buy_amount_per_stock, neutral 기준 고정 금액)이 1주 가격보다 작아서 actual_buy // price가 0이 되는 것이었다.\nbrainstorming으로 동작을 결정했다 — 1주 예외매수는 계좌 사용가능금액 이내일 때만, 종목당 매수예산의 2배까지만 허용.\n_calc_qty()가 int 단일 반환 대신 (qty, reason) 튜플 반환 — reason: \"ok\"/\"insufficient_balance\"/\"single_share_override\"/\"budget_exceeded\" strategy_v1/trading/buy.py, strategy_v2/trading/buy.py 양쪽에 독립적으로 동일하게 적용(공유 모듈로 묶지 않음) 최종 whole-branch 리뷰(opus) “Ready to merge: Yes” — v1/v2가 공유 코드 없이도 4가지 사유 문자열·임계값 로직·경계값 처리가 한 줄씩 동일함을 확인했다. 이전엔 예산보다 비싸면 그냥 스킵되던 종목이 이제(예산~2배 사이일 때) 실제로 1주 매수 주문이 나가는, 실거래 동작이 바뀌는 변경이다. 배포 후 하루 정도 실제로 이 1주 매수가 의도대로 발동하는지 관찰하기로 했다.\npytest tests/ 717/717 통과.\n정리 작업 내용 v2 백테스트 국면전환 KOSPI 기반 bull/chop/bear 감지로 프로파일 날짜별 전환 시뮬레이션 OCI 자동화 스크립트 브랜치/venv/git pull/stash/재시작/DB확인 전체 자동화, 실서버 2/3 검증 본계좌 잔고 동기화 sync_broker_holdings() — 수량 phantom position 직접 정정 확인 docs-sync skill 18개 문서 통일 재작성 절차 신설(실행은 다음 작업) 1주 예외매수 매수예산보다 비싼 종목도 2배 이내면 1주 매수 허용 테스트 pytest tests/ 717/717 통과 다음 글에서는 같은 날 진행한 문서 전체 점검, docs-sync 5개 카테고리 19개 문서 재작성, v0.6.0 릴리즈까지를 다룬다.\n",
+  "wordCount" : "3948",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-23T12:00:00+09:00",
+  "dateModified": "2026-06-23T12:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
+    </h1>
+    <div class="post-description">
+      v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-23T12:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#v2-%eb%b0%b1%ed%85%8c%ec%8a%a4%ed%8a%b8-%eb%8f%99%ec%a0%81-%ea%b5%ad%eb%a9%b4%ec%a0%84%ed%99%98%ec%8b%9c%ec%9e%a5-regime-%ea%b8%b0%eb%b0%98-%ec%8b%9c%eb%ae%ac%eb%a0%88%ec%9d%b4%ec%85%98-%ec%b6%94%ea%b0%80-6-task" aria-label="v2 백테스트 동적 국면전환(시장 regime 기반) 시뮬레이션 추가 (6-Task)">v2 백테스트 동적 국면전환(시장 regime 기반) 시뮬레이션 추가 (6-Task)</a></li>
+            <li>
+                <a href="#oci-%ec%84%9c%eb%b2%84-%ec%97%85%eb%8d%b0%ec%9d%b4%ed%8a%b8-%ec%9e%90%eb%8f%99%ed%99%94-%ec%8a%a4%ed%81%ac%eb%a6%bd%ed%8a%b8-%ec%b6%94%ea%b0%80-7-task" aria-label="OCI 서버 업데이트 자동화 스크립트 추가 (7-Task)">OCI 서버 업데이트 자동화 스크립트 추가 (7-Task)</a></li>
+            <li>
+                <a href="#-%eb%b3%b8%ea%b3%84%ec%a2%8c-%ec%8b%a4%ec%8b%9c%ea%b0%84-kis-%ec%9e%94%ea%b3%a0-%eb%8f%99%ea%b8%b0%ed%99%94-4-task-pr-63-merge" aria-label="✅ 본계좌 실시간 KIS 잔고 동기화 (4-Task, PR #63 merge)">✅ 본계좌 실시간 KIS 잔고 동기화 (4-Task, PR #63 merge)</a></li>
+            <li>
+                <a href="#oci-%ec%97%85%eb%8d%b0%ec%9d%b4%ed%8a%b8-%ec%9e%90%eb%8f%99%ed%99%94-%ec%8a%a4%ed%81%ac%eb%a6%bd%ed%8a%b8-%ec%8b%a4%ec%84%9c%eb%b2%84-%ec%8b%a4%ed%96%89-%ea%b2%80%ec%a6%9d-23-%ec%99%84%eb%a3%8c" aria-label="OCI 업데이트 자동화 스크립트 실서버 실행 검증 2/3 완료">OCI 업데이트 자동화 스크립트 실서버 실행 검증 2/3 완료</a></li>
+            <li>
+                <a href="#docs-sync-skill-%ec%8b%a0%ec%84%a4-2-task" aria-label="docs-sync skill 신설 (2-Task)">docs-sync skill 신설 (2-Task)</a></li>
+            <li>
+                <a href="#%eb%a7%a4%ec%88%98-%ec%88%98%eb%9f%89-0--1%ec%a3%bc-%ec%98%88%ec%99%b8%eb%a7%a4%ec%88%98--%eb%a1%9c%ea%b7%b8-%ec%a0%95%ed%99%95%eb%8f%84-%ea%b0%9c%ec%84%a0-2-task" aria-label="매수 수량 0 — 1주 예외매수 &#43; 로그 정확도 개선 (2-Task)">매수 수량 0 — 1주 예외매수 + 로그 정확도 개선 (2-Task)</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 23일<br>
+<strong>최종 수정</strong>: 2026년 6월 23일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Advanced<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/order-fill-holdings-diff-bug/">이전 글</a>에서 매수 무한반복 사고를 발견하고 체결판단을 holdings-diff 방식으로 전환했다. 하지만 그 수정은 이미 쌓여있던 특정 종목을 자동으로 회복시켜주진 않는다. 6월 23일은 그 phantom position을 실제로 정정하는 작업으로 마무리되는데, 그 전에 v2 백테스트 기능 확장과 OCI 운영 자동화도 진행했다.</p>
+<p>결론부터 말하면, v2 백테스트에 시장국면(bull/chop/bear)에 따라 전략 프로파일이 날짜별로 바뀌는 동적 국면전환 시뮬레이션을 추가했다. OCI 서버 업데이트를 자동화하는 스크립트를 만들어 실제로 검증했다. 그리고 <code>sync_broker_holdings()</code>를 새로 만들어 매 cron마다 실제 KIS 잔고와 자동 대조하도록 했고, 직접 실행해서 수량이 정확히 정정되는 것을 확인했다. 마지막으로 매수 수량이 0이 되어 스킵되던 케이스에 1주 예외매수를 추가했다.</p>
+<hr>
+<h2 id="v2-백테스트-동적-국면전환시장-regime-기반-시뮬레이션-추가-6-task">v2 백테스트 동적 국면전환(시장 regime 기반) 시뮬레이션 추가 (6-Task)<a hidden class="anchor" aria-hidden="true" href="#v2-백테스트-동적-국면전환시장-regime-기반-시뮬레이션-추가-6-task">#</a></h2>
+<p>v1 백테스트는 <code>second_stage</code> 프로필을 미리 선택해야 그 선택에 따른 수익률을 확인할 수 있는데(정상 동작), v2는 실거래에서 시장국면에 따라 <code>second_stage</code>가 날짜마다 동적으로 바뀌는데도 백테스트 엔진은 처음 로드된 정적 설정 하나로만 전체 기간을 도는 근본적 한계가 있었다.</p>
+<p>brainstorming으로 범위를 확정했다 — 4그룹 스크리닝·VKOSPI 공포 필터·동적 손절·Hysteresis 매도는 백테스트용 데이터(VKOSPI 히스토리·섹터 매핑·수급 데이터)가 없어 이번 범위에서 제외하고, <strong>KOSPI 지수 기반 시장국면(bull/chop/bear) 감지</strong>로 trend_following/momentum/balanced 프로파일을 날짜별로 전환하는 것까지만 구현했다.</p>
+<ul>
+<li><code>backtest/data_downloader.py</code>: <code>download_index_candles()</code> 추가 — KOSPI 지수 캔들을 종목 캔들과 동일한 CSV 스키마로 저장</li>
+<li><code>backtest/v2_regime_screening.py</code> 신규 — 순수 계산 헬퍼. <code>strategy_v2/screening/{market_regime,second_stage,atr_filter}.py</code>의 실거래 공식을 직접 import해 재사용(해당 파일들은 한 글자도 수정하지 않음 — 읽기 전용 의존)</li>
+<li><code>backtest_runner.py::run_backtest()</code>에 <code>strategy_version</code> 파라미터 추가 — v2는 매 시뮬레이션일마다 KOSPI 종가로 국면을 재감지해 프로파일을 전환하며 매수 평가</li>
+<li>매수 거래 레코드에 <code>regime</code>/<code>target_strategy</code> 필드 추가, 웹 <code>/backtest/{run_id}</code> 상세 페이지에 국면/프로파일 분포 표시 추가</li>
+</ul>
+<p>구현 중 기존 결함도 하나 발견해 함께 수정했다 — <code>test_renders_with_no_history</code> 테스트가 <code>_load_app_yaml</code>을 mock하지 않아 실제 <code>data/trading.db</code>(기존 백테스트 이력 포함)를 읽어버려 &ldquo;이력 없음&rdquo; 분기가 트리거되지 않고 실패하던 테스트 격리 누락 버그였다.</p>
+<p><code>pytest tests/</code> 691개 전체 통과. 로컬엔 실제 KIS API 키·백테스트 CSV가 없어 unit/통합 테스트로만 검증했고, OCI 배포 후 실데이터 기준 확인이 필요한 항목으로 남겼다.</p>
+<hr>
+<h2 id="oci-서버-업데이트-자동화-스크립트-추가-7-task">OCI 서버 업데이트 자동화 스크립트 추가 (7-Task)<a hidden class="anchor" aria-hidden="true" href="#oci-서버-업데이트-자동화-스크립트-추가-7-task">#</a></h2>
+<p><code>docs/UPDATE.md</code>/<code>docs/WEBSERVICE_DEPLOY.md</code>에 문서화된 OCI 서버 수동 업데이트 절차(venv 확인, 의존성 확인, git pull, kis-web 재시작, DB 확인)를 하나의 쉘스크립트로 자동화했다.</p>
+<p>brainstorming으로 범위를 확정했다 — pull 브랜치는 master만, <code>app.yaml</code> 충돌은 자동 stash, DB 확인은 파일존재+integrity_check, 의존성은 매번 무조건 설치, <code>kis-web.service</code> 변경은 자동 감지·적용, 실패 시 즉시 중단, 텔레그램 알림은 없음.</p>
+<p><code>scripts/update_oci.sh</code>를 함수 단위로 구성했다(<code>check_branch</code>, <code>check_venv</code>, <code>check_local_changes_and_stash</code>, <code>do_git_pull</code>, <code>install_dependencies</code>, <code>sync_service_file_if_changed</code>, <code>restart_web_service</code>, <code>verify_db_integrity</code> 등). <code>UPDATE_OCI_REPO_ROOT</code> 환경변수로 <code>REPO_ROOT</code>를 오버라이드할 수 있게 해 로컬에서 임시 git 저장소로 테스트할 수 있도록 설계했다.</p>
+<p>최종 리뷰에서 Important 1건을 발견했다 — <code>verify_db_integrity()</code>가 <code>set -euo pipefail</code> 하에서 sqlite3가 비정상 종료(DB 손상 시 흔한 패턴)하면 &ldquo;DB 손상은 경고만 하고 절대 스크립트를 중단하지 않는다&quot;는 설계 원칙을 깨고 스크립트 전체가 죽어버리는 버그였다. <code>result=&quot;$(sqlite3 ... 2&gt;&amp;1 || true)&quot;</code>로 수정 후 재리뷰 &ldquo;Ready to merge: Yes&rdquo;.</p>
+<p>이 스크립트는 sudo/systemctl/git을 직접 다뤄 pytest 대상이 아니다 — <code>bash -n</code> 문법 검사 + 스텁(sudo/systemctl/sqlite3/pip) 기반 임시 git 저장소 시나리오 테스트로 검증했다. <code>pytest tests/</code> 691개는 이 작업과 무관하게 통과(회귀 없음). <code>docs/UPDATE.md</code>에 &ldquo;자동화 스크립트(권장)&rdquo; 섹션을 추가했다.</p>
+<hr>
+<h2 id="-본계좌-실시간-kis-잔고-동기화-4-task-pr-63-merge">✅ 본계좌 실시간 KIS 잔고 동기화 (4-Task, PR #63 merge)<a hidden class="anchor" aria-hidden="true" href="#-본계좌-실시간-kis-잔고-동기화-4-task-pr-63-merge">#</a></h2>
+<p>전날(6/22)의 매수 무한반복 사고로 holdings-diff 전환은 끝냈지만, 어제저녁 <code>--reconcile</code> 실행 후 봇 대시보드(특정 종목)와 실제 KIS 모의투자 계좌(특정 종목)가 다르다는 보고가 있었다. systematic-debugging으로 다시 조사했다.</p>
+<p>로그·DB·<code>get_balance()</code> 직접 조회로 원인을 확정했다 — 6/22 특정 종목 손절매도와 특정 종목 26회 매수 시도 전부 실제로는 체결됐으나 구버전 체결판단 로직이 매번 오판해 <code>holdings.json</code>이 갱신되지 않았던 것이다. 같은 날 holdings-diff 전환으로 재발 방지는 됐지만, <strong>&ldquo;봇 자신의 계좌는 KIS 실제 잔고 대조 장치가 없다&quot;는 공백</strong>(6/21에 기록해뒀던 운영 안정성 공백 2건 중 하나)은 여전히 미해결로 남아있던 구조적 원인이었다.</p>
+<p>brainstorming → 설계 → 계획(4 Task) → 구현했다.</p>
+<ul>
+<li><code>utils/reconcile.py</code>에 v1/v2 라우팅 헬퍼(<code>_upsert_holding</code>/<code>_close_holding</code>) 추가, 기존 <code>run()</code>의 누락/복구/초과 종목 처리를 헬퍼 사용으로 교체</li>
+<li><code>sync_broker_holdings()</code> 신규 — 매 15분 cron마다 <code>get_balance()</code>로 실제 KIS 잔고와 <code>holdings.json</code>/<code>position_registry</code>를 대조해 자동 보정, 드리프트 발견 시 텔레그램 알림</li>
+<li><code>runner.py</code>에 연동(미확인 주문 처리 직후, <code>--dry-run</code> 가드 포함)</li>
+<li>부수 발견: 본계좌 reconcile 경로가 <code>active_strategy_version</code>(v1/v2)과 무관하게 항상 v1 스키마로 기록하던 별도 버그도 같은 라우팅 헬퍼로 해결</li>
+</ul>
+<p>최종 whole-branch 리뷰 &ldquo;Ready to merge: Yes&rdquo;. <strong>직접 실행해 실제 효과를 확인</strong>했다(서브에이전트가 아니라 컨트롤러가 직접 수행 — 실제 데이터/텔레그램 영향 때문):</p>
+<ul>
+<li><code>--dry-run</code> → <code>holdings.json</code> 무변화 확인</li>
+<li>실제 <code>python runner.py</code> 1회 → <code>holdings.json</code>이 실제 KIS 잔고(특정 종목)와 정확히 일치하도록 자동 정정됨</li>
+<li>정정 직후 봇이 정상적으로 &ldquo;연속 하락 7일&rdquo; 조건을 인식해 수량 매도 주문을 접수(주문번호 &lt;주문번호&gt;)</li>
+</ul>
+<p><code>pytest tests/</code> 704/704 통과. PR #63 머지 후 <code>feature/build</code>를 master에 동기화했다.</p>
+<hr>
+<h2 id="oci-업데이트-자동화-스크립트-실서버-실행-검증-23-완료">OCI 업데이트 자동화 스크립트 실서버 실행 검증 2/3 완료<a hidden class="anchor" aria-hidden="true" href="#oci-업데이트-자동화-스크립트-실서버-실행-검증-23-완료">#</a></h2>
+<p><code>scripts/update_oci.sh</code>를 OCI 서버에서 직접 실행해 브랜치/venv 사전점검·<code>git pull</code>(fast-forward)·<code>app.yaml</code> 자동 stash/복원·의존성 설치·서비스 재시작(active 확인)·DB 무결성 확인(ok)까지 전체 단계가 에러 없이 정상 완료됨을 확인했다. 미검증 1건은 남았다 — 이번 실행은 <code>kis-web.service</code> 파일 변경이 없는 PR이었어서, 서비스 파일이 실제로 바뀐 PR을 반영할 때 systemd 갱신이 의도대로 동작하는지는 다음에 해당 파일을 바꾸는 PR이 머지되면 확인하기로 했다.</p>
+<hr>
+<h2 id="docs-sync-skill-신설-2-task">docs-sync skill 신설 (2-Task)<a hidden class="anchor" aria-hidden="true" href="#docs-sync-skill-신설-2-task">#</a></h2>
+<p><code>docs/</code> 폴더 18개 문서의 양식·점검순서·전략버전별 분리 기준이 제각각이라 통일하고 싶다는 요청이 있었다. brainstorming으로 &ldquo;문서 구조 설계 먼저, 자동화 skill은 그 다음&rdquo; 두 단계로 분리했다.</p>
+<ul>
+<li>설계: 카테고리 5개(시작하기/설정/매매전략/운영·테스트/안전) + 추천 읽기순서, 공통 메타(최종업데이트/대상독자/한줄요약/관련문서), <code>TRADING_FLOW.md</code> → <code>STRATEGY_V1/V2_trading_flow.md</code> 분리, 기존 문서는 <code>docs/archive/</code>에 보관</li>
+<li>Task 1: <code>docs/README.md</code> 19개 문서 체크리스트 골격 + <code>docs/archive/</code> 폴더</li>
+<li>Task 2: <code>.claude/skills/docs-sync/skill.md</code> — 문서별 읽기전용 서브에이전트 디스패치 → 컨트롤러 검토·최종작성 → 원본 아카이브 → README 체크 갱신 → 링크 무결성 점검 절차</li>
+</ul>
+<p>사용자 피드백으로 stale 점검 시 코드만 보지 말고 <code>work-log.md</code>(최근 변경 맥락)·설계문서(설계 의도)도 함께 참고하도록 skill.md에 보강했다. 실제 18→19개 문서 재작성 실행은 이번 범위 밖으로, skill을 호출해 별도 세션에서 진행하기로 했다(다음 글에서 다룬다).</p>
+<hr>
+<h2 id="매수-수량-0--1주-예외매수--로그-정확도-개선-2-task">매수 수량 0 — 1주 예외매수 + 로그 정확도 개선 (2-Task)<a hidden class="anchor" aria-hidden="true" href="#매수-수량-0--1주-예외매수--로그-정확도-개선-2-task">#</a></h2>
+<p><code>logs/trader.log</code> 점검 중 &ldquo;매수 수량 0 — 잔고 부족 스킵&rdquo; 로그가 반복 발견됐다(예: 잔고가 충분한데도 고가 종목 1주를 &ldquo;잔고 부족&quot;으로 스킵). 추적 결과 실제 원인은 계좌 잔고가 아니라 <strong>종목당 매수예산</strong>(<code>buy_amount_per_stock</code>, neutral 기준 고정 금액)이 1주 가격보다 작아서 <code>actual_buy // price</code>가 0이 되는 것이었다.</p>
+<p>brainstorming으로 동작을 결정했다 — 1주 예외매수는 계좌 사용가능금액 이내일 때만, 종목당 매수예산의 2배까지만 허용.</p>
+<ul>
+<li><code>_calc_qty()</code>가 <code>int</code> 단일 반환 대신 <code>(qty, reason)</code> 튜플 반환 — <code>reason</code>: <code>&quot;ok&quot;</code>/<code>&quot;insufficient_balance&quot;</code>/<code>&quot;single_share_override&quot;</code>/<code>&quot;budget_exceeded&quot;</code></li>
+<li><code>strategy_v1/trading/buy.py</code>, <code>strategy_v2/trading/buy.py</code> 양쪽에 독립적으로 동일하게 적용(공유 모듈로 묶지 않음)</li>
+</ul>
+<p>최종 whole-branch 리뷰(opus) &ldquo;Ready to merge: Yes&rdquo; — v1/v2가 공유 코드 없이도 4가지 사유 문자열·임계값 로직·경계값 처리가 한 줄씩 동일함을 확인했다. <strong>이전엔 예산보다 비싸면 그냥 스킵되던 종목이 이제(예산~2배 사이일 때) 실제로 1주 매수 주문이 나가는, 실거래 동작이 바뀌는 변경</strong>이다. 배포 후 하루 정도 실제로 이 1주 매수가 의도대로 발동하는지 관찰하기로 했다.</p>
+<p><code>pytest tests/</code> 717/717 통과.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>작업</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>v2 백테스트 국면전환</td>
+					<td>KOSPI 기반 bull/chop/bear 감지로 프로파일 날짜별 전환 시뮬레이션</td>
+			</tr>
+			<tr>
+					<td>OCI 자동화 스크립트</td>
+					<td>브랜치/venv/git pull/stash/재시작/DB확인 전체 자동화, 실서버 2/3 검증</td>
+			</tr>
+			<tr>
+					<td>본계좌 잔고 동기화</td>
+					<td><code>sync_broker_holdings()</code> — 수량 phantom position 직접 정정 확인</td>
+			</tr>
+			<tr>
+					<td>docs-sync skill</td>
+					<td>18개 문서 통일 재작성 절차 신설(실행은 다음 작업)</td>
+			</tr>
+			<tr>
+					<td>1주 예외매수</td>
+					<td>매수예산보다 비싼 종목도 2배 이내면 1주 매수 허용</td>
+			</tr>
+			<tr>
+					<td>테스트</td>
+					<td><code>pytest tests/</code> 717/717 통과</td>
+			</tr>
+	</tbody>
+</table>
+<p>다음 글에서는 같은 날 진행한 <strong>문서 전체 점검, docs-sync 5개 카테고리 19개 문서 재작성, v0.6.0 릴리즈</strong>까지를 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

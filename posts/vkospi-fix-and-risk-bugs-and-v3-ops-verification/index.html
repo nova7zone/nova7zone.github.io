@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="버그수정">
+<meta name="description" content="KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증">
+  <meta property="og:description" content="KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-03T10:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-03T10:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증">
+  <meta name="twitter:description" content="KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증",
+      "item": "https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증",
+  "description": "KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.",
+  "keywords": [
+    "버그수정"
+  ],
+  "articleBody": "작성일: 2026년 7월 3일\n최종 수정: 2026년 7월 3일\n분야: AI Trading, Development\n난이도: Advanced\n상태: Production Ready\n들어가며 이전 글에서 v0.7.0을 릴리즈하며 v3를 메인 전략으로 전환했다. 7월 3일은 v3가 실제로 돌아가기 시작한 지 이틀째 되는 날로, 운영 로그 검증과 외부에서 준비된 작업 지시서 기반의 긴급 수정이 함께 진행됐다.\n결론부터 말하면, KIS Open API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회하고 있어서 fear_filter가 매 사이클 극단적 공포로 오판하던 버그를 찾아 고쳤다. 이어서 리스크 버그 5건을 추가로 수정했다. 같은 날 v0.7.0 배포 후 이틀치 v3 운영 로그를 분석해, 종목명 대량 누락·재선정 날짜 미전달·v2가 v3 포지션까지 매도하는 Critical 버그 3건도 발견해 고쳤다.\nv3 운영 로그 검증: Critical 버그 3건 먼저 v0.7.0 배포 후 OCI(모의투자)에서 v3가 처음 운영된 이틀치(07-02~07-03) logs/, data/, data/cache를 사용자가 복사해 전달해서 V3_HANDOFF.md §9 절차대로 분석했다.\n검증 완료 항목: position_registry에 managed_by='v3', entry_profile(fear_driven/momentum/trend_following), entry_group_scores(G1G5 정상값) 6건이 전부 정상 기록됐다 — 7월 1일 buy.py Critical 버그(2b189e1) 수정이 실거래에서 해소됐음을 최초로 직접 확인했다. 매시간 재선정 0914시도 정상 실행됐고, 1차 퍼널 로그도 정상(그룹 A~D 전부 매 사이클 1건 이상 1차선정, 과거 “그룹 D 항상 0건” 문제 재발 없음)이었다.\nCritical 버그 3건 발견·수정 (전부 TDD, pytest tests/ 897/897 통과):\n종목명 대량 누락 — 모의투자(VTS) get_price_info()가 호출 성공(rt_cd=0)해도 hts_kor_isnm을 빈 문자열로 반환하는 경우가 잦았다. 같은 재선정 사이클에서 캐시 기반 그룹 C는 이름이 채워지고 실시간 조회 기반 그룹 A/B/D만 비어 있는 패턴으로 근본 원인을 특정했는데, 실제 매수 체결 종목의 holdings.json name까지 빈 값으로 저장되고 있었다. 이전에 고친 버그(bd10663)는 코드는 맞았지만 API가 애초에 이름을 안 주는 케이스를 못 막았던 것이었다 — get_stock_sector()와 동일 패턴으로 get_stock_name()(항상 live 앱키 조회)을 신규 추가해 _current_price_and_name()에 fallback을 적용했다(v2/v3 공통, 동일 버그 패턴이라 양쪽 다 수정). 매시간 재선정 date_str 미전달 — strategy_v3/trading/buy.py의 mark_candidates_selected(now.hour) 등 재선정 관련 호출이 date_str을 넘기지 않아 first_stage_groups.py가 자체적으로 “오늘\"을 재계산하는 구조였다. now_kst()를 모킹해도 두 모듈의 “오늘\"이 어긋날 수 있어 기존 테스트 2건이 실패 중이었다(제3자 검증 중 재발견 — pytest 훅이 이 실패를 잡아냈다). now에서 date_str을 한 번만 계산해 관련 호출 전체에 명시적으로 전달하도록 수정했다. v2 병행 매도가 v3 포지션까지 매도 — runner.py::_has_legacy_v2_holdings()가 True(v2 잔존 포지션 존재)일 때 strategy_v2/trading/sell.py::run_sell()이 managed_by 구분 없이 holdings.json 전체를 순회하고 있었다 — v3로 갓 매수한 포지션까지 v2의 구식(그룹 정규화 없는) 스코어링으로 매도해버린 것이다. 특정 종목이 09:15 v3 매수 후 10:15 v2 target_reached로 오매도된 실제 사례로 확인됐다. managed_by='v3' 종목은 v2 매도 평가에서 스킵하도록 수정했다. 미해결로 남긴 확인 항목도 있다 — strategy_sell.yaml hold_days/score_exit_ratio/MFE 트레일링 반영은 운영 2일차라 아직 트리거 조건 미도달(지금까지 매도는 전부 stop_loss)이었고, API 예산 잔여는 애초에 로그로 안 남기고 있어 계측 코드 추가가 선행되어야 했다.\n커밋: 706f719. release-notes-draft-v0.7.0.md의 “다음 단계” 체크리스트도 함께 갱신했다(9개 중 6개 [x]).\nVKOSPI 오조회 긴급 수정(Phase 0) 사용자가 외부에서 준비한 작업 지시서 3종(docs/development/20260703_review/: work-order, code-review, strategy-return-analysis) 기반 다단계 작업(Phase 04)에 착수했다. 오늘은 Phase 0(T0-1)과 Phase 1(T1-1T1-5)만 완료하고 Phase 2부터는 다음 세션으로 넘겼다.\nT0-1 (commit 29a4629): KIS Open API는 V-KOSPI200을 제공하지 않는다. 그런데 잘못된 지수 코드(VKOSPI_INDEX_CODE=\"2030\")로 조회하고 있어서 464~586의 엉뚱한 값을 반환했고, fear_filter가 매 사이클 extreme_fear로 오판해 포지션 사이징·프로파일·청산 로직을 상시 왜곡시키고 있었다.\n수정: api/krx_api.py를 신규 작성(KRX Open API로 실제 V-KOSPI200 EOD 종가 조회, 공휴일 영업일 재시도) + market_data_helpers.py(KRX 1순위 + KOSPI 일봉 기반 realized volatility 폴백, sanity guard, 이상값 텔레그램 1일 1회 경고, 일별 파일 캐싱) + fear_filter.classify()(vkospi=None → “unknown” 레벨 신설). /code-review(8각도 finder + 검증)로 diff를 재검토해 확인된 이슈 9건을 추가 수정했다(공휴일 데이터소스 혼합, sanity guard의 정상 0.0 오탐, candle count 비대칭, 캐싱 부재로 인한 중복 외부 호출 등).\n리스크 버그 5건 수정(Phase 1) T1-1(H-1, commit 7c0ff14): 매도 registry close 시점을 주문 접수에서 체결 확인으로 이동. 미체결 취소 시 registry만 ‘sold’로 남아 다음 사이클 손절 재평가가 스킵되던 orphan 포지션 버그를 수정했다. _on_sell_filled의 v1용 close_position_registry(이미 닫힌 행이라 no-op) 대신 close_position_registry_v2로 통일하고, 전량 체결 시에만 close(부분체결 시 미close 버그도 함께 수정)하도록 했다. T1-2(H-2, commit 142a27f): 주문·취소 API POST 재시도 금지. _request/_request_full에 retryable 파라미터를 추가해 타임아웃이 중복 주문으로 이어질 위험을 차단했다(401 토큰 재발급 재시도는 그대로 유지). T1-3(H-3, commit 1ffcccf): 서버 타임존 의존 코드 제거. v3 buy.py 목표가 valid_until 판정, token_manager.py 차단 플래그 날짜를 now_kst()/today_kst()로 통일했다. T1-4(M-3, commit 58ba391): 체결가를 주문가 대신 실측값으로 기록. get_holding_avg_price()(매수, pchs_avg_pric)·_approx_sell_fill_price()(매도, 현재가 근사)를 신규 추가했다(orders 테이블 연계는 Phase 2로 이월). T1-5(M-1/M-4, commit ab9d24d): 보유 한도가 pending 매수를 못 세던 버그를 수정(get_pending_buy_count())하고, KIS API 콜 스로틀을 추가했다(min_call_interval_seconds, 기본 0.3초, VTS 초당 2건 제한 대응). pytest tests/ 913개(Phase 0 시작 전) → 946개(Phase 1 종료 시점) 전체 통과했다. Phase마다 개별 커밋으로 나눴다.\n정리 항목 내용 VKOSPI 버그 존재하지 않는 지수를 잘못된 코드로 조회 → fear_filter 상시 오판 Phase 0 수정 KRX Open API로 실제 지수 조회 + realized volatility 폴백 Phase 1 리스크 버그 5건 orphan 포지션, 주문 재시도, 타임존, 체결가, pending 카운트/스로틀 v3 운영 검증 Critical 3건 종목명 누락, 재선정 날짜 미전달, v2가 v3 포지션 오매도 실제 사고 특정 종목 v3 매수 후 v2에 의해 오매도 가장 근본적인 지수 오조회 버그가 시리즈 내내 fear_filter의 판단을 왜곡시키고 있었다는 것과, v3 전환 직후 v2/v3 병행 운영 중 서로 다른 전략이 같은 포지션을 건드리는 경계 문제가 실거래로 드러났다는 것, 두 가지가 이 날의 핵심이었다. Phase 2(데이터 수집 계층 — 신규 테이블 4개 + holdings_snapshot 연결)는 다음 세션으로 이월됐다. 다음 글에서는 7월 4일, 매도 판단 근거를 데이터베이스에 남기는 sell_evaluation_log와 주문 이벤트를 append-only로 기록하는 orders 테이블을 신설하는 과정을 다룬다.\n",
+  "wordCount" : "3047",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-03T10:00:00+09:00",
+  "dateModified": "2026-07-03T10:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증
+    </h1>
+    <div class="post-description">
+      KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-03T10:00:00+09:00'>2026년 7월 3일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#v3-%ec%9a%b4%ec%98%81-%eb%a1%9c%ea%b7%b8-%ea%b2%80%ec%a6%9d-critical-%eb%b2%84%ea%b7%b8-3%ea%b1%b4" aria-label="v3 운영 로그 검증: Critical 버그 3건">v3 운영 로그 검증: Critical 버그 3건</a></li>
+            <li>
+                <a href="#vkospi-%ec%98%a4%ec%a1%b0%ed%9a%8c-%ea%b8%b4%ea%b8%89-%ec%88%98%ec%a0%95phase-0" aria-label="VKOSPI 오조회 긴급 수정(Phase 0)">VKOSPI 오조회 긴급 수정(Phase 0)</a></li>
+            <li>
+                <a href="#%eb%a6%ac%ec%8a%a4%ed%81%ac-%eb%b2%84%ea%b7%b8-5%ea%b1%b4-%ec%88%98%ec%a0%95phase-1" aria-label="리스크 버그 5건 수정(Phase 1)">리스크 버그 5건 수정(Phase 1)</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 3일<br>
+<strong>최종 수정</strong>: 2026년 7월 3일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Advanced<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/docs-update-and-v070-release/">이전 글</a>에서 v0.7.0을 릴리즈하며 v3를 메인 전략으로 전환했다. 7월 3일은 v3가 실제로 돌아가기 시작한 지 이틀째 되는 날로, 운영 로그 검증과 외부에서 준비된 작업 지시서 기반의 긴급 수정이 함께 진행됐다.</p>
+<p>결론부터 말하면, KIS Open API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회하고 있어서 fear_filter가 매 사이클 극단적 공포로 오판하던 버그를 찾아 고쳤다. 이어서 리스크 버그 5건을 추가로 수정했다. 같은 날 v0.7.0 배포 후 이틀치 v3 운영 로그를 분석해, 종목명 대량 누락·재선정 날짜 미전달·v2가 v3 포지션까지 매도하는 Critical 버그 3건도 발견해 고쳤다.</p>
+<hr>
+<h2 id="v3-운영-로그-검증-critical-버그-3건">v3 운영 로그 검증: Critical 버그 3건<a hidden class="anchor" aria-hidden="true" href="#v3-운영-로그-검증-critical-버그-3건">#</a></h2>
+<p>먼저 v0.7.0 배포 후 OCI(모의투자)에서 v3가 처음 운영된 이틀치(07-02~07-03) <code>logs/</code>, <code>data/</code>, <code>data/cache</code>를 사용자가 복사해 전달해서 <code>V3_HANDOFF.md</code> §9 절차대로 분석했다.</p>
+<p><strong>검증 완료 항목</strong>: <code>position_registry</code>에 <code>managed_by='v3'</code>, <code>entry_profile</code>(fear_driven/momentum/trend_following), <code>entry_group_scores</code>(G1<del>G5 정상값) 6건이 전부 정상 기록됐다 — 7월 1일 buy.py Critical 버그(<code>2b189e1</code>) 수정이 실거래에서 해소됐음을 최초로 직접 확인했다. 매시간 재선정 09</del>14시도 정상 실행됐고, 1차 퍼널 로그도 정상(그룹 A~D 전부 매 사이클 1건 이상 1차선정, 과거 &ldquo;그룹 D 항상 0건&rdquo; 문제 재발 없음)이었다.</p>
+<p><strong>Critical 버그 3건 발견·수정</strong> (전부 TDD, <code>pytest tests/</code> 897/897 통과):</p>
+<ol>
+<li><strong>종목명 대량 누락</strong> — 모의투자(VTS) <code>get_price_info()</code>가 호출 성공(rt_cd=0)해도 <code>hts_kor_isnm</code>을 빈 문자열로 반환하는 경우가 잦았다. 같은 재선정 사이클에서 캐시 기반 그룹 C는 이름이 채워지고 실시간 조회 기반 그룹 A/B/D만 비어 있는 패턴으로 근본 원인을 특정했는데, 실제 매수 체결 종목의 <code>holdings.json</code> name까지 빈 값으로 저장되고 있었다. 이전에 고친 버그(<code>bd10663</code>)는 코드는 맞았지만 API가 애초에 이름을 안 주는 케이스를 못 막았던 것이었다 — <code>get_stock_sector()</code>와 동일 패턴으로 <code>get_stock_name()</code>(항상 live 앱키 조회)을 신규 추가해 <code>_current_price_and_name()</code>에 fallback을 적용했다(v2/v3 공통, 동일 버그 패턴이라 양쪽 다 수정).</li>
+<li><strong>매시간 재선정 date_str 미전달</strong> — <code>strategy_v3/trading/buy.py</code>의 <code>mark_candidates_selected(now.hour)</code> 등 재선정 관련 호출이 <code>date_str</code>을 넘기지 않아 <code>first_stage_groups.py</code>가 자체적으로 &ldquo;오늘&quot;을 재계산하는 구조였다. <code>now_kst()</code>를 모킹해도 두 모듈의 &ldquo;오늘&quot;이 어긋날 수 있어 기존 테스트 2건이 실패 중이었다(제3자 검증 중 재발견 — pytest 훅이 이 실패를 잡아냈다). <code>now</code>에서 <code>date_str</code>을 한 번만 계산해 관련 호출 전체에 명시적으로 전달하도록 수정했다.</li>
+<li><strong>v2 병행 매도가 v3 포지션까지 매도</strong> — <code>runner.py::_has_legacy_v2_holdings()</code>가 True(v2 잔존 포지션 존재)일 때 <code>strategy_v2/trading/sell.py::run_sell()</code>이 <code>managed_by</code> 구분 없이 <code>holdings.json</code> 전체를 순회하고 있었다 — v3로 갓 매수한 포지션까지 v2의 구식(그룹 정규화 없는) 스코어링으로 매도해버린 것이다. 특정 종목이 09:15 v3 매수 후 10:15 v2 <code>target_reached</code>로 오매도된 실제 사례로 확인됐다. <code>managed_by='v3'</code> 종목은 v2 매도 평가에서 스킵하도록 수정했다.</li>
+</ol>
+<p>미해결로 남긴 확인 항목도 있다 — <code>strategy_sell.yaml</code> hold_days/score_exit_ratio/MFE 트레일링 반영은 운영 2일차라 아직 트리거 조건 미도달(지금까지 매도는 전부 stop_loss)이었고, API 예산 잔여는 애초에 로그로 안 남기고 있어 계측 코드 추가가 선행되어야 했다.</p>
+<p>커밋: <code>706f719</code>. <code>release-notes-draft-v0.7.0.md</code>의 &ldquo;다음 단계&rdquo; 체크리스트도 함께 갱신했다(9개 중 6개 <code>[x]</code>).</p>
+<hr>
+<h2 id="vkospi-오조회-긴급-수정phase-0">VKOSPI 오조회 긴급 수정(Phase 0)<a hidden class="anchor" aria-hidden="true" href="#vkospi-오조회-긴급-수정phase-0">#</a></h2>
+<p>사용자가 외부에서 준비한 작업 지시서 3종(<code>docs/development/20260703_review/</code>: work-order, code-review, strategy-return-analysis) 기반 다단계 작업(Phase 0<del>4)에 착수했다. 오늘은 Phase 0(T0-1)과 Phase 1(T1-1</del>T1-5)만 완료하고 Phase 2부터는 다음 세션으로 넘겼다.</p>
+<p><strong>T0-1 (commit <code>29a4629</code>)</strong>: KIS Open API는 V-KOSPI200을 제공하지 않는다. 그런데 잘못된 지수 코드(<code>VKOSPI_INDEX_CODE=&quot;2030&quot;</code>)로 조회하고 있어서 464~586의 엉뚱한 값을 반환했고, fear_filter가 매 사이클 extreme_fear로 오판해 포지션 사이징·프로파일·청산 로직을 상시 왜곡시키고 있었다.</p>
+<p><strong>수정</strong>: <code>api/krx_api.py</code>를 신규 작성(KRX Open API로 실제 V-KOSPI200 EOD 종가 조회, 공휴일 영업일 재시도) + <code>market_data_helpers.py</code>(KRX 1순위 + KOSPI 일봉 기반 realized volatility 폴백, sanity guard, 이상값 텔레그램 1일 1회 경고, 일별 파일 캐싱) + <code>fear_filter.classify()</code>(vkospi=None → &ldquo;unknown&rdquo; 레벨 신설). <code>/code-review</code>(8각도 finder + 검증)로 diff를 재검토해 확인된 이슈 9건을 추가 수정했다(공휴일 데이터소스 혼합, sanity guard의 정상 0.0 오탐, candle count 비대칭, 캐싱 부재로 인한 중복 외부 호출 등).</p>
+<hr>
+<h2 id="리스크-버그-5건-수정phase-1">리스크 버그 5건 수정(Phase 1)<a hidden class="anchor" aria-hidden="true" href="#리스크-버그-5건-수정phase-1">#</a></h2>
+<ul>
+<li><strong>T1-1(H-1, commit <code>7c0ff14</code>)</strong>: 매도 registry close 시점을 주문 접수에서 체결 확인으로 이동. 미체결 취소 시 registry만 &lsquo;sold&rsquo;로 남아 다음 사이클 손절 재평가가 스킵되던 orphan 포지션 버그를 수정했다. <code>_on_sell_filled</code>의 v1용 <code>close_position_registry</code>(이미 닫힌 행이라 no-op) 대신 <code>close_position_registry_v2</code>로 통일하고, 전량 체결 시에만 close(부분체결 시 미close 버그도 함께 수정)하도록 했다.</li>
+<li><strong>T1-2(H-2, commit <code>142a27f</code>)</strong>: 주문·취소 API POST 재시도 금지. <code>_request</code>/<code>_request_full</code>에 <code>retryable</code> 파라미터를 추가해 타임아웃이 중복 주문으로 이어질 위험을 차단했다(401 토큰 재발급 재시도는 그대로 유지).</li>
+<li><strong>T1-3(H-3, commit <code>1ffcccf</code>)</strong>: 서버 타임존 의존 코드 제거. v3 buy.py 목표가 valid_until 판정, token_manager.py 차단 플래그 날짜를 <code>now_kst()</code>/<code>today_kst()</code>로 통일했다.</li>
+<li><strong>T1-4(M-3, commit <code>58ba391</code>)</strong>: 체결가를 주문가 대신 실측값으로 기록. <code>get_holding_avg_price()</code>(매수, <code>pchs_avg_pric</code>)·<code>_approx_sell_fill_price()</code>(매도, 현재가 근사)를 신규 추가했다(orders 테이블 연계는 Phase 2로 이월).</li>
+<li><strong>T1-5(M-1/M-4, commit <code>ab9d24d</code>)</strong>: 보유 한도가 pending 매수를 못 세던 버그를 수정(<code>get_pending_buy_count()</code>)하고, KIS API 콜 스로틀을 추가했다(<code>min_call_interval_seconds</code>, 기본 0.3초, VTS 초당 2건 제한 대응).</li>
+</ul>
+<p><code>pytest tests/</code> 913개(Phase 0 시작 전) → 946개(Phase 1 종료 시점) 전체 통과했다. Phase마다 개별 커밋으로 나눴다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>VKOSPI 버그</td>
+					<td>존재하지 않는 지수를 잘못된 코드로 조회 → fear_filter 상시 오판</td>
+			</tr>
+			<tr>
+					<td>Phase 0 수정</td>
+					<td>KRX Open API로 실제 지수 조회 + realized volatility 폴백</td>
+			</tr>
+			<tr>
+					<td>Phase 1 리스크 버그 5건</td>
+					<td>orphan 포지션, 주문 재시도, 타임존, 체결가, pending 카운트/스로틀</td>
+			</tr>
+			<tr>
+					<td>v3 운영 검증 Critical 3건</td>
+					<td>종목명 누락, 재선정 날짜 미전달, v2가 v3 포지션 오매도</td>
+			</tr>
+			<tr>
+					<td>실제 사고</td>
+					<td>특정 종목 v3 매수 후 v2에 의해 오매도</td>
+			</tr>
+	</tbody>
+</table>
+<p>가장 근본적인 지수 오조회 버그가 시리즈 내내 fear_filter의 판단을 왜곡시키고 있었다는 것과, v3 전환 직후 v2/v3 병행 운영 중 서로 다른 전략이 같은 포지션을 건드리는 경계 문제가 실거래로 드러났다는 것, 두 가지가 이 날의 핵심이었다. Phase 2(데이터 수집 계층 — 신규 테이블 4개 + holdings_snapshot 연결)는 다음 세션으로 이월됐다. 다음 글에서는 7월 4일, 매도 판단 근거를 데이터베이스에 남기는 sell_evaluation_log와 주문 이벤트를 append-only로 기록하는 orders 테이블을 신설하는 과정을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

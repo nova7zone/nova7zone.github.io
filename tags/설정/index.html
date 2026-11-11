@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>설정 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="">
+<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/index.xml" title="rss">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="설정">
+  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="website">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="설정">
+  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
+
+</head>
+<body class="list" id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main"> 
+<header class="page-header"><nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/tags/">Tags</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+  <h1>
+    설정
+  </h1>
+</header>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 29일
+최종 수정: 2026년 6월 29일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 Alpine.js 반응성 버그와 캐시 날짜 버그를 고쳤다. 6월 29일 후반은 문서 구조 자체를 손보는 작업으로 이어졌다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-29T16:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈" href="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (21) — 매매설정 v2 카드 확장(3·4단계), next-pre-market 분리
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 17일
+최종 수정: 2026년 6월 17일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 pre-market 성능 최적화와 주문 체결 검증을 개선했다. 6월 17일은 그 pre-market 캐시 자체에 구조적 문제가 있다는 걸 발견하면서 시작됐고, 이어서 매매설정 탭에 v2 전용 카드들을 채워나갔다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-17T21:00:00+09:00'>2026년 6월 17일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (21) — 매매설정 v2 카드 확장(3·4단계), next-pre-market 분리" href="https://nova7zone.github.io/posts/v2-settings-cards-and-next-premarket-split/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">빈 ARM 서버에 24시간 AI 비서 심기 — Hermes &#43; OpenRouter &#43; Telegram 구축기
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 17일
+최종 수정: 2026년 6월 17일
+분야: Cloud Infrastructure, AI Agent
+난이도: Intermediate
+상태: Production Ready
+들어가며 결론부터 말하면, OCI A1(ARM) 인스턴스에 Hermes Agent를 올리고 OpenRouter 무료 모델을 붙여, 폰에서 텔레그램으로 대화하는 24시간 AI 비서를 만들었다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-17T15:00:00+09:00'>2026년 6월 17일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 빈 ARM 서버에 24시간 AI 비서 심기 — Hermes &#43; OpenRouter &#43; Telegram 구축기" href="https://nova7zone.github.io/posts/hermes-agent-openrouter-telegram-setup/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 16일
+최종 수정: 2026년 6월 16일
+분야: Cloud Infrastructure
+난이도: Beginner ~ Intermediate
+상태: Production Ready
+들어가며 결론부터 말하면, A1.Flex 인스턴스를 확보한 뒤 PuTTY 접속 설정 → 4 OCPU/24GB 업그레이드 → 스왑·자동회수 방지·방화벽까지 기본 환경 세팅을 마쳤다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-16T18:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 16일
+최종 수정: 2026년 6월 16일
+분야: Cloud Infrastructure
+난이도: Intermediate
+상태: Production Ready
+들어가며 결론부터 말하면, 3,310번의 실패 끝에 A1.Flex 확보에 성공했다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-16T09:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 14일
+최종 수정: 2026년 6월 14일
+분야: AI Trading, Development
+난이도: Advanced
+상태: Production Ready
+들어가며 이전 글에서 strategy_v2의 핵심 매매 로직(position_registry, buy/sell, 다중 계좌 reconcile)을 완성했다. 이번 글은 그 위에 웹에서 v2 설정을 직접 다룰 수 있는 API/카드를 추가하고, 프로젝트 전체에 대한 실행/보안 점검을 진행한 6월 14일 작업을 정리한다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-14T21:00:00+09:00'>2026년 6월 14일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정" href="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 10일
+최종 수정: 2026년 6월 10일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 잔고 0원 버그와 호가단위 오류를 고치면서 실제 매수 주문이 들어가기 시작했다. 매수 주문이 쌓이자 자연스럽게 “이 종목은 왜 샀고, 왜 팔았는지&#34;를 한눈에 보고 싶어졌다. 이번 글은 같은 날(6/10) 이어서 진행한 체결 이력(/trades) 페이지 개편 작업을 정리한다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-10T16:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집" href="https://nova7zone.github.io/posts/trades-page-revamp/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 9일
+최종 수정: 2026년 6월 9일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 매매가 전혀 발생하지 않던 KOSPI 지수 조회 버그를 고쳤다. 이번 글부터는 build-docs/work-log.md에 남긴 커밋 단위 작업 기록을 기반으로, 하루치 작업을 한 편씩 정리한다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-09T20:00:00+09:00'>2026년 6월 9일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (11) — wide 전략 도입과 매매설정 페이지 개편" href="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 5일
+최종 수정: 2026년 6월 5일
+분야: AI Trading, Development
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 crontab으로 자동매매를 등록하고 dry-run/토큰 차단 처리까지 마쳤다. 이번 글은 6월 4일 후반부터 6월 5일까지 진행한 작업을 정리한다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-05T11:00:00+09:00'>2026년 6월 5일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기" href="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>작성일: 2026년 6월 4일
+최종 수정: 2026년 6월 4일
+분야: Infrastructure, DevOps
+난이도: Intermediate
+상태: Production Ready
+들어가며 이전 글에서 웹서버를 외부에서 접속 가능한 상태까지 만들었다. 이번 글에서는 그 웹서버를 상시 실행 상태로 등록하고, 자동매매 본체를 crontab에 올려 실제로 동작시키는 과정을 정리한다.
+...</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-04T10:00:00+09:00'>2026년 6월 4일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입" href="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/"></a>
+</article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="next" href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/page/2/">다음 페이지&nbsp;&nbsp;»
+    </a>
+  </nav>
+</footer>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="버그수정, 설계">
+<meta name="description" content="그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그">
+  <meta property="og:description" content="그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-01T10:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-01T10:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그">
+  <meta name="twitter:description" content="그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그",
+      "item": "https://nova7zone.github.io/posts/strategy-v3-implementation-complete/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그",
+  "description": "그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.",
+  "keywords": [
+    "버그수정", "설계"
+  ],
+  "articleBody": "작성일: 2026년 7월 1일\n최종 수정: 2026년 7월 1일\n분야: AI Trading, Development\n난이도: Advanced\n상태: In Progress\n들어가며 이전 글에서 텔레그램 알림 버그와 손실 매도 버그를 고치고 v0.6.4를 릴리즈했다. 7월 1일부터는 그동안 v1/v2와는 별개로 준비해오던 세 번째 전략 엔진, strategy_v3의 마무리 작업으로 넘어간다.\n결론부터 말하면, 이전 세션에서 Task 18까지 진행하다 중단됐던 strategy_v3 구현을 이어서 Task 912까지 완료했다. 그런데 전체 브랜치를 한 번에 보는 최종 리뷰에서, 실거래에 배포됐다면 매수가 전혀 발생하지 않았을 Critical 버그를 발견했다.\nstrategy_v3란 v1은 조건별 가중치 합산 방식, v2는 4개 그룹(A/B/C/D) 통합 선정 + 풀링 매수 방식이었다. v3는 여기서 한 걸음 더 나아가 그룹 정규화 스크리닝 방식을 쓴다 — 여러 그룹(G1G5)의 점수를 각각 0100 스케일로 정규화한 뒤 합산하고, 5개 프로파일(momentum/trend_following/balanced/reversal/fear_driven)마다 서로 다른 최소 점수(min_score)와 목표가 계산 방식(즉시/할인/기술적)을 적용한다. 매수 후에는 시간이 지날수록 손절/기회비용 기준으로 청산하는 보유기간 관리 로직도 갖췄다.\n이번 세션에서 이어서 완료한 Task 9~12는 다음과 같다.\nTask 9: utils/config_loader.py에 _load_screening_configs_v3() 추가 — condition_groups 구조(v2의 condition_weights와 다름)를 로드하고, v3 전용 strategy_sell/daily_reeval YAML과 v2 공유 운영 YAML을 조합 Task 10: utils/reconcile.py(strategy_version in (\"v2\", \"v3\") 분기), strategy_v2/daily_reeval.py(_call_score() 버전 분기 wrapper — v3는 3-tuple, v2는 2-tuple 언패킹) Task 11: runner.py v3 elif 분기 + _has_legacy_v2_holdings()(v3 활성 중 v2 잔존 포지션 병행 매도) + --pre-market/--next-pre-market v3 허용, web/routers/config_router.py의 get_screening_strategy() v3 condition_groups 지원. 구현 중 실제 버그 하나를 발견했다 — v3 프로파일 선택자 파일 strategy_v3/settings/screen_config/second_stage.yaml이 아예 없어서 config_router가 FileNotFoundError를 낼 뻔한 것을 확인해 생성 Task 12: tests/test_v3_integration.py 통합 스모크 테스트 3건 추가(_score_stock end-to-end, calculate_target_price end-to-end, db/schema.py v3 컬럼 5개 생성 확인) 각 Task는 subagent 구현 → task-reviewer 검토(spec 준수 + 코드 품질) → Important 발견 시 fix subagent → 재검토 순으로 진행했다. Task 9(모킹만 하던 테스트를 실제 동작 검증으로 교체)·Task 10(v3-routing과 v1-fallback을 구분 못 하던 테스트 강화)에서 각 1회 재검토 루프가 발생했지만 모두 clean 통과했다.\n최종 리뷰가 잡은 Critical 버그 Task별 리뷰는 전부 통과했다. 하지만 전체 변경사항(범위 a002495..5b648ed)을 한 번에 보는 최종 whole-branch 리뷰(opus 모델)에서 Critical 버그 1건이 나왔다.\nstrategy_v3/trading/buy.py가 2차 스크리닝용 group_configs에 profile_config(전체 YAML, condition_groups 포함) 키를 누락하고 있었다. 이 때문에 first_stage_groups.run_full_screening()이 빈 condition_groups로 폴백해서 모든 후보 종목이 0점 처리되는 상태였다 — v3를 활성화해서 실거래에 배포했다면 매수가 전혀 발생하지 않았을 버그다.\n문제는 어떤 개별 Task 리뷰도 이 흐름을 잡아내지 못했다는 점이다. Task 5 리뷰는 buy.py만 봤고, Task 2 리뷰는 second_stage.py만 봤다 — 각 파일은 자기 안에서 논리적으로 맞았지만, 두 파일 사이의 연결(배선)이 끊어져 있었다.\nImportant 2건도 함께 발견됐다.\ncandidate[\"profile_name\"]이 어디서도 설정되지 않아 entry_profile이 항상 NULL로 저장되고, _calc_size_multiplier()가 항상 balanced 분기로 폴백(프로파일별 차등 사이징이 작동하지 않음). 매도 시 _load_profile_for_sell()도 항상 balanced.yaml로 폴백 daily_reeval.py가 active_strategy_version=v3 전환 후에도 잔존하는 managed_by='v2' 포지션을 v3 점수 기준으로 재평가하던 버그 수정 커밋(2b189e1)으로 3건 모두 해결하고 회귀 테스트 6건을 추가했다(5건 RED→GREEN 확인, 1건은 중복이라 무해하다고 정직하게 명시). 재검토는 “Ready to merge: Yes\"로 통과했다.\n최종 상태 pytest tests/ 841건 전체 통과를 확인했다. feature/build에 v3 관련 커밋 16개(f8bac12~2b189e1)가 적재됐다.\n배포 후 확인이 필요한 항목도 명확히 남겨뒀다 — active_strategy_version=v3 전환 후 매수 체결 시 position_registry에 managed_by='v3', entry_profile(NULL 아님), entry_group_scores가 실제로 기록되는지가 핵심이다. 이번에 고친 Critical/Important 버그가 실거래에서도 해소됐는지의 직접적 검증이 되기 때문이다. strategy_v3/specs/PLAN_04_INFRA.md의 “Step 9 — 검증 계획” 체크리스트를 참고 문서로 남겨뒀다.\n범위 밖으로 남긴 항목도 있다. test_target_price_technical_trend(MA20 분기)와 test_score_vs_v2_comparison 단위 테스트는 Task 12 브리프가 요청한 3건에 포함되지 않아 미작성 상태로 남았다.\n정리 항목 내용 완료 Task Task 9~12(config_loader v3 로더, reconcile/daily_reeval 분기, runner.py 배선, 통합 테스트) Critical 버그 buy.py가 profile_config 누락 → 모든 후보 0점 처리 → 매수 전면 중단 Important 버그 2건 entry_profile 항상 NULL, v3 전환 후 v2 잔존 포지션 오재평가 발견 경로 개별 Task 리뷰가 아닌 whole-branch 최종 리뷰 테스트 pytest 841건 통과, 회귀 테스트 6건 추가 각 파일 단위로는 완벽했던 코드가, 파일 사이의 연결 지점에서 실거래를 통째로 무력화시킬 수 있는 버그를 숨기고 있었다. Task 단위 리뷰만으로는 부족하고, 전체를 한 번에 보는 최종 리뷰가 왜 필요한지 다시 한번 확인한 사례였다. 다음 글에서는 여전히 7월 1일, v3를 웹 대시보드에 통합하는 과정에서 발견한 config_loader 이중 중첩 버그를 다룬다.\n",
+  "wordCount" : "2270",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-01T10:00:00+09:00",
+  "dateModified": "2026-07-01T10:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/strategy-v3-implementation-complete/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
+    </h1>
+    <div class="post-description">
+      그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-01T10:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#strategy_v3%eb%9e%80" aria-label="strategy_v3란">strategy_v3란</a></li>
+            <li>
+                <a href="#%ec%b5%9c%ec%a2%85-%eb%a6%ac%eb%b7%b0%ea%b0%80-%ec%9e%a1%ec%9d%80-critical-%eb%b2%84%ea%b7%b8" aria-label="최종 리뷰가 잡은 Critical 버그">최종 리뷰가 잡은 Critical 버그</a></li>
+            <li>
+                <a href="#%ec%b5%9c%ec%a2%85-%ec%83%81%ed%83%9c" aria-label="최종 상태">최종 상태</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 1일<br>
+<strong>최종 수정</strong>: 2026년 7월 1일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Advanced<br>
+<strong>상태</strong>: In Progress</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/telegram-markdown-bug-and-v064-release/">이전 글</a>에서 텔레그램 알림 버그와 손실 매도 버그를 고치고 v0.6.4를 릴리즈했다. 7월 1일부터는 그동안 v1/v2와는 별개로 준비해오던 세 번째 전략 엔진, <strong>strategy_v3</strong>의 마무리 작업으로 넘어간다.</p>
+<p>결론부터 말하면, 이전 세션에서 Task 1<del>8까지 진행하다 중단됐던 strategy_v3 구현을 이어서 Task 9</del>12까지 완료했다. 그런데 전체 브랜치를 한 번에 보는 최종 리뷰에서, 실거래에 배포됐다면 <strong>매수가 전혀 발생하지 않았을</strong> Critical 버그를 발견했다.</p>
+<hr>
+<h2 id="strategy_v3란">strategy_v3란<a hidden class="anchor" aria-hidden="true" href="#strategy_v3란">#</a></h2>
+<p>v1은 조건별 가중치 합산 방식, v2는 4개 그룹(A/B/C/D) 통합 선정 + 풀링 매수 방식이었다. v3는 여기서 한 걸음 더 나아가 <strong>그룹 정규화 스크리닝</strong> 방식을 쓴다 — 여러 그룹(G1<del>G5)의 점수를 각각 0</del>100 스케일로 정규화한 뒤 합산하고, 5개 프로파일(momentum/trend_following/balanced/reversal/fear_driven)마다 서로 다른 최소 점수(min_score)와 목표가 계산 방식(즉시/할인/기술적)을 적용한다. 매수 후에는 시간이 지날수록 손절/기회비용 기준으로 청산하는 보유기간 관리 로직도 갖췄다.</p>
+<p>이번 세션에서 이어서 완료한 Task 9~12는 다음과 같다.</p>
+<ul>
+<li><strong>Task 9</strong>: <code>utils/config_loader.py</code>에 <code>_load_screening_configs_v3()</code> 추가 — <code>condition_groups</code> 구조(v2의 <code>condition_weights</code>와 다름)를 로드하고, v3 전용 <code>strategy_sell</code>/<code>daily_reeval</code> YAML과 v2 공유 운영 YAML을 조합</li>
+<li><strong>Task 10</strong>: <code>utils/reconcile.py</code>(<code>strategy_version in (&quot;v2&quot;, &quot;v3&quot;)</code> 분기), <code>strategy_v2/daily_reeval.py</code>(<code>_call_score()</code> 버전 분기 wrapper — v3는 3-tuple, v2는 2-tuple 언패킹)</li>
+<li><strong>Task 11</strong>: <code>runner.py</code> v3 elif 분기 + <code>_has_legacy_v2_holdings()</code>(v3 활성 중 v2 잔존 포지션 병행 매도) + <code>--pre-market</code>/<code>--next-pre-market</code> v3 허용, <code>web/routers/config_router.py</code>의 <code>get_screening_strategy()</code> v3 <code>condition_groups</code> 지원. 구현 중 실제 버그 하나를 발견했다 — v3 프로파일 선택자 파일 <code>strategy_v3/settings/screen_config/second_stage.yaml</code>이 아예 없어서 <code>config_router</code>가 <code>FileNotFoundError</code>를 낼 뻔한 것을 확인해 생성</li>
+<li><strong>Task 12</strong>: <code>tests/test_v3_integration.py</code> 통합 스모크 테스트 3건 추가(<code>_score_stock</code> end-to-end, <code>calculate_target_price</code> end-to-end, <code>db/schema.py</code> v3 컬럼 5개 생성 확인)</li>
+</ul>
+<p>각 Task는 subagent 구현 → task-reviewer 검토(spec 준수 + 코드 품질) → Important 발견 시 fix subagent → 재검토 순으로 진행했다. Task 9(모킹만 하던 테스트를 실제 동작 검증으로 교체)·Task 10(v3-routing과 v1-fallback을 구분 못 하던 테스트 강화)에서 각 1회 재검토 루프가 발생했지만 모두 clean 통과했다.</p>
+<hr>
+<h2 id="최종-리뷰가-잡은-critical-버그">최종 리뷰가 잡은 Critical 버그<a hidden class="anchor" aria-hidden="true" href="#최종-리뷰가-잡은-critical-버그">#</a></h2>
+<p>Task별 리뷰는 전부 통과했다. 하지만 전체 변경사항(범위 <code>a002495..5b648ed</code>)을 한 번에 보는 최종 whole-branch 리뷰(opus 모델)에서 Critical 버그 1건이 나왔다.</p>
+<p><code>strategy_v3/trading/buy.py</code>가 2차 스크리닝용 <code>group_configs</code>에 <code>profile_config</code>(전체 YAML, <code>condition_groups</code> 포함) 키를 누락하고 있었다. 이 때문에 <code>first_stage_groups.run_full_screening()</code>이 빈 <code>condition_groups</code>로 폴백해서 <strong>모든 후보 종목이 0점 처리</strong>되는 상태였다 — v3를 활성화해서 실거래에 배포했다면 매수가 전혀 발생하지 않았을 버그다.</p>
+<p>문제는 어떤 개별 Task 리뷰도 이 흐름을 잡아내지 못했다는 점이다. Task 5 리뷰는 <code>buy.py</code>만 봤고, Task 2 리뷰는 <code>second_stage.py</code>만 봤다 — 각 파일은 자기 안에서 논리적으로 맞았지만, 두 파일 사이의 연결(배선)이 끊어져 있었다.</p>
+<p>Important 2건도 함께 발견됐다.</p>
+<ul>
+<li><code>candidate[&quot;profile_name&quot;]</code>이 어디서도 설정되지 않아 <code>entry_profile</code>이 항상 NULL로 저장되고, <code>_calc_size_multiplier()</code>가 항상 balanced 분기로 폴백(프로파일별 차등 사이징이 작동하지 않음). 매도 시 <code>_load_profile_for_sell()</code>도 항상 balanced.yaml로 폴백</li>
+<li><code>daily_reeval.py</code>가 <code>active_strategy_version=v3</code> 전환 후에도 잔존하는 <code>managed_by='v2'</code> 포지션을 v3 점수 기준으로 재평가하던 버그</li>
+</ul>
+<p>수정 커밋(<code>2b189e1</code>)으로 3건 모두 해결하고 회귀 테스트 6건을 추가했다(5건 RED→GREEN 확인, 1건은 중복이라 무해하다고 정직하게 명시). 재검토는 &ldquo;Ready to merge: Yes&quot;로 통과했다.</p>
+<hr>
+<h2 id="최종-상태">최종 상태<a hidden class="anchor" aria-hidden="true" href="#최종-상태">#</a></h2>
+<p><code>pytest tests/</code> 841건 전체 통과를 확인했다. <code>feature/build</code>에 v3 관련 커밋 16개(<code>f8bac12</code>~<code>2b189e1</code>)가 적재됐다.</p>
+<p>배포 후 확인이 필요한 항목도 명확히 남겨뒀다 — <code>active_strategy_version=v3</code> 전환 후 매수 체결 시 <code>position_registry</code>에 <code>managed_by='v3'</code>, <code>entry_profile</code>(NULL 아님), <code>entry_group_scores</code>가 실제로 기록되는지가 핵심이다. 이번에 고친 Critical/Important 버그가 실거래에서도 해소됐는지의 직접적 검증이 되기 때문이다. <code>strategy_v3/specs/PLAN_04_INFRA.md</code>의 &ldquo;Step 9 — 검증 계획&rdquo; 체크리스트를 참고 문서로 남겨뒀다.</p>
+<p>범위 밖으로 남긴 항목도 있다. <code>test_target_price_technical_trend</code>(MA20 분기)와 <code>test_score_vs_v2_comparison</code> 단위 테스트는 Task 12 브리프가 요청한 3건에 포함되지 않아 미작성 상태로 남았다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>완료 Task</td>
+					<td>Task 9~12(config_loader v3 로더, reconcile/daily_reeval 분기, runner.py 배선, 통합 테스트)</td>
+			</tr>
+			<tr>
+					<td>Critical 버그</td>
+					<td>buy.py가 profile_config 누락 → 모든 후보 0점 처리 → 매수 전면 중단</td>
+			</tr>
+			<tr>
+					<td>Important 버그 2건</td>
+					<td>entry_profile 항상 NULL, v3 전환 후 v2 잔존 포지션 오재평가</td>
+			</tr>
+			<tr>
+					<td>발견 경로</td>
+					<td>개별 Task 리뷰가 아닌 whole-branch 최종 리뷰</td>
+			</tr>
+			<tr>
+					<td>테스트</td>
+					<td>pytest 841건 통과, 회귀 테스트 6건 추가</td>
+			</tr>
+	</tbody>
+</table>
+<p>각 파일 단위로는 완벽했던 코드가, 파일 사이의 연결 지점에서 실거래를 통째로 무력화시킬 수 있는 버그를 숨기고 있었다. Task 단위 리뷰만으로는 부족하고, 전체를 한 번에 보는 최종 리뷰가 왜 필요한지 다시 한번 확인한 사례였다. 다음 글에서는 여전히 7월 1일, v3를 웹 대시보드에 통합하는 과정에서 발견한 config_loader 이중 중첩 버그를 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

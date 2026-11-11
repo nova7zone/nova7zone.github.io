@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="릴리스">
+<meta name="description" content="strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈">
+  <meta property="og:description" content="strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-07-02T17:00:00+09:00">
+    <meta property="article:modified_time" content="2026-07-02T17:00:00+09:00">
+    <meta property="article:tag" content="릴리스">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈">
+  <meta name="twitter:description" content="strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈",
+      "item": "https://nova7zone.github.io/posts/docs-update-and-v070-release/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈",
+  "description": "strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.",
+  "keywords": [
+    "릴리스"
+  ],
+  "articleBody": "작성일: 2026년 7월 2일\n최종 수정: 2026년 7월 2일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 매시간 재선정을 구현하고 메인 전략을 v3로 전환했다. 새 전략 엔진이 실거래에 들어가기 전, 문서를 정리하고 정식 버전을 릴리즈하는 마무리 작업이 이어졌다.\n결론부터 말하면, docs/STRATEGY_V3_trading_flow.md를 신규 작성하고 기존 12개 문서에 v3 내용을 반영했다. v0.6.4 이후 머지된 PR 7건을 정리해 v0.7.0(minor)을 릴리즈했다. 그 직후 v3 로그가 trader.log에 전혀 남지 않는다는 것과, 날짜 계산 방식이 서로 다른 두 테스트가 타임존 경계에서 우연히 통과하고 있었다는 것도 함께 발견해 고쳤다.\ndocs 전면 최신화 (PR #84) docs/STRATEGY_V3_trading_flow.md 신규 작성 — v1/v2와 동일한 공통 메타 양식으로 그룹 정규화 스크리닝·목표가 3모드·매시간 재선정을 요약 CLAUDE.md의 “Strategy V3 개발 규칙” 섹션을 strategy_v3/specs/DEVELOPMENT_SPEC.md로 분리(v1/v2와 동일 패턴), CLAUDE.md에는 참조만 유지 루트 README.md — 전략 버전 2종→3종 반영, strategy_v3 서브섹션 신설, 프로젝트 구조·상세 문서 표 갱신 기존 docs/*.md의 v1/v2 전용 서술에 v3 반영(APP_SETTINGS/SETTINGS_GUIDE/CONDITIONS_GUIDE/WORKFLOW/TESTING_GUIDE/OCI_QUICKSTART/INSTALL/UPDATE/AI_CODE_SAFETY_CHECKLIST/HOW_TO_ADD_CONDITION_V1·V2/SETTINGS_REFERENCE) 문서 간 링크·앵커(fragment)를 전수 검증 스크립트로 점검한 뒤 누락된 상호참조를 수정(BACKTEST_DATA_GUIDE.md 중복 “관련 문서” 섹션 정리, USAGE.md 공통메타 도입 + docs/README.md 인덱스 신규 등록 등) 코드 변경은 없었고(문서 전용), pytest tests/ 영향도 없었다.\nv0.7.0 릴리즈 v0.6.4 이후 merge된 PR #78~#84(strategy_v3 신규 구현 → 웹 대시보드 통합 → Critical 버그 3건 수정 → 매시간 재선정 → 메인 전략 전환 → 문서 갱신) 기준으로 release-notes-draft-v0.7.0.md를 작성했다. minor 버전으로 결정했다 — 신규 전략 엔진 구현 + 메인 전략 전환이라는 기능 추가 성격에 따라 v0.6.5(patch) 대신 v0.7.0으로 사용자가 확정했다.\ngit tag v0.7.0(origin/master HEAD 34e2cc7, 이전 태그와 동일한 lightweight 태그 방식) → git push origin v0.7.0 → gh release create로 정식 GitHub Release를 발행했다. GitHub 정식 릴리즈 노트 본문의 “# v0.7.0 (draft)” 헤더에서 “(draft)“를 제거(gh release edit --notes-file)했다 — 로컬 draft 파일명·본문은 관례대로 “draft” 표기를 유지하고, GitHub 상 정식 발행본만 draft 문구를 제거하는 패턴을 계속 지켰다.\ntrader.log에 v3 로그가 안 남던 버그 로그 레벨 동작 방식을 사용자에게 설명하던 중, utils/logger.py의 _TRADING_LOGGER_PREFIXES에 strategy_v3.trading/strategy_v3.screening이 빠져 있는 것을 발견했다. v3 매수/매도/스크리닝 로그가 logs/trader.log에 기록되지 않고 콘솔(cron.log)에서만 확인 가능했던 문제다. daily_reeval.py는 strategy_v2.daily_reeval로 로거 이름이 고정(버전 분기 방식)돼 있어 이미 필터를 통과하고 있어서 별도 수정이 필요 없음을 확인했다.\nutils/logger.py: _TRADING_LOGGER_PREFIXES에 v3 prefix 2개 추가 타임존 경계에서 흔들리던 date rot 테스트 이어서 PostToolUse pytest 훅이 tests/test_v3_strategy_sell.py::test_min_hold_days_blocks_strategy_trigger 실패를 보고했다. systematic-debugging 절차로 근본 원인을 확인했다.\nentry_date=\"2026-06-30\"을 하드코딩하고 “오늘\"로 가정했는데, 실제 날짜가 2026-07-02로 넘어가면서 hold_days가 2로 계산돼 min_hold_days=2 가드를 통과 못하고(2 \u003c 2 = False) score_drop 트리거가 발동하고 있었다. 같은 파일의 다른 테스트들은 이미 datetime.date.today() - timedelta(...) 동적 계산 패턴을 쓰고 있었는데, 이 테스트만 절대 날짜를 하드코딩한 date rot 버그(V2_LESSONS_LEARNED.md BUG-09류)였다.\ntests/test_v3_strategy_sell.py: entry_date를 datetime.date.today().isoformat()로 동적 계산하도록 수정 그런데 PR #81 CI에서 같은 파일의 다른 두 테스트가 새로 실패했다. 이 역시 근본 원인은 date 경계 불일치였다. 테스트가 datetime.date.today()(서버 로컬/UTC)로 entry_date를 계산하는데, production 로직(_hold_days())은 now_kst()(KST 명시)로 경과일을 계산한다 — UTC 15:0023:59(KST 자정08:59) 구간에 CI가 실행되면 두 “오늘” 날짜가 하루 어긋나 경계값 테스트(hold_days_limit - 1, half - 1)가 뒤집혔다. 방금 위에서 넣은 수정도 같은 결함을 안고 있어서 함께 수정해야 했다.\ntests/test_v3_strategy_sell.py: 5곳 전부 datetime.date.today() → now_kst().date()(utils.time_utils)로 통일 — production과 동일한 타임존 기준으로 “오늘\"을 계산하도록 수정 pytest tests/test_logger.py tests/test_v3_strategy_sell.py 통과를 확인했다. production 매매 로직 변경은 없었다(로그 필터 설정 + 테스트 date rot 수정).\n정리 항목 내용 docs 최신화 STRATEGY_V3_trading_flow.md 신규, 기존 12개 문서 v3 반영 v0.7.0 릴리즈 PR #78~#84 기준, minor 버전(신규 전략 엔진+메인 전환) trader.log 버그 v3 prefix 2개 필터 누락 date rot 버그 entry_date 하드코딩 + UTC/KST “오늘” 기준 불일치 수정 now_kst().date()로 5곳 전부 통일 문서 정리와 릴리즈라는 “마무리” 작업 중에도 실제 코드 버그 두 건이 튀어나왔다. 특히 date rot 버그는 첫 수정이 같은 결함의 다른 증상만 없앴을 뿐 근본 원인(테스트와 프로덕션의 “오늘” 기준이 다르다는 것)을 놓쳤다가, CI가 특정 시간대에 실행될 때만 실패하는 걸 보고서야 제대로 짚을 수 있었다. 다음 글에서는 7월 3일, VKOSPI 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건, 그리고 v3 운영 로그에서 발견한 Critical 버그 3건을 다룬다.\n",
+  "wordCount" : "2450",
+  "inLanguage": "ko",
+  "datePublished": "2026-07-02T17:00:00+09:00",
+  "dateModified": "2026-07-02T17:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/docs-update-and-v070-release/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈
+    </h1>
+    <div class="post-description">
+      strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-07-02T17:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#docs-%ec%a0%84%eb%a9%b4-%ec%b5%9c%ec%8b%a0%ed%99%94-pr-84" aria-label="docs 전면 최신화 (PR #84)">docs 전면 최신화 (PR #84)</a></li>
+            <li>
+                <a href="#v070-%eb%a6%b4%eb%a6%ac%ec%a6%88" aria-label="v0.7.0 릴리즈">v0.7.0 릴리즈</a></li>
+            <li>
+                <a href="#traderlog%ec%97%90-v3-%eb%a1%9c%ea%b7%b8%ea%b0%80-%ec%95%88-%eb%82%a8%eb%8d%98-%eb%b2%84%ea%b7%b8" aria-label="trader.log에 v3 로그가 안 남던 버그">trader.log에 v3 로그가 안 남던 버그</a></li>
+            <li>
+                <a href="#%ed%83%80%ec%9e%84%ec%a1%b4-%ea%b2%bd%ea%b3%84%ec%97%90%ec%84%9c-%ed%9d%94%eb%93%a4%eb%a6%ac%eb%8d%98-date-rot-%ed%85%8c%ec%8a%a4%ed%8a%b8" aria-label="타임존 경계에서 흔들리던 date rot 테스트">타임존 경계에서 흔들리던 date rot 테스트</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 7월 2일<br>
+<strong>최종 수정</strong>: 2026년 7월 2일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/strategy-v3-hourly-reselect-and-main-switch/">이전 글</a>에서 매시간 재선정을 구현하고 메인 전략을 v3로 전환했다. 새 전략 엔진이 실거래에 들어가기 전, 문서를 정리하고 정식 버전을 릴리즈하는 마무리 작업이 이어졌다.</p>
+<p>결론부터 말하면, <code>docs/STRATEGY_V3_trading_flow.md</code>를 신규 작성하고 기존 12개 문서에 v3 내용을 반영했다. v0.6.4 이후 머지된 PR 7건을 정리해 v0.7.0(minor)을 릴리즈했다. 그 직후 v3 로그가 <code>trader.log</code>에 전혀 남지 않는다는 것과, 날짜 계산 방식이 서로 다른 두 테스트가 타임존 경계에서 우연히 통과하고 있었다는 것도 함께 발견해 고쳤다.</p>
+<hr>
+<h2 id="docs-전면-최신화-pr-84">docs 전면 최신화 (PR #84)<a hidden class="anchor" aria-hidden="true" href="#docs-전면-최신화-pr-84">#</a></h2>
+<ul>
+<li><code>docs/STRATEGY_V3_trading_flow.md</code> 신규 작성 — v1/v2와 동일한 공통 메타 양식으로 그룹 정규화 스크리닝·목표가 3모드·매시간 재선정을 요약</li>
+<li>CLAUDE.md의 &ldquo;Strategy V3 개발 규칙&rdquo; 섹션을 <code>strategy_v3/specs/DEVELOPMENT_SPEC.md</code>로 분리(v1/v2와 동일 패턴), CLAUDE.md에는 참조만 유지</li>
+<li>루트 README.md — 전략 버전 2종→3종 반영, strategy_v3 서브섹션 신설, 프로젝트 구조·상세 문서 표 갱신</li>
+<li>기존 <code>docs/*.md</code>의 v1/v2 전용 서술에 v3 반영(APP_SETTINGS/SETTINGS_GUIDE/CONDITIONS_GUIDE/WORKFLOW/TESTING_GUIDE/OCI_QUICKSTART/INSTALL/UPDATE/AI_CODE_SAFETY_CHECKLIST/HOW_TO_ADD_CONDITION_V1·V2/SETTINGS_REFERENCE)</li>
+<li>문서 간 링크·앵커(fragment)를 전수 검증 스크립트로 점검한 뒤 누락된 상호참조를 수정(<code>BACKTEST_DATA_GUIDE.md</code> 중복 &ldquo;관련 문서&rdquo; 섹션 정리, <code>USAGE.md</code> 공통메타 도입 + <code>docs/README.md</code> 인덱스 신규 등록 등)</li>
+</ul>
+<p>코드 변경은 없었고(문서 전용), <code>pytest tests/</code> 영향도 없었다.</p>
+<hr>
+<h2 id="v070-릴리즈">v0.7.0 릴리즈<a hidden class="anchor" aria-hidden="true" href="#v070-릴리즈">#</a></h2>
+<p>v0.6.4 이후 merge된 PR #78~#84(strategy_v3 신규 구현 → 웹 대시보드 통합 → Critical 버그 3건 수정 → 매시간 재선정 → 메인 전략 전환 → 문서 갱신) 기준으로 <code>release-notes-draft-v0.7.0.md</code>를 작성했다. minor 버전으로 결정했다 — 신규 전략 엔진 구현 + 메인 전략 전환이라는 기능 추가 성격에 따라 v0.6.5(patch) 대신 v0.7.0으로 사용자가 확정했다.</p>
+<p><code>git tag v0.7.0</code>(origin/master HEAD <code>34e2cc7</code>, 이전 태그와 동일한 lightweight 태그 방식) → <code>git push origin v0.7.0</code> → <code>gh release create</code>로 정식 GitHub Release를 발행했다. GitHub 정식 릴리즈 노트 본문의 &ldquo;# v0.7.0 (draft)&rdquo; 헤더에서 &ldquo;(draft)&ldquo;를 제거(<code>gh release edit --notes-file</code>)했다 — 로컬 draft 파일명·본문은 관례대로 &ldquo;draft&rdquo; 표기를 유지하고, GitHub 상 정식 발행본만 draft 문구를 제거하는 패턴을 계속 지켰다.</p>
+<hr>
+<h2 id="traderlog에-v3-로그가-안-남던-버그">trader.log에 v3 로그가 안 남던 버그<a hidden class="anchor" aria-hidden="true" href="#traderlog에-v3-로그가-안-남던-버그">#</a></h2>
+<p>로그 레벨 동작 방식을 사용자에게 설명하던 중, <code>utils/logger.py</code>의 <code>_TRADING_LOGGER_PREFIXES</code>에 <code>strategy_v3.trading</code>/<code>strategy_v3.screening</code>이 빠져 있는 것을 발견했다. v3 매수/매도/스크리닝 로그가 <code>logs/trader.log</code>에 기록되지 않고 콘솔(cron.log)에서만 확인 가능했던 문제다. <code>daily_reeval.py</code>는 <code>strategy_v2.daily_reeval</code>로 로거 이름이 고정(버전 분기 방식)돼 있어 이미 필터를 통과하고 있어서 별도 수정이 필요 없음을 확인했다.</p>
+<ul>
+<li><code>utils/logger.py</code>: <code>_TRADING_LOGGER_PREFIXES</code>에 v3 prefix 2개 추가</li>
+</ul>
+<hr>
+<h2 id="타임존-경계에서-흔들리던-date-rot-테스트">타임존 경계에서 흔들리던 date rot 테스트<a hidden class="anchor" aria-hidden="true" href="#타임존-경계에서-흔들리던-date-rot-테스트">#</a></h2>
+<p>이어서 PostToolUse pytest 훅이 <code>tests/test_v3_strategy_sell.py::test_min_hold_days_blocks_strategy_trigger</code> 실패를 보고했다. <code>systematic-debugging</code> 절차로 근본 원인을 확인했다.</p>
+<p><code>entry_date=&quot;2026-06-30&quot;</code>을 하드코딩하고 &ldquo;오늘&quot;로 가정했는데, 실제 날짜가 2026-07-02로 넘어가면서 <code>hold_days</code>가 2로 계산돼 <code>min_hold_days=2</code> 가드를 통과 못하고(2 &lt; 2 = False) <code>score_drop</code> 트리거가 발동하고 있었다. 같은 파일의 다른 테스트들은 이미 <code>datetime.date.today() - timedelta(...)</code> 동적 계산 패턴을 쓰고 있었는데, 이 테스트만 절대 날짜를 하드코딩한 date rot 버그(<code>V2_LESSONS_LEARNED.md</code> BUG-09류)였다.</p>
+<ul>
+<li><code>tests/test_v3_strategy_sell.py</code>: <code>entry_date</code>를 <code>datetime.date.today().isoformat()</code>로 동적 계산하도록 수정</li>
+</ul>
+<p>그런데 PR #81 CI에서 같은 파일의 다른 두 테스트가 새로 실패했다. 이 역시 근본 원인은 date 경계 불일치였다. 테스트가 <code>datetime.date.today()</code>(서버 로컬/UTC)로 <code>entry_date</code>를 계산하는데, production 로직(<code>_hold_days()</code>)은 <code>now_kst()</code>(KST 명시)로 경과일을 계산한다 — UTC 15:00<del>23:59(KST 자정</del>08:59) 구간에 CI가 실행되면 두 &ldquo;오늘&rdquo; 날짜가 하루 어긋나 경계값 테스트(<code>hold_days_limit - 1</code>, <code>half - 1</code>)가 뒤집혔다. 방금 위에서 넣은 수정도 같은 결함을 안고 있어서 함께 수정해야 했다.</p>
+<ul>
+<li><code>tests/test_v3_strategy_sell.py</code>: 5곳 전부 <code>datetime.date.today()</code> → <code>now_kst().date()</code>(<code>utils.time_utils</code>)로 통일 — production과 동일한 타임존 기준으로 &ldquo;오늘&quot;을 계산하도록 수정</li>
+</ul>
+<p><code>pytest tests/test_logger.py tests/test_v3_strategy_sell.py</code> 통과를 확인했다. production 매매 로직 변경은 없었다(로그 필터 설정 + 테스트 date rot 수정).</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>docs 최신화</td>
+					<td>STRATEGY_V3_trading_flow.md 신규, 기존 12개 문서 v3 반영</td>
+			</tr>
+			<tr>
+					<td>v0.7.0 릴리즈</td>
+					<td>PR #78~#84 기준, minor 버전(신규 전략 엔진+메인 전환)</td>
+			</tr>
+			<tr>
+					<td>trader.log 버그</td>
+					<td>v3 prefix 2개 필터 누락</td>
+			</tr>
+			<tr>
+					<td>date rot 버그</td>
+					<td>entry_date 하드코딩 + UTC/KST &ldquo;오늘&rdquo; 기준 불일치</td>
+			</tr>
+			<tr>
+					<td>수정</td>
+					<td>now_kst().date()로 5곳 전부 통일</td>
+			</tr>
+	</tbody>
+</table>
+<p>문서 정리와 릴리즈라는 &ldquo;마무리&rdquo; 작업 중에도 실제 코드 버그 두 건이 튀어나왔다. 특히 date rot 버그는 첫 수정이 같은 결함의 다른 증상만 없앴을 뿐 근본 원인(테스트와 프로덕션의 &ldquo;오늘&rdquo; 기준이 다르다는 것)을 놓쳤다가, CI가 특정 시간대에 실행될 때만 실패하는 걸 보고서야 제대로 짚을 수 있었다. 다음 글에서는 7월 3일, VKOSPI 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건, 그리고 v3 운영 로그에서 발견한 Critical 버그 3건을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">릴리스</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

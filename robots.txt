@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://nova7zone.github.io/sitemap.xml

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>AI 에이전트 on Evan&#39;s Dev Log</title>
+    <link>https://nova7zone.github.io/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/</link>
+    <description>Recent content in AI 에이전트 on Evan&#39;s Dev Log</description>
+    <generator>Hugo</generator>
+    <language>ko-KR</language>
+    <lastBuildDate>Wed, 17 Jun 2026 15:00:00 +0900</lastBuildDate>
+    <atom:link href="https://nova7zone.github.io/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>빈 ARM 서버에 24시간 AI 비서 심기 — Hermes &#43; OpenRouter &#43; Telegram 구축기</title>
+      <link>https://nova7zone.github.io/posts/hermes-agent-openrouter-telegram-setup/</link>
+      <pubDate>Wed, 17 Jun 2026 15:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/hermes-agent-openrouter-telegram-setup/</guid>
+      <description>OCI A1.Flex(ARM) 인스턴스에 Nous Research의 Hermes Agent를 설치하고 OpenRouter 무료 모델과 Telegram 게이트웨이를 연동해, 폰에서 대화하는 24시간 AI 비서를 구축한 과정을 기록한다.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설정, 설계">
+<meta name="description" content="체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/trades-page-revamp/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/trades-page-revamp/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/trades-page-revamp/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집">
+  <meta property="og:description" content="체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-10T16:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-10T16:00:00+09:00">
+    <meta property="article:tag" content="설정">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집">
+  <meta name="twitter:description" content="체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
+      "item": "https://nova7zone.github.io/posts/trades-page-revamp/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
+  "description": "체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.",
+  "keywords": [
+    "설정", "설계"
+  ],
+  "articleBody": "작성일: 2026년 6월 10일\n최종 수정: 2026년 6월 10일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 잔고 0원 버그와 호가단위 오류를 고치면서 실제 매수 주문이 들어가기 시작했다. 매수 주문이 쌓이자 자연스럽게 “이 종목은 왜 샀고, 왜 팔았는지\"를 한눈에 보고 싶어졌다. 이번 글은 같은 날(6/10) 이어서 진행한 체결 이력(/trades) 페이지 개편 작업을 정리한다.\n결론부터 말하면, 체결 이력 페이지의 렌더링이 깨져 있던 버그를 먼저 고치고, 그 위에 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 쌓아 올렸다. 이 과정에서 DB 컬럼을 condition_scores → buy_context로 정리했고, 마지막으로 매매설정 페이지에서 2차 스크리닝 조건 파라미터 전체를 웹에서 직접 편집할 수 있도록 만들었다.\n❌ 버그: 체결 이력 페이지 렌더링 깨짐 /trades 페이지에 접속하면 Alpine.js 코드가 화면에 텍스트로 그대로 노출되는 문제가 있었다.\n원인 web/templates/trades.html에서 x-data=\"{ ... {{ trades | tojson }} ... }\" 형태로 작성되어 있었는데, tojson이 출력하는 JSON 문자열에는 큰따옴표(\")가 포함된다. 이 큰따옴표가 x-data=\"...\" 속성을 감싸는 큰따옴표와 충돌해 HTML이 중간에서 끊기고, 나머지 스크립트가 그대로 화면에 노출됐다.\n수정 x-data 속성을 작은따옴표('...')로 변경 내부 JS 문자열 리터럴은 큰따옴표로 전환 pytest tests/ 186개 전체 통과 — 템플릿 변경이라 단위 테스트에는 영향 없음을 확인했다.\n매수 점수 / 매도 사유 표시 체결 이력에서 “이 종목이 왜 선정됐는지”, “왜 팔았는지\"를 보여주는 컬럼을 추가했다.\ndb/schema.py: trades 테이블에 score REAL, sell_reason TEXT 컬럼 추가 init_db()에 _add_column_if_missing() 추가 — 기존 DB도 재실행 시 자동 마이그레이션(idempotent) db/repository.py: insert_trade()가 score/sell_reason도 저장 (get_trades()는 SELECT *라 자동 반영) trading/order_manager.py add_pending_order()에 score, sell_reason 파라미터 추가 → pending_orders.json에 기록 _on_buy_filled() / _on_sell_filled()에서 trade_log.json·DB에 score/sell_reason 포함 trading/buy.py: add_pending_order() 호출 시 2차 스크리닝 점수(score) 전달 trading/sell.py: add_pending_order() 호출 시 매도 사유(sell_reason) 전달 web/templates/trades.html: “점수/사유” 컬럼 추가 — 매수 행은 점수, 매도 행은 매도 사유 표시 테스트는 tests/test_db.py(신규, schema 마이그레이션·CRUD)와 tests/test_trading.py(score/sell_reason 전파 케이스 2건)를 추가했다. pytest tests/ 192개 전체 통과.\n보유상태 / 매수가 컬럼 추가 체결 이력만 봐서는 “이 종목을 지금도 들고 있는지”, “얼마에 샀는지\"를 알 수 없었다. 이를 보완했다.\ndb/schema.py: trades 테이블에 avg_price INTEGER 컬럼 추가, init_db() 마이그레이션 등록 db/repository.py: insert_trade()가 avg_price도 저장 trading/order_manager.py: _on_sell_filled()의 trade_entry에 avg_price(매도 시점 평균매수단가) 포함 web/routers/pages.py: /trades 페이지에 holdings.json 기준 현재 보유 종목 코드 목록(held_codes) 전달 web/templates/trades.html: “상태/매수가” 컬럼 추가 매수 행: 현재 보유 중이면 “보유중”, 이미 매도되었으면 “매도완료” 매도 행: avg_price(매수가) 표시, 없으면 “—” tests/test_db.py에 avg_price 컬럼/CRUD 검증, tests/test_trading.py에 전파 검증을 추가했다. pytest tests/ 192개 전체 통과.\n매수 점수 툴팁 — 조건별 점수 상세 매수 점수가 몇 점인지는 보이지만, “어떤 조건이 얼마나 기여했는지\"는 알 수 없었다. 2차 스크리닝의 조건별 점수를 hover 툴팁으로 보여주도록 했다.\ndb/schema.py: trades 테이블에 condition_scores TEXT 컬럼 추가 (init_db() 마이그레이션 등록) db/repository.py: insert_trade()가 condition_scores(JSON 문자열)도 저장 trading/order_manager.py add_pending_order()에 condition_scores: dict | None 파라미터 추가 → pending_orders.json에 기록 _on_buy_filled()에서 trade_entry에 condition_scores를 JSON 문자열로 직렬화해 포함 trading/buy.py: add_pending_order() 호출 시 stock[\"raw_scores\"](2차 스크리닝 조건별 0.0~1.0 점수)를 condition_scores로 전달 web/templates/trades.html: 매수 행의 점수 텍스트에 title 툴팁 추가 — 조건별 점수(한글 라벨 + %)를 hover 시 표시 tests/test_db.py, tests/test_trading.py에 condition_scores 전파 검증을 추가했다. pytest tests/ 192개 전체 통과.\n기존 trades 행은 condition_scores가 없어 툴팁이 표시되지 않고, 다음 매수 체결부터 정상 기록된다.\n컬럼명 정리: condition_scores → buy_context 조건별 점수 툴팁을 추가하자마자, “이 매수가 어떤 설정(프리셋/임계값/전략)에서 이뤄졌는지\"가 더 유용한 정보라는 판단이 들었다. 그래서 같은 컬럼을 재정의해서 사용했다.\ndb/schema.py: trades.condition_scores 컬럼을 buy_context TEXT로 변경 — 운영 DB에 아직 반영되지 않은 상태였기 때문에 컬럼명 자체를 교체 db/repository.py: insert_trade() 컬럼명 condition_scores → buy_context trading/order_manager.py: add_pending_order()/_on_buy_filled()의 condition_scores → buy_context로 변경 trading/buy.py: add_pending_order() 호출 시 다음 정보를 buy_context로 전달 preset: 현재 매매 프리셋 strategy: 활성 2차 스크리닝 전략 min_score: 해당 종목에 적용된 통과 기준점 web/templates/trades.html: 매수 점수 툴팁을 “매매프리셋 / 임계값 / 2차 스크리닝전략” 3줄로 변경 프리셋: 보수적/중립/공격적, 전략: 균형/모멘텀/추세추종/광범위 — 한글 라벨로 매핑 tests/test_db.py, tests/test_trading.py를 buy_context 기준으로 갱신했다. pytest tests/ 192개 전체 통과.\n매매설정 페이지: 2차 스크리닝 조건 파라미터 전체 편집 이전 글에서 추가한 매매설정 탭에서는 조건별 가중치 8개만 편집할 수 있었는데, 실제로는 각 조건마다 기간·임계값 등 세부 파라미터가 더 많다. 이를 전부 웹에서 편집할 수 있도록 확장했다.\nweb/routers/config_router.py _PARAM_LABELS 신규 추가 — 10개 조건 × 17개 세부 파라미터를 한글 라벨로 매핑 get_screening_strategy(): 기존 8개 고정 key_params 대신, 전체 condition_params(nested dict)와 param_labels를 반환 ScreeningParamsUpdate를 min_score: float | None, condition_params: dict[str, dict[str, float]] | None로 일반화 — 기존 8개 고정 필드 제거 update_screening_params(): condition_params를 조건별로 deep-merge 저장, _PARAM_LABELS에 정의된 키만 허용 기존 값이 int이고 입력값이 정수면 int로 저장해 YAML 포맷 보존 (예: period: 14 → 14.0 방지) web/templates/settings.html “핵심 조건 파라미터” 영역을 10개 조건별 그룹으로 재구성 — 각 조건의 모든 파라미터를 입력 필드로 노출 screeningParamEdits를 { min_score, condition_params: {...} } 구조로 변경, screeningStrategy.conditions/condition_params/param_labels를 기반으로 동적 렌더링 pytest tests/ 192개 전체 통과(회귀 없음, web 라우터는 기존부터 미커버리지). fastapi가 로컬 환경에 설치되어 있지 않아 엔드포인트 직접 실행 검증은 하지 못했고, OCI에서 /settings 매매 설정 탭을 수동으로 확인해야 하는 상태로 남겨두었다.\ndocs 정리: wide 전략 반영 + 웹 설정 편집 안내 작업 마무리로 문서를 코드와 다시 맞췄다.\nsettings/screen_config/second_stage.yaml: 주석 표의 wide min_score를 35 → 25(CHOP+5 보정 후 30)로 수정 — 6/9 wide 완화 작업과 동기화 docs/SETTINGS_GUIDE.md active_strategy 주석과 “전략 비교” 표에 wide 전략 행 추가 (6/9에 추가했지만 반영이 안 되어 있던 상태) 섹션 6에 “웹 대시보드에서 수정하기” 추가 — /settings에서 핵심 조건 파라미터 전체를 편집하는 기능 안내 docs/SETTINGS_REFERENCE.md: “전략 선택” 표에 wide 행 추가 pytest tests/ 192개 전체 통과 — 문서 변경만이라 회귀 없음을 확인했다.\n정리 작업 내용 렌더링 버그 수정 x-data 작은따옴표 전환으로 /trades 페이지 정상화 점수/사유 표시 score, sell_reason 컬럼 추가, 매수 점수·매도 사유 표시 보유상태/매수가 avg_price 컬럼 추가, 보유중/매도완료 + 매수가 표시 조건별 점수 툴팁 condition_scores → 매수 점수 hover 시 조건별 점수 표시 buy_context 정리 컬럼을 buy_context로 재정의 — 프리셋/임계값/전략 툴팁 매매설정 전체 편집 10개 조건 × 17개 파라미터를 웹에서 직접 편집 docs 정리 wide 전략 표/주석 반영, 웹 설정 편집 안내 추가 다음 글에서는 6월 11일 진행한 strategy_v1/v2 분리 구조 설계와, 공유 indicators 패키지 분리부터 strategy_v1 디렉터리 재구성까지의 작업을 다룬다.\n",
+  "wordCount" : "3308",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-10T16:00:00+09:00",
+  "dateModified": "2026-06-10T16:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/trades-page-revamp/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집
+    </h1>
+    <div class="post-description">
+      체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-10T16:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#-%eb%b2%84%ea%b7%b8-%ec%b2%b4%ea%b2%b0-%ec%9d%b4%eb%a0%a5-%ed%8e%98%ec%9d%b4%ec%a7%80-%eb%a0%8c%eb%8d%94%eb%a7%81-%ea%b9%a8%ec%a7%90" aria-label="❌ 버그: 체결 이력 페이지 렌더링 깨짐">❌ 버그: 체결 이력 페이지 렌더링 깨짐</a><ul>
+                    
+            <li>
+                <a href="#%ec%9b%90%ec%9d%b8" aria-label="원인">원인</a></li>
+            <li>
+                <a href="#%ec%88%98%ec%a0%95" aria-label="수정">수정</a></li></ul>
+            </li>
+            <li>
+                <a href="#%eb%a7%a4%ec%88%98-%ec%a0%90%ec%88%98--%eb%a7%a4%eb%8f%84-%ec%82%ac%ec%9c%a0-%ed%91%9c%ec%8b%9c" aria-label="매수 점수 / 매도 사유 표시">매수 점수 / 매도 사유 표시</a></li>
+            <li>
+                <a href="#%eb%b3%b4%ec%9c%a0%ec%83%81%ed%83%9c--%eb%a7%a4%ec%88%98%ea%b0%80-%ec%bb%ac%eb%9f%bc-%ec%b6%94%ea%b0%80" aria-label="보유상태 / 매수가 컬럼 추가">보유상태 / 매수가 컬럼 추가</a></li>
+            <li>
+                <a href="#%eb%a7%a4%ec%88%98-%ec%a0%90%ec%88%98-%ed%88%b4%ed%8c%81--%ec%a1%b0%ea%b1%b4%eb%b3%84-%ec%a0%90%ec%88%98-%ec%83%81%ec%84%b8" aria-label="매수 점수 툴팁 — 조건별 점수 상세">매수 점수 툴팁 — 조건별 점수 상세</a></li>
+            <li>
+                <a href="#%ec%bb%ac%eb%9f%bc%eb%aa%85-%ec%a0%95%eb%a6%ac-condition_scores--buy_context" aria-label="컬럼명 정리: condition_scores → buy_context">컬럼명 정리: condition_scores → buy_context</a></li>
+            <li>
+                <a href="#%eb%a7%a4%eb%a7%a4%ec%84%a4%ec%a0%95-%ed%8e%98%ec%9d%b4%ec%a7%80-2%ec%b0%a8-%ec%8a%a4%ed%81%ac%eb%a6%ac%eb%8b%9d-%ec%a1%b0%ea%b1%b4-%ed%8c%8c%eb%9d%bc%eb%af%b8%ed%84%b0-%ec%a0%84%ec%b2%b4-%ed%8e%b8%ec%a7%91" aria-label="매매설정 페이지: 2차 스크리닝 조건 파라미터 전체 편집">매매설정 페이지: 2차 스크리닝 조건 파라미터 전체 편집</a></li>
+            <li>
+                <a href="#docs-%ec%a0%95%eb%a6%ac-wide-%ec%a0%84%eb%9e%b5-%eb%b0%98%ec%98%81--%ec%9b%b9-%ec%84%a4%ec%a0%95-%ed%8e%b8%ec%a7%91-%ec%95%88%eb%82%b4" aria-label="docs 정리: wide 전략 반영 &#43; 웹 설정 편집 안내">docs 정리: wide 전략 반영 + 웹 설정 편집 안내</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 10일<br>
+<strong>최종 수정</strong>: 2026년 6월 10일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/balance-kosdaq-tick-size-bugfix/">이전 글</a>에서 잔고 0원 버그와 호가단위 오류를 고치면서 실제 매수 주문이 들어가기 시작했다. 매수 주문이 쌓이자 자연스럽게 &ldquo;이 종목은 왜 샀고, 왜 팔았는지&quot;를 한눈에 보고 싶어졌다. 이번 글은 같은 날(6/10) 이어서 진행한 <strong>체결 이력(<code>/trades</code>) 페이지 개편</strong> 작업을 정리한다.</p>
+<p>결론부터 말하면, 체결 이력 페이지의 렌더링이 깨져 있던 버그를 먼저 고치고, 그 위에 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 쌓아 올렸다. 이 과정에서 DB 컬럼을 <code>condition_scores</code> → <code>buy_context</code>로 정리했고, 마지막으로 매매설정 페이지에서 2차 스크리닝 조건 파라미터 전체를 웹에서 직접 편집할 수 있도록 만들었다.</p>
+<hr>
+<h2 id="-버그-체결-이력-페이지-렌더링-깨짐">❌ 버그: 체결 이력 페이지 렌더링 깨짐<a hidden class="anchor" aria-hidden="true" href="#-버그-체결-이력-페이지-렌더링-깨짐">#</a></h2>
+<p><code>/trades</code> 페이지에 접속하면 Alpine.js 코드가 화면에 텍스트로 그대로 노출되는 문제가 있었다.</p>
+<h3 id="원인">원인<a hidden class="anchor" aria-hidden="true" href="#원인">#</a></h3>
+<p><code>web/templates/trades.html</code>에서 <code>x-data=&quot;{ ... {{ trades | tojson }} ... }&quot;</code> 형태로 작성되어 있었는데, <code>tojson</code>이 출력하는 JSON 문자열에는 큰따옴표(<code>&quot;</code>)가 포함된다. 이 큰따옴표가 <code>x-data=&quot;...&quot;</code> 속성을 감싸는 큰따옴표와 충돌해 HTML이 중간에서 끊기고, 나머지 스크립트가 그대로 화면에 노출됐다.</p>
+<h3 id="수정">수정<a hidden class="anchor" aria-hidden="true" href="#수정">#</a></h3>
+<ul>
+<li><code>x-data</code> 속성을 작은따옴표(<code>'...'</code>)로 변경</li>
+<li>내부 JS 문자열 리터럴은 큰따옴표로 전환</li>
+</ul>
+<p><code>pytest tests/</code> 186개 전체 통과 — 템플릿 변경이라 단위 테스트에는 영향 없음을 확인했다.</p>
+<hr>
+<h2 id="매수-점수--매도-사유-표시">매수 점수 / 매도 사유 표시<a hidden class="anchor" aria-hidden="true" href="#매수-점수--매도-사유-표시">#</a></h2>
+<p>체결 이력에서 &ldquo;이 종목이 왜 선정됐는지&rdquo;, &ldquo;왜 팔았는지&quot;를 보여주는 컬럼을 추가했다.</p>
+<ul>
+<li><code>db/schema.py</code>: <code>trades</code> 테이블에 <code>score REAL</code>, <code>sell_reason TEXT</code> 컬럼 추가
+<ul>
+<li><code>init_db()</code>에 <code>_add_column_if_missing()</code> 추가 — 기존 DB도 재실행 시 자동 마이그레이션(idempotent)</li>
+</ul>
+</li>
+<li><code>db/repository.py</code>: <code>insert_trade()</code>가 <code>score</code>/<code>sell_reason</code>도 저장 (<code>get_trades()</code>는 <code>SELECT *</code>라 자동 반영)</li>
+<li><code>trading/order_manager.py</code>
+<ul>
+<li><code>add_pending_order()</code>에 <code>score</code>, <code>sell_reason</code> 파라미터 추가 → <code>pending_orders.json</code>에 기록</li>
+<li><code>_on_buy_filled()</code> / <code>_on_sell_filled()</code>에서 <code>trade_log.json</code>·DB에 <code>score</code>/<code>sell_reason</code> 포함</li>
+</ul>
+</li>
+<li><code>trading/buy.py</code>: <code>add_pending_order()</code> 호출 시 2차 스크리닝 점수(<code>score</code>) 전달</li>
+<li><code>trading/sell.py</code>: <code>add_pending_order()</code> 호출 시 매도 사유(<code>sell_reason</code>) 전달</li>
+<li><code>web/templates/trades.html</code>: &ldquo;점수/사유&rdquo; 컬럼 추가 — 매수 행은 점수, 매도 행은 매도 사유 표시</li>
+</ul>
+<p>테스트는 <code>tests/test_db.py</code>(신규, schema 마이그레이션·CRUD)와 <code>tests/test_trading.py</code>(score/sell_reason 전파 케이스 2건)를 추가했다. <code>pytest tests/</code> 192개 전체 통과.</p>
+<hr>
+<h2 id="보유상태--매수가-컬럼-추가">보유상태 / 매수가 컬럼 추가<a hidden class="anchor" aria-hidden="true" href="#보유상태--매수가-컬럼-추가">#</a></h2>
+<p>체결 이력만 봐서는 &ldquo;이 종목을 지금도 들고 있는지&rdquo;, &ldquo;얼마에 샀는지&quot;를 알 수 없었다. 이를 보완했다.</p>
+<ul>
+<li><code>db/schema.py</code>: <code>trades</code> 테이블에 <code>avg_price INTEGER</code> 컬럼 추가, <code>init_db()</code> 마이그레이션 등록</li>
+<li><code>db/repository.py</code>: <code>insert_trade()</code>가 <code>avg_price</code>도 저장</li>
+<li><code>trading/order_manager.py</code>: <code>_on_sell_filled()</code>의 trade_entry에 <code>avg_price</code>(매도 시점 평균매수단가) 포함</li>
+<li><code>web/routers/pages.py</code>: <code>/trades</code> 페이지에 <code>holdings.json</code> 기준 현재 보유 종목 코드 목록(<code>held_codes</code>) 전달</li>
+<li><code>web/templates/trades.html</code>: &ldquo;상태/매수가&rdquo; 컬럼 추가
+<ul>
+<li>매수 행: 현재 보유 중이면 &ldquo;보유중&rdquo;, 이미 매도되었으면 &ldquo;매도완료&rdquo;</li>
+<li>매도 행: <code>avg_price</code>(매수가) 표시, 없으면 &ldquo;—&rdquo;</li>
+</ul>
+</li>
+</ul>
+<p><code>tests/test_db.py</code>에 <code>avg_price</code> 컬럼/CRUD 검증, <code>tests/test_trading.py</code>에 전파 검증을 추가했다. <code>pytest tests/</code> 192개 전체 통과.</p>
+<hr>
+<h2 id="매수-점수-툴팁--조건별-점수-상세">매수 점수 툴팁 — 조건별 점수 상세<a hidden class="anchor" aria-hidden="true" href="#매수-점수-툴팁--조건별-점수-상세">#</a></h2>
+<p>매수 점수가 몇 점인지는 보이지만, &ldquo;어떤 조건이 얼마나 기여했는지&quot;는 알 수 없었다. 2차 스크리닝의 조건별 점수를 hover 툴팁으로 보여주도록 했다.</p>
+<ul>
+<li><code>db/schema.py</code>: <code>trades</code> 테이블에 <code>condition_scores TEXT</code> 컬럼 추가 (<code>init_db()</code> 마이그레이션 등록)</li>
+<li><code>db/repository.py</code>: <code>insert_trade()</code>가 <code>condition_scores</code>(JSON 문자열)도 저장</li>
+<li><code>trading/order_manager.py</code>
+<ul>
+<li><code>add_pending_order()</code>에 <code>condition_scores: dict | None</code> 파라미터 추가 → <code>pending_orders.json</code>에 기록</li>
+<li><code>_on_buy_filled()</code>에서 trade_entry에 <code>condition_scores</code>를 JSON 문자열로 직렬화해 포함</li>
+</ul>
+</li>
+<li><code>trading/buy.py</code>: <code>add_pending_order()</code> 호출 시 <code>stock[&quot;raw_scores&quot;]</code>(2차 스크리닝 조건별 0.0~1.0 점수)를 <code>condition_scores</code>로 전달</li>
+<li><code>web/templates/trades.html</code>: 매수 행의 점수 텍스트에 <code>title</code> 툴팁 추가 — 조건별 점수(한글 라벨 + %)를 hover 시 표시</li>
+</ul>
+<p><code>tests/test_db.py</code>, <code>tests/test_trading.py</code>에 <code>condition_scores</code> 전파 검증을 추가했다. <code>pytest tests/</code> 192개 전체 통과.</p>
+<blockquote>
+<p>기존 trades 행은 <code>condition_scores</code>가 없어 툴팁이 표시되지 않고, 다음 매수 체결부터 정상 기록된다.</p>
+</blockquote>
+<hr>
+<h2 id="컬럼명-정리-condition_scores--buy_context">컬럼명 정리: condition_scores → buy_context<a hidden class="anchor" aria-hidden="true" href="#컬럼명-정리-condition_scores--buy_context">#</a></h2>
+<p>조건별 점수 툴팁을 추가하자마자, &ldquo;이 매수가 어떤 설정(프리셋/임계값/전략)에서 이뤄졌는지&quot;가 더 유용한 정보라는 판단이 들었다. 그래서 같은 컬럼을 재정의해서 사용했다.</p>
+<ul>
+<li><code>db/schema.py</code>: <code>trades.condition_scores</code> 컬럼을 <code>buy_context TEXT</code>로 변경 — 운영 DB에 아직 반영되지 않은 상태였기 때문에 컬럼명 자체를 교체</li>
+<li><code>db/repository.py</code>: <code>insert_trade()</code> 컬럼명 <code>condition_scores</code> → <code>buy_context</code></li>
+<li><code>trading/order_manager.py</code>: <code>add_pending_order()</code>/<code>_on_buy_filled()</code>의 <code>condition_scores</code> → <code>buy_context</code>로 변경</li>
+<li><code>trading/buy.py</code>: <code>add_pending_order()</code> 호출 시 다음 정보를 <code>buy_context</code>로 전달
+<ul>
+<li><code>preset</code>: 현재 매매 프리셋</li>
+<li><code>strategy</code>: 활성 2차 스크리닝 전략</li>
+<li><code>min_score</code>: 해당 종목에 적용된 통과 기준점</li>
+</ul>
+</li>
+<li><code>web/templates/trades.html</code>: 매수 점수 툴팁을 &ldquo;매매프리셋 / 임계값 / 2차 스크리닝전략&rdquo; 3줄로 변경
+<ul>
+<li>프리셋: 보수적/중립/공격적, 전략: 균형/모멘텀/추세추종/광범위 — 한글 라벨로 매핑</li>
+</ul>
+</li>
+</ul>
+<p><code>tests/test_db.py</code>, <code>tests/test_trading.py</code>를 <code>buy_context</code> 기준으로 갱신했다. <code>pytest tests/</code> 192개 전체 통과.</p>
+<hr>
+<h2 id="매매설정-페이지-2차-스크리닝-조건-파라미터-전체-편집">매매설정 페이지: 2차 스크리닝 조건 파라미터 전체 편집<a hidden class="anchor" aria-hidden="true" href="#매매설정-페이지-2차-스크리닝-조건-파라미터-전체-편집">#</a></h2>
+<p><a href="/posts/wide-strategy-and-settings-tabs/">이전 글</a>에서 추가한 매매설정 탭에서는 조건별 가중치 8개만 편집할 수 있었는데, 실제로는 각 조건마다 기간·임계값 등 세부 파라미터가 더 많다. 이를 전부 웹에서 편집할 수 있도록 확장했다.</p>
+<ul>
+<li><code>web/routers/config_router.py</code>
+<ul>
+<li><code>_PARAM_LABELS</code> 신규 추가 — 10개 조건 × 17개 세부 파라미터를 한글 라벨로 매핑</li>
+<li><code>get_screening_strategy()</code>: 기존 8개 고정 <code>key_params</code> 대신, 전체 <code>condition_params</code>(nested dict)와 <code>param_labels</code>를 반환</li>
+<li><code>ScreeningParamsUpdate</code>를 <code>min_score: float | None</code>, <code>condition_params: dict[str, dict[str, float]] | None</code>로 일반화 — 기존 8개 고정 필드 제거</li>
+<li><code>update_screening_params()</code>: <code>condition_params</code>를 조건별로 deep-merge 저장, <code>_PARAM_LABELS</code>에 정의된 키만 허용
+<ul>
+<li>기존 값이 <code>int</code>이고 입력값이 정수면 <code>int</code>로 저장해 YAML 포맷 보존 (예: <code>period: 14</code> → <code>14.0</code> 방지)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>web/templates/settings.html</code>
+<ul>
+<li>&ldquo;핵심 조건 파라미터&rdquo; 영역을 10개 조건별 그룹으로 재구성 — 각 조건의 모든 파라미터를 입력 필드로 노출</li>
+<li><code>screeningParamEdits</code>를 <code>{ min_score, condition_params: {...} }</code> 구조로 변경, <code>screeningStrategy.conditions</code>/<code>condition_params</code>/<code>param_labels</code>를 기반으로 동적 렌더링</li>
+</ul>
+</li>
+</ul>
+<p><code>pytest tests/</code> 192개 전체 통과(회귀 없음, web 라우터는 기존부터 미커버리지). fastapi가 로컬 환경에 설치되어 있지 않아 엔드포인트 직접 실행 검증은 하지 못했고, OCI에서 <code>/settings</code> 매매 설정 탭을 수동으로 확인해야 하는 상태로 남겨두었다.</p>
+<hr>
+<h2 id="docs-정리-wide-전략-반영--웹-설정-편집-안내">docs 정리: wide 전략 반영 + 웹 설정 편집 안내<a hidden class="anchor" aria-hidden="true" href="#docs-정리-wide-전략-반영--웹-설정-편집-안내">#</a></h2>
+<p>작업 마무리로 문서를 코드와 다시 맞췄다.</p>
+<ul>
+<li><code>settings/screen_config/second_stage.yaml</code>: 주석 표의 <code>wide</code> min_score를 <code>35</code> → <code>25</code>(CHOP+5 보정 후 30)로 수정 — 6/9 wide 완화 작업과 동기화</li>
+<li><code>docs/SETTINGS_GUIDE.md</code>
+<ul>
+<li><code>active_strategy</code> 주석과 &ldquo;전략 비교&rdquo; 표에 <code>wide</code> 전략 행 추가 (6/9에 추가했지만 반영이 안 되어 있던 상태)</li>
+<li>섹션 6에 &ldquo;웹 대시보드에서 수정하기&rdquo; 추가 — <code>/settings</code>에서 핵심 조건 파라미터 전체를 편집하는 기능 안내</li>
+</ul>
+</li>
+<li><code>docs/SETTINGS_REFERENCE.md</code>: &ldquo;전략 선택&rdquo; 표에 <code>wide</code> 행 추가</li>
+</ul>
+<p><code>pytest tests/</code> 192개 전체 통과 — 문서 변경만이라 회귀 없음을 확인했다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>작업</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>렌더링 버그 수정</td>
+					<td><code>x-data</code> 작은따옴표 전환으로 <code>/trades</code> 페이지 정상화</td>
+			</tr>
+			<tr>
+					<td>점수/사유 표시</td>
+					<td><code>score</code>, <code>sell_reason</code> 컬럼 추가, 매수 점수·매도 사유 표시</td>
+			</tr>
+			<tr>
+					<td>보유상태/매수가</td>
+					<td><code>avg_price</code> 컬럼 추가, 보유중/매도완료 + 매수가 표시</td>
+			</tr>
+			<tr>
+					<td>조건별 점수 툴팁</td>
+					<td><code>condition_scores</code> → 매수 점수 hover 시 조건별 점수 표시</td>
+			</tr>
+			<tr>
+					<td>buy_context 정리</td>
+					<td>컬럼을 <code>buy_context</code>로 재정의 — 프리셋/임계값/전략 툴팁</td>
+			</tr>
+			<tr>
+					<td>매매설정 전체 편집</td>
+					<td>10개 조건 × 17개 파라미터를 웹에서 직접 편집</td>
+			</tr>
+			<tr>
+					<td>docs 정리</td>
+					<td>wide 전략 표/주석 반영, 웹 설정 편집 안내 추가</td>
+			</tr>
+	</tbody>
+</table>
+<p>다음 글에서는 6월 11일 진행한 <strong>strategy_v1/v2 분리 구조</strong> 설계와, 공유 indicators 패키지 분리부터 strategy_v1 디렉터리 재구성까지의 작업을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/strategy-version-restructure/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (14) — strategy_v1/v2 분리 구조 설계와 3단계 이동</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설계">
+<meta name="description" content="종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도">
+  <meta property="og:description" content="종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-24T10:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-24T10:00:00+09:00">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도">
+  <meta name="twitter:description" content="종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도",
+      "item": "https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도",
+  "description": "종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.",
+  "keywords": [
+    "설계"
+  ],
+  "articleBody": "작성일: 2026년 6월 24일\n최종 수정: 2026년 6월 24일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: In Progress\n들어가며 이전 글에서 docs/ 폴더 19개 문서를 전부 재작성하고 v0.6.0을 릴리즈하며 6월 23일까지의 시리즈를 마무리했다. 6월 24일부터는 다시 기능 개발로 돌아왔다.\n결론부터 말하면, 종목당 매수금액을 고정 금액(buy_amount_per_stock)에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금이 부족해지면 수익률이 가장 낮은 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 같은 로직을 반영했고, 마지막 전체 리뷰에서 두 로직이 충돌할 수 있는 cross-task 버그 하나를 잡았다.\n종목당 매수금액 동적화 기존에는 프리셋(conservative/neutral/aggressive)마다 buy_amount_per_stock이라는 고정 금액과 max_holding_count(3/5/8 등 프리셋별로 다른 값)를 따로 설정했다. 이 방식은 계좌 잔고가 늘거나 줄어도 종목당 투입 금액이 그대로라, 총자산 대비 투자 비중이 계속 달라지는 문제가 있었다.\n이번에 바꾼 구조는 다음과 같다.\nmax_holding_count를 v1/v2 3개 프리셋 모두 20종목으로 통일(기존 3/5/8 등 프리셋별 차등 폐지) total_asset_buy_ratio 신규 도입(conservative 0.5 / neutral 0.7 / aggressive 0.9) 종목당 매수 예산 = get_balance().total_eval(총자산) × 활용율 / 20, 매 매수 시도마다 실시간 재계산 섹터당 보유 한도도 종목 한도 확대(4배)에 비례해 동일 배율로 확대: v1 max_holding_per_sector 2/1/3 → 8/4/12, v2 sector_max_count 3 → 12 프리셋별로 고정된 종목 수를 정해놓는 대신, “총자산의 몇 %까지 투자할지\"와 “몇 종목으로 나눌지\"를 분리해서 계좌 규모가 바뀌어도 같은 비율로 대응하게 만든 셈이다.\n현금 하한선 강제매도 여기에 추가로 사용자 요청이 하나 더 있었다. 현금 보유량이 프리셋 활용율 기준 하한선(총자산 × (1 - total_asset_buy_ratio)) 아래로 내려가면, 매수 시도 시점에 보유 종목 중 수익률이 가장 낮은 종목을 전량 매도해 현금을 확보하는 기능이다. 한 사이클에 한 종목만 매도하고, 연쇄 매도는 하지 않는다. 백테스트 엔진에도 같은 로직을 반영했다.\nbrainstorming → 설계 → writing-plans(7-Task) → subagent-driven-development 절차로 진행했다. 사용자가 특히 강조한 지시는 “공용 헬퍼를 한 번만 정의하고 v1/v2가 가져다 쓸 것” — find_worst_performer()/sell_worst_performer_for_cash()를 trading/order_manager.py에 한 번만 정의해 v1(Task 2)·v2(Task 4)가 재사용하도록 했다. 백테스트는 api_client/position_registry 의존성이 없어 별도로 backtest/backtest_runner.py에 _apply_cash_floor_sell()을 독립 구현했는데, 최종 리뷰에서 두 구현의 동작 계약(behavioral contract)이 일치하는지 확인했다.\nTask 1~5(v1/v2 동적예산, 공용 하한선 헬퍼+v1/v2 적용, 백테스트 반영)는 전부 개별 리뷰에서 Critical/Important 없이 통과했다. Task 6(문서 갱신)은 기계적 치환이라 컨트롤러가 직접 처리했는데, 브리프가 참조한 파일/라인 2건이 6월 23일 docs-sync 재구성으로 이미 stale해진 상태라 grep으로 실제 위치를 다시 찾아 수정했다(docs/USAGE.md와 docs/SETTINGS_REFERENCE.md 일부 내용이 서로 뒤바뀌어 있었다).\n최종 리뷰에서 발견된 cross-task 버그 개별 Task 리뷰는 전부 통과했지만, 전체 브랜치를 한 번에 보는 최종 리뷰에서 Important 1건이 나왔다. v1/v2 run_buy()의 현금 하한선 강제매도가, 같은 cron 사이클에서 run_sell()이 이미 매도 주문을 접수했지만 아직 holdings.json에서 제거되지 않은 종목(예: 손절 대상)을 다시 “수익률 최저 종목\"으로 선택해 중복 매도 주문을 쌓을 수 있는 경로였다.\n손절 대상은 정의상 수익률이 가장 낮은 경우가 많아서, 실제로 트리거되기 쉬운 패턴이다. 개별 Task 리뷰는 각자 자기 파일만 봤기 때문에 이 흐름을 놓쳤다 — 매도 로직과 현금 확보 로직이 각각 정상이어도, 둘이 같은 사이클에서 만나면 문제가 생기는 경우였다.\n수정은 find_worst_performer()에 exclude_codes 파라미터를 추가하고, sell_worst_performer_for_cash()가 pending_orders.json의 미체결 매도 종목을 조회해 제외하도록 하는 방식이었다(commit 9b988ed). 신규 테스트 4건을 추가해 검증했다. 같은 커밋에서 Minor 1건(v2 sector_max_count stale fallback 기본값이 3으로 남아있던 것을 12로 수정, 실질 영향은 없었다)도 함께 처리했다.\nfeat(v1): 종목당 매수금액을 총자산 비율 기준 동적 계산으로 변경 feat: 현금 보유량 하한선 미달 시 수익률 최저 종목 전량 매도(공용 헬퍼) + v1 적용 feat(v2): 종목당 매수금액을 총자산 비율 기준 동적 계산으로 변경 feat(v2): 현금 보유량 하한선 미달 시 수익률 최저 종목 전량 매도(공용 헬퍼 적용) feat(backtest): 종목당 매수금액 동적화 + 현금 보유량 하한선 강제매도 반영 pytest tests/ 734개(730 + cross-task 수정 테스트 4건) 전체 통과했다. 최종 리뷰 결과는 “Ready to merge: WITH FIXES\"였지만, 사용자가 이번엔 “일단 보류\"를 선택해 feature/build에 push나 PR을 올리지 않았다.\n정리 항목 변경 전 변경 후 종목당 매수금액 프리셋 고정 금액 총자산 × 활용율 / 20 (실시간 재계산) max_holding_count 프리셋별 3/5/8 등 차등 전 프리셋 20으로 통일 total_asset_buy_ratio 없음 conservative 0.5 / neutral 0.7 / aggressive 0.9 현금 하한선 대응 없음 수익률 최저 종목 전량 매도(1사이클 1종목) cross-task 버그 - 손절 대기 종목 중복매도 방지(exclude_codes) 다음 세션에서 머지/PR을 진행할 때 확인이 필요한 항목도 세 가지 남겨뒀다. cross-task 수정(9b988ed)이 반영된 채로 전체 테스트를 다시 통과시키는 것, 실거래에서 동적 예산 계산이 의도대로 동작하는지(한 사이클에 여러 종목을 살 때 잔고 재조회가 누적 반영되는지), 현금 하한선 강제매도가 실제로 트리거되는 상황을 관찰할 기회가 있으면 정확히 1건만 발생하는지 확인하는 것이다.\n다음 글에서는 이 브랜치를 PR #68로 머지하고 v0.6.1을 릴리즈하는 과정과, 그 직후 발견된 매도 주문 체결인식 실패 버그를 다룬다.\n",
+  "wordCount" : "2384",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-24T10:00:00+09:00",
+  "dateModified": "2026-06-24T10:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도
+    </h1>
+    <div class="post-description">
+      종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-24T10:00:00+09:00'>2026년 6월 24일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#%ec%a2%85%eb%aa%a9%eb%8b%b9-%eb%a7%a4%ec%88%98%ea%b8%88%ec%95%a1-%eb%8f%99%ec%a0%81%ed%99%94" aria-label="종목당 매수금액 동적화">종목당 매수금액 동적화</a></li>
+            <li>
+                <a href="#%ed%98%84%ea%b8%88-%ed%95%98%ed%95%9c%ec%84%a0-%ea%b0%95%ec%a0%9c%eb%a7%a4%eb%8f%84" aria-label="현금 하한선 강제매도">현금 하한선 강제매도</a></li>
+            <li>
+                <a href="#%ec%b5%9c%ec%a2%85-%eb%a6%ac%eb%b7%b0%ec%97%90%ec%84%9c-%eb%b0%9c%ea%b2%ac%eb%90%9c-cross-task-%eb%b2%84%ea%b7%b8" aria-label="최종 리뷰에서 발견된 cross-task 버그">최종 리뷰에서 발견된 cross-task 버그</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 24일<br>
+<strong>최종 수정</strong>: 2026년 6월 24일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: In Progress</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/docs-sync-and-v060-release/">이전 글</a>에서 docs/ 폴더 19개 문서를 전부 재작성하고 v0.6.0을 릴리즈하며 6월 23일까지의 시리즈를 마무리했다. 6월 24일부터는 다시 기능 개발로 돌아왔다.</p>
+<p>결론부터 말하면, 종목당 매수금액을 고정 금액(<code>buy_amount_per_stock</code>)에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금이 부족해지면 수익률이 가장 낮은 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 같은 로직을 반영했고, 마지막 전체 리뷰에서 두 로직이 충돌할 수 있는 cross-task 버그 하나를 잡았다.</p>
+<hr>
+<h2 id="종목당-매수금액-동적화">종목당 매수금액 동적화<a hidden class="anchor" aria-hidden="true" href="#종목당-매수금액-동적화">#</a></h2>
+<p>기존에는 프리셋(conservative/neutral/aggressive)마다 <code>buy_amount_per_stock</code>이라는 고정 금액과 <code>max_holding_count</code>(3/5/8 등 프리셋별로 다른 값)를 따로 설정했다. 이 방식은 계좌 잔고가 늘거나 줄어도 종목당 투입 금액이 그대로라, 총자산 대비 투자 비중이 계속 달라지는 문제가 있었다.</p>
+<p>이번에 바꾼 구조는 다음과 같다.</p>
+<ul>
+<li><code>max_holding_count</code>를 v1/v2 3개 프리셋 모두 <strong>20종목으로 통일</strong>(기존 3/5/8 등 프리셋별 차등 폐지)</li>
+<li><code>total_asset_buy_ratio</code> 신규 도입(conservative 0.5 / neutral 0.7 / aggressive 0.9)</li>
+<li>종목당 매수 예산 = <code>get_balance().total_eval</code>(총자산) × 활용율 / 20, <strong>매 매수 시도마다 실시간 재계산</strong></li>
+<li>섹터당 보유 한도도 종목 한도 확대(4배)에 비례해 동일 배율로 확대: v1 <code>max_holding_per_sector</code> 2/1/3 → 8/4/12, v2 <code>sector_max_count</code> 3 → 12</li>
+</ul>
+<p>프리셋별로 고정된 종목 수를 정해놓는 대신, &ldquo;총자산의 몇 %까지 투자할지&quot;와 &ldquo;몇 종목으로 나눌지&quot;를 분리해서 계좌 규모가 바뀌어도 같은 비율로 대응하게 만든 셈이다.</p>
+<hr>
+<h2 id="현금-하한선-강제매도">현금 하한선 강제매도<a hidden class="anchor" aria-hidden="true" href="#현금-하한선-강제매도">#</a></h2>
+<p>여기에 추가로 사용자 요청이 하나 더 있었다. 현금 보유량이 프리셋 활용율 기준 하한선(<code>총자산 × (1 - total_asset_buy_ratio)</code>) 아래로 내려가면, 매수 시도 시점에 보유 종목 중 <strong>수익률이 가장 낮은 종목을 전량 매도</strong>해 현금을 확보하는 기능이다. 한 사이클에 한 종목만 매도하고, 연쇄 매도는 하지 않는다. 백테스트 엔진에도 같은 로직을 반영했다.</p>
+<p><code>brainstorming → 설계 → writing-plans(7-Task) → subagent-driven-development</code> 절차로 진행했다. 사용자가 특히 강조한 지시는 &ldquo;공용 헬퍼를 한 번만 정의하고 v1/v2가 가져다 쓸 것&rdquo; — <code>find_worst_performer()</code>/<code>sell_worst_performer_for_cash()</code>를 <code>trading/order_manager.py</code>에 한 번만 정의해 v1(Task 2)·v2(Task 4)가 재사용하도록 했다. 백테스트는 <code>api_client</code>/<code>position_registry</code> 의존성이 없어 별도로 <code>backtest/backtest_runner.py</code>에 <code>_apply_cash_floor_sell()</code>을 독립 구현했는데, 최종 리뷰에서 두 구현의 동작 계약(behavioral contract)이 일치하는지 확인했다.</p>
+<p>Task 1~5(v1/v2 동적예산, 공용 하한선 헬퍼+v1/v2 적용, 백테스트 반영)는 전부 개별 리뷰에서 Critical/Important 없이 통과했다. Task 6(문서 갱신)은 기계적 치환이라 컨트롤러가 직접 처리했는데, 브리프가 참조한 파일/라인 2건이 6월 23일 docs-sync 재구성으로 이미 stale해진 상태라 grep으로 실제 위치를 다시 찾아 수정했다(<code>docs/USAGE.md</code>와 <code>docs/SETTINGS_REFERENCE.md</code> 일부 내용이 서로 뒤바뀌어 있었다).</p>
+<hr>
+<h2 id="최종-리뷰에서-발견된-cross-task-버그">최종 리뷰에서 발견된 cross-task 버그<a hidden class="anchor" aria-hidden="true" href="#최종-리뷰에서-발견된-cross-task-버그">#</a></h2>
+<p>개별 Task 리뷰는 전부 통과했지만, 전체 브랜치를 한 번에 보는 최종 리뷰에서 Important 1건이 나왔다. v1/v2 <code>run_buy()</code>의 현금 하한선 강제매도가, 같은 cron 사이클에서 <code>run_sell()</code>이 이미 매도 주문을 접수했지만 아직 <code>holdings.json</code>에서 제거되지 않은 종목(예: 손절 대상)을 다시 &ldquo;수익률 최저 종목&quot;으로 선택해 <strong>중복 매도 주문</strong>을 쌓을 수 있는 경로였다.</p>
+<p>손절 대상은 정의상 수익률이 가장 낮은 경우가 많아서, 실제로 트리거되기 쉬운 패턴이다. 개별 Task 리뷰는 각자 자기 파일만 봤기 때문에 이 흐름을 놓쳤다 — 매도 로직과 현금 확보 로직이 각각 정상이어도, 둘이 같은 사이클에서 만나면 문제가 생기는 경우였다.</p>
+<p>수정은 <code>find_worst_performer()</code>에 <code>exclude_codes</code> 파라미터를 추가하고, <code>sell_worst_performer_for_cash()</code>가 <code>pending_orders.json</code>의 미체결 매도 종목을 조회해 제외하도록 하는 방식이었다(commit <code>9b988ed</code>). 신규 테스트 4건을 추가해 검증했다. 같은 커밋에서 Minor 1건(v2 <code>sector_max_count</code> stale fallback 기본값이 3으로 남아있던 것을 12로 수정, 실질 영향은 없었다)도 함께 처리했다.</p>
+<pre tabindex="0"><code>feat(v1): 종목당 매수금액을 총자산 비율 기준 동적 계산으로 변경
+feat: 현금 보유량 하한선 미달 시 수익률 최저 종목 전량 매도(공용 헬퍼) + v1 적용
+feat(v2): 종목당 매수금액을 총자산 비율 기준 동적 계산으로 변경
+feat(v2): 현금 보유량 하한선 미달 시 수익률 최저 종목 전량 매도(공용 헬퍼 적용)
+feat(backtest): 종목당 매수금액 동적화 + 현금 보유량 하한선 강제매도 반영
+</code></pre><p><code>pytest tests/</code> 734개(730 + cross-task 수정 테스트 4건) 전체 통과했다. 최종 리뷰 결과는 &ldquo;Ready to merge: WITH FIXES&quot;였지만, 사용자가 이번엔 &ldquo;일단 보류&quot;를 선택해 <code>feature/build</code>에 push나 PR을 올리지 않았다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>변경 전</th>
+					<th>변경 후</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>종목당 매수금액</td>
+					<td>프리셋 고정 금액</td>
+					<td>총자산 × 활용율 / 20 (실시간 재계산)</td>
+			</tr>
+			<tr>
+					<td>max_holding_count</td>
+					<td>프리셋별 3/5/8 등 차등</td>
+					<td>전 프리셋 20으로 통일</td>
+			</tr>
+			<tr>
+					<td>total_asset_buy_ratio</td>
+					<td>없음</td>
+					<td>conservative 0.5 / neutral 0.7 / aggressive 0.9</td>
+			</tr>
+			<tr>
+					<td>현금 하한선 대응</td>
+					<td>없음</td>
+					<td>수익률 최저 종목 전량 매도(1사이클 1종목)</td>
+			</tr>
+			<tr>
+					<td>cross-task 버그</td>
+					<td>-</td>
+					<td>손절 대기 종목 중복매도 방지(<code>exclude_codes</code>)</td>
+			</tr>
+	</tbody>
+</table>
+<p>다음 세션에서 머지/PR을 진행할 때 확인이 필요한 항목도 세 가지 남겨뒀다. cross-task 수정(<code>9b988ed</code>)이 반영된 채로 전체 테스트를 다시 통과시키는 것, 실거래에서 동적 예산 계산이 의도대로 동작하는지(한 사이클에 여러 종목을 살 때 잔고 재조회가 누적 반영되는지), 현금 하한선 강제매도가 실제로 트리거되는 상황을 관찰할 기회가 있으면 정확히 1건만 발생하는지 확인하는 것이다.</p>
+<p>다음 글에서는 이 브랜치를 PR #68로 머지하고 v0.6.1을 릴리즈하는 과정과, 그 직후 발견된 매도 주문 체결인식 실패 버그를 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

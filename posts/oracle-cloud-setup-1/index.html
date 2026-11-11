@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설정">
+<meta name="description" content="Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/oracle-cloud-setup-1/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/oracle-cloud-setup-1/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-setup-1/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공">
+  <meta property="og:description" content="Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-05-28T15:01:00+09:00">
+    <meta property="article:modified_time" content="2026-05-28T15:01:00+09:00">
+    <meta property="article:tag" content="설정">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공">
+  <meta name="twitter:description" content="Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공",
+      "item": "https://nova7zone.github.io/posts/oracle-cloud-setup-1/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공",
+  "name": "Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공",
+  "description": "Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.",
+  "keywords": [
+    "설정"
+  ],
+  "articleBody": "작성일: 2026년 5월 28일\n최종 수정: 2026년 5월 28일\n분야: Cloud Infrastructure, DevOps\n난이도: Beginner ~ Intermediate\n상태: Production Ready\n들어가며 AI 자동매매 시스템을 24/7 돌리려면 서버가 필요하다. 집 PC를 켜두는 건 현실적이지 않고, 유료 클라우드는 비용 부담이 있다. Oracle Cloud의 Always Free Tier는 말 그대로 평생 무료로 쓸 수 있는 서버를 제공하기 때문에 첫 번째 선택지로 골랐다.\n결론부터 말하면 첫 시도는 실패했다. ARM 기반 인스턴스를 만들려다 “Out of host capacity” 에러를 만났고, AMD로 바꿔서 재시도해 성공했다. 이 글은 그 과정을 스크린샷과 함께 기록한 것이다.\n1차 시도: ARM (AMPERE) 기반 구축 — 실패 인스턴스 기본 정보 입력 Oracle Cloud 콘솔에서 Compute \u003e Instances \u003e Create Instance 로 진입한다.\nName: instance-auto Compartment: nova_lab (root) Availability Domain: AD 1 (FGOE:AP-CHUNCHEON-1-AD-1) — 춘천 리전 OS 이미지 선택 Operating system: Canonical Ubuntu 22.04 Image build: 2026.04.30-1 Security: Shielded instance Shape 선택 — AMPERE ARM Free Tier에서 가장 스펙이 좋은 ARM 기반 사양을 선택했다.\nShape: VM.Standard.A1.Flex (Always Free-eligible) Spec: 1 core OCPU, 6 GB memory, 1 Gbps network 네트워크 설정 VNIC name: lab-vnic Primary network: Create new virtual cloud network VCN name: vcn-20260528-1407 Compartment: nova_lab (root) Subnet: Create new public subnet Subnet name: subnet-20260528-1407 CIDR block: (IP) Private IPv4 주소는 자동 할당으로 설정했다.\n비용 확인 Boot volume 비용으로 $2.76/month가 표시된다. Free Tier 범위에서는 이 비용도 청구되지 않는다.\n결과: 스택 생성은 됐지만… Terraform Stack(instance-auto)은 Active 상태로 만들어졌지만, 실제 인스턴스 생성 단계에서 아래 에러가 발생했다.\nError: 500-InternalError Out of host capacity ❌ 에러 원인: “Out of host capacity\"란? 설정이나 코드의 문제가 아니다. Oracle Cloud 춘천 리전(ap-chuncheon-1)의 ARM 서버 자원이 현재 꽉 찬 상태라는 뜻이다.\nVM.Standard.A1.Flex는 Oracle Free Tier에서 가장 인기 있는 사양이라 전 세계 사용자가 몰려 자원 부족이 매우 자주 발생한다. 한번 뜨면 수일~수주 기다려야 할 수도 있다.\n해결 방법 두 가지:\n계속 재시도하면서 빈 자리가 생기기를 기다린다 (운에 맡기는 방식) CPU 아키텍처를 AMD로 바꿔서 재시도한다 ← 이 방법을 선택 2차 시도: AMD로 전환 — 성공 인스턴스 기본 정보 입력 Name: instance-lab (이름 변경) Compartment: nova_lab (root) Availability Domain: AD 1 (FGOE:AP-CHUNCHEON-1-AD-1) OS 이미지 선택 OS는 동일하게 Ubuntu 22.04를 선택했다.\nShape 변경 — AMD EPYC 핵심 변경 사항이다. ARM → AMD로 바꿨다.\nShape: VM.Standard.E2.1.Micro (Always Free-eligible) Spec: 1 core OCPU, 1 GB memory, 0.48 Gbps network ARM(6GB) 대비 메모리가 1GB로 줄어드는 단점이 있지만, 자원을 바로 확보할 수 있다는 게 훨씬 중요했다.\n고급 설정 Instance Metadata Service(IMDS)는 기본값으로 유지했다. IMDSv2를 강제하면 보안이 강화되지만, 일부 앱에서 호환성 문제가 생길 수 있어 일단 기본으로 두었다.\nLive migration 옵션은 “Let Oracle Cloud Infrastructure choose the best migration option\"으로 설정했다. 인프라 유지보수 시 자동으로 다른 호스트로 이전된다.\nOracle Cloud Agent는 아래 플러그인을 활성화했다.\nCustom Logs Monitoring Compute Instance Monitoring Cloud Guard Workload Protection 보안 설정 Shielded Instance는 비활성화 상태다. AMD E2.1.Micro Shape에서는 이 옵션이 지원되지 않는다.\n네트워크 설정 VNIC name: nova_vnic Primary network: Create new virtual cloud network VCN name: vcn-20260528-1454 Compartment: nova_lab (root) Subnet: Create new public subnet Subnet name: subnet-20260528-1454 CIDR block: (IP) Private IPv4 주소는 자동 할당으로 설정했다.\n✅ 최종 결과: Running 2026년 5월 28일 15:01, 인스턴스 생성 성공.\n항목 값 Name instance-lab State Running Public IP (서버 IP) Private IP (IP) Shape VM.Standard.E2.1.Micro OCPU 1 Memory 1 GB Availability Domain AD-1 SSH 접속 확인 chmod 600 private_key.pem ssh -i private_key.pem ubuntu@\u003c서버 IP\u003e # 접속 후 확인 $ uname -a Linux instance-lab 6.1.0-28-generic #49-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Linux 정리 항목 1차 시도 (실패) 2차 시도 (성공) Shape VM.Standard.A1.Flex VM.Standard.E2.1.Micro CPU ARM AMPERE AMD EPYC Memory 6 GB 1 GB 결과 Out of host capacity Running Free Tier에서 ARM 자원이 부족하다면 AMD로 전환하는 게 현실적인 해결책이다. 메모리가 6GB → 1GB로 줄어들지만, AI 매매 시스템의 신호 생성과 주문 실행 정도는 1GB로도 충분히 돌아간다.\n참고 Oracle Cloud Infrastructure Documentation Always Free Tier Services ",
+  "wordCount" : "1373",
+  "inLanguage": "ko",
+  "datePublished": "2026-05-28T15:01:00+09:00",
+  "dateModified": "2026-05-28T15:01:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/oracle-cloud-setup-1/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공
+    </h1>
+    <div class="post-description">
+      Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-05-28T15:01:00+09:00'>2026년 5월 28일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1%ec%b0%a8-%ec%8b%9c%eb%8f%84-arm-ampere-%ea%b8%b0%eb%b0%98-%ea%b5%ac%ec%b6%95--%ec%8b%a4%ed%8c%a8" aria-label="1차 시도: ARM (AMPERE) 기반 구축 — 실패">1차 시도: ARM (AMPERE) 기반 구축 — 실패</a><ul>
+                    
+            <li>
+                <a href="#%ec%9d%b8%ec%8a%a4%ed%84%b4%ec%8a%a4-%ea%b8%b0%eb%b3%b8-%ec%a0%95%eb%b3%b4-%ec%9e%85%eb%a0%a5" aria-label="인스턴스 기본 정보 입력">인스턴스 기본 정보 입력</a></li>
+            <li>
+                <a href="#os-%ec%9d%b4%eb%af%b8%ec%a7%80-%ec%84%a0%ed%83%9d" aria-label="OS 이미지 선택">OS 이미지 선택</a></li>
+            <li>
+                <a href="#shape-%ec%84%a0%ed%83%9d--ampere-arm" aria-label="Shape 선택 — AMPERE ARM">Shape 선택 — AMPERE ARM</a></li>
+            <li>
+                <a href="#%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%ec%84%a4%ec%a0%95" aria-label="네트워크 설정">네트워크 설정</a></li>
+            <li>
+                <a href="#%eb%b9%84%ec%9a%a9-%ed%99%95%ec%9d%b8" aria-label="비용 확인">비용 확인</a></li>
+            <li>
+                <a href="#%ea%b2%b0%ea%b3%bc-%ec%8a%a4%ed%83%9d-%ec%83%9d%ec%84%b1%ec%9d%80-%eb%90%90%ec%a7%80%eb%a7%8c" aria-label="결과: 스택 생성은 됐지만&hellip;">결과: 스택 생성은 됐지만&hellip;</a></li>
+            <li>
+                <a href="#-%ec%97%90%eb%9f%ac-%ec%9b%90%ec%9d%b8-out-of-host-capacity%eb%9e%80" aria-label="❌ 에러 원인: &ldquo;Out of host capacity&quot;란?">❌ 에러 원인: &ldquo;Out of host capacity&quot;란?</a></li></ul>
+            </li>
+            <li>
+                <a href="#2%ec%b0%a8-%ec%8b%9c%eb%8f%84-amd%eb%a1%9c-%ec%a0%84%ed%99%98--%ec%84%b1%ea%b3%b5" aria-label="2차 시도: AMD로 전환 — 성공">2차 시도: AMD로 전환 — 성공</a><ul>
+                    
+            <li>
+                <a href="#%ec%9d%b8%ec%8a%a4%ed%84%b4%ec%8a%a4-%ea%b8%b0%eb%b3%b8-%ec%a0%95%eb%b3%b4-%ec%9e%85%eb%a0%a5-1" aria-label="인스턴스 기본 정보 입력">인스턴스 기본 정보 입력</a></li>
+            <li>
+                <a href="#os-%ec%9d%b4%eb%af%b8%ec%a7%80-%ec%84%a0%ed%83%9d-1" aria-label="OS 이미지 선택">OS 이미지 선택</a></li>
+            <li>
+                <a href="#shape-%eb%b3%80%ea%b2%bd--amd-epyc" aria-label="Shape 변경 — AMD EPYC">Shape 변경 — AMD EPYC</a></li>
+            <li>
+                <a href="#%ea%b3%a0%ea%b8%89-%ec%84%a4%ec%a0%95" aria-label="고급 설정">고급 설정</a></li>
+            <li>
+                <a href="#%eb%b3%b4%ec%95%88-%ec%84%a4%ec%a0%95" aria-label="보안 설정">보안 설정</a></li>
+            <li>
+                <a href="#%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%ec%84%a4%ec%a0%95-1" aria-label="네트워크 설정">네트워크 설정</a></li>
+            <li>
+                <a href="#-%ec%b5%9c%ec%a2%85-%ea%b2%b0%ea%b3%bc-running" aria-label="✅ 최종 결과: Running">✅ 최종 결과: Running</a></li></ul>
+            </li>
+            <li>
+                <a href="#ssh-%ec%a0%91%ec%86%8d-%ed%99%95%ec%9d%b8" aria-label="SSH 접속 확인">SSH 접속 확인</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a></li>
+            <li>
+                <a href="#%ec%b0%b8%ea%b3%a0" aria-label="참고">참고</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 5월 28일<br>
+<strong>최종 수정</strong>: 2026년 5월 28일<br>
+<strong>분야</strong>: Cloud Infrastructure, DevOps<br>
+<strong>난이도</strong>: Beginner ~ Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>AI 자동매매 시스템을 24/7 돌리려면 서버가 필요하다. 집 PC를 켜두는 건 현실적이지 않고, 유료 클라우드는 비용 부담이 있다. Oracle Cloud의 Always Free Tier는 말 그대로 평생 무료로 쓸 수 있는 서버를 제공하기 때문에 첫 번째 선택지로 골랐다.</p>
+<p>결론부터 말하면 <strong>첫 시도는 실패</strong>했다. ARM 기반 인스턴스를 만들려다 &ldquo;Out of host capacity&rdquo; 에러를 만났고, AMD로 바꿔서 재시도해 성공했다. 이 글은 그 과정을 스크린샷과 함께 기록한 것이다.</p>
+<hr>
+<h2 id="1차-시도-arm-ampere-기반-구축--실패">1차 시도: ARM (AMPERE) 기반 구축 — 실패<a hidden class="anchor" aria-hidden="true" href="#1차-시도-arm-ampere-기반-구축--실패">#</a></h2>
+<h3 id="인스턴스-기본-정보-입력">인스턴스 기본 정보 입력<a hidden class="anchor" aria-hidden="true" href="#인스턴스-기본-정보-입력">#</a></h3>
+<p>Oracle Cloud 콘솔에서 <strong>Compute &gt; Instances &gt; Create Instance</strong> 로 진입한다.</p>
+<p><img alt="인스턴스 기본 정보 설정" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image1.png"></p>
+<ul>
+<li><strong>Name</strong>: <code>instance-auto</code></li>
+<li><strong>Compartment</strong>: <code>nova_lab (root)</code></li>
+<li><strong>Availability Domain</strong>: AD 1 (FGOE:AP-CHUNCHEON-1-AD-1) — 춘천 리전</li>
+</ul>
+<h3 id="os-이미지-선택">OS 이미지 선택<a hidden class="anchor" aria-hidden="true" href="#os-이미지-선택">#</a></h3>
+<p><img alt="OS 이미지 선택 — Ubuntu 22.04" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image2.png"></p>
+<ul>
+<li><strong>Operating system</strong>: Canonical Ubuntu 22.04</li>
+<li><strong>Image build</strong>: 2026.04.30-1</li>
+<li><strong>Security</strong>: Shielded instance</li>
+</ul>
+<h3 id="shape-선택--ampere-arm">Shape 선택 — AMPERE ARM<a hidden class="anchor" aria-hidden="true" href="#shape-선택--ampere-arm">#</a></h3>
+<p><img alt="Shape 선택 — VM.Standard.A1.Flex" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image3.png"></p>
+<p>Free Tier에서 가장 스펙이 좋은 ARM 기반 사양을 선택했다.</p>
+<ul>
+<li><strong>Shape</strong>: <code>VM.Standard.A1.Flex</code> (Always Free-eligible)</li>
+<li><strong>Spec</strong>: 1 core OCPU, 6 GB memory, 1 Gbps network</li>
+</ul>
+<h3 id="네트워크-설정">네트워크 설정<a hidden class="anchor" aria-hidden="true" href="#네트워크-설정">#</a></h3>
+<p><img alt="Primary VNIC 설정" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image4.png"></p>
+<ul>
+<li><strong>VNIC name</strong>: <code>lab-vnic</code></li>
+<li><strong>Primary network</strong>: Create new virtual cloud network</li>
+<li><strong>VCN name</strong>: <code>vcn-20260528-1407</code></li>
+<li><strong>Compartment</strong>: <code>nova_lab (root)</code></li>
+</ul>
+<p><img alt="Subnet 설정" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image5.png"></p>
+<ul>
+<li><strong>Subnet</strong>: Create new public subnet</li>
+<li><strong>Subnet name</strong>: <code>subnet-20260528-1407</code></li>
+<li><strong>CIDR block</strong>: <code>(IP)</code></li>
+</ul>
+<p><img alt="Private IPv4 주소 할당" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image6.png"></p>
+<p>Private IPv4 주소는 자동 할당으로 설정했다.</p>
+<h3 id="비용-확인">비용 확인<a hidden class="anchor" aria-hidden="true" href="#비용-확인">#</a></h3>
+<p><img alt="예상 비용" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image7.png"></p>
+<p>Boot volume 비용으로 $2.76/month가 표시된다. Free Tier 범위에서는 이 비용도 청구되지 않는다.</p>
+<h3 id="결과-스택-생성은-됐지만">결과: 스택 생성은 됐지만&hellip;<a hidden class="anchor" aria-hidden="true" href="#결과-스택-생성은-됐지만">#</a></h3>
+<p><img alt="Stack 생성 결과" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image8.png"></p>
+<p>Terraform Stack(<code>instance-auto</code>)은 Active 상태로 만들어졌지만, 실제 인스턴스 생성 단계에서 아래 에러가 발생했다.</p>
+<pre tabindex="0"><code>Error: 500-InternalError
+Out of host capacity
+</code></pre><h3 id="-에러-원인-out-of-host-capacity란">❌ 에러 원인: &ldquo;Out of host capacity&quot;란?<a hidden class="anchor" aria-hidden="true" href="#-에러-원인-out-of-host-capacity란">#</a></h3>
+<p>설정이나 코드의 문제가 아니다. Oracle Cloud 춘천 리전(ap-chuncheon-1)의 <strong>ARM 서버 자원이 현재 꽉 찬 상태</strong>라는 뜻이다.</p>
+<p><code>VM.Standard.A1.Flex</code>는 Oracle Free Tier에서 가장 인기 있는 사양이라 전 세계 사용자가 몰려 자원 부족이 매우 자주 발생한다. 한번 뜨면 수일~수주 기다려야 할 수도 있다.</p>
+<p><strong>해결 방법 두 가지:</strong></p>
+<ol>
+<li>계속 재시도하면서 빈 자리가 생기기를 기다린다 (운에 맡기는 방식)</li>
+<li><strong>CPU 아키텍처를 AMD로 바꿔서 재시도한다</strong> ← 이 방법을 선택</li>
+</ol>
+<hr>
+<h2 id="2차-시도-amd로-전환--성공">2차 시도: AMD로 전환 — 성공<a hidden class="anchor" aria-hidden="true" href="#2차-시도-amd로-전환--성공">#</a></h2>
+<h3 id="인스턴스-기본-정보-입력-1">인스턴스 기본 정보 입력<a hidden class="anchor" aria-hidden="true" href="#인스턴스-기본-정보-입력-1">#</a></h3>
+<p><img alt="인스턴스 기본 정보 — instance-lab" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image9.png"></p>
+<ul>
+<li><strong>Name</strong>: <code>instance-lab</code> (이름 변경)</li>
+<li><strong>Compartment</strong>: <code>nova_lab (root)</code></li>
+<li><strong>Availability Domain</strong>: AD 1 (FGOE:AP-CHUNCHEON-1-AD-1)</li>
+</ul>
+<h3 id="os-이미지-선택-1">OS 이미지 선택<a hidden class="anchor" aria-hidden="true" href="#os-이미지-선택-1">#</a></h3>
+<p><img alt="OS 이미지 선택 — Ubuntu 22.04" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image10.png"></p>
+<p>OS는 동일하게 Ubuntu 22.04를 선택했다.</p>
+<h3 id="shape-변경--amd-epyc">Shape 변경 — AMD EPYC<a hidden class="anchor" aria-hidden="true" href="#shape-변경--amd-epyc">#</a></h3>
+<p><img alt="Shape 변경 — VM.Standard.E2.1.Micro" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image11.png"></p>
+<p>핵심 변경 사항이다. ARM → AMD로 바꿨다.</p>
+<ul>
+<li><strong>Shape</strong>: <code>VM.Standard.E2.1.Micro</code> (Always Free-eligible)</li>
+<li><strong>Spec</strong>: 1 core OCPU, 1 GB memory, 0.48 Gbps network</li>
+</ul>
+<p>ARM(6GB) 대비 메모리가 1GB로 줄어드는 단점이 있지만, 자원을 바로 확보할 수 있다는 게 훨씬 중요했다.</p>
+<h3 id="고급-설정">고급 설정<a hidden class="anchor" aria-hidden="true" href="#고급-설정">#</a></h3>
+<p><img alt="Management — IMDSv2 설정" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image12.png"></p>
+<p>Instance Metadata Service(IMDS)는 기본값으로 유지했다. IMDSv2를 강제하면 보안이 강화되지만, 일부 앱에서 호환성 문제가 생길 수 있어 일단 기본으로 두었다.</p>
+<p><img alt="Availability configuration" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image13.png"></p>
+<p>Live migration 옵션은 &ldquo;Let Oracle Cloud Infrastructure choose the best migration option&quot;으로 설정했다. 인프라 유지보수 시 자동으로 다른 호스트로 이전된다.</p>
+<p><img alt="Oracle Cloud Agent" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image14.png"></p>
+<p>Oracle Cloud Agent는 아래 플러그인을 활성화했다.</p>
+<ul>
+<li>Custom Logs Monitoring</li>
+<li>Compute Instance Monitoring</li>
+<li>Cloud Guard Workload Protection</li>
+</ul>
+<h3 id="보안-설정">보안 설정<a hidden class="anchor" aria-hidden="true" href="#보안-설정">#</a></h3>
+<p><img alt="Security — Shielded Instance" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image15.png"></p>
+<p>Shielded Instance는 비활성화 상태다. AMD E2.1.Micro Shape에서는 이 옵션이 지원되지 않는다.</p>
+<h3 id="네트워크-설정-1">네트워크 설정<a hidden class="anchor" aria-hidden="true" href="#네트워크-설정-1">#</a></h3>
+<p><img alt="Primary VNIC — nova_vnic" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image16.png"></p>
+<ul>
+<li><strong>VNIC name</strong>: <code>nova_vnic</code></li>
+<li><strong>Primary network</strong>: Create new virtual cloud network</li>
+<li><strong>VCN name</strong>: <code>vcn-20260528-1454</code></li>
+<li><strong>Compartment</strong>: <code>nova_lab (root)</code></li>
+</ul>
+<p><img alt="Subnet 설정" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image17.png"></p>
+<ul>
+<li><strong>Subnet</strong>: Create new public subnet</li>
+<li><strong>Subnet name</strong>: <code>subnet-20260528-1454</code></li>
+<li><strong>CIDR block</strong>: <code>(IP)</code></li>
+</ul>
+<p><img alt="Private IPv4 주소 할당" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image18.png"></p>
+<p>Private IPv4 주소는 자동 할당으로 설정했다.</p>
+<h3 id="-최종-결과-running">✅ 최종 결과: Running<a hidden class="anchor" aria-hidden="true" href="#-최종-결과-running">#</a></h3>
+<p><img alt="인스턴스 목록 — instance-lab Running" loading="lazy" src="/assets/img/oracle-cloud-setup-1/image19.png"></p>
+<p><strong>2026년 5월 28일 15:01</strong>, 인스턴스 생성 성공.</p>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>값</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Name</td>
+					<td>instance-lab</td>
+			</tr>
+			<tr>
+					<td>State</td>
+					<td><strong>Running</strong></td>
+			</tr>
+			<tr>
+					<td>Public IP</td>
+					<td>(서버 IP)</td>
+			</tr>
+			<tr>
+					<td>Private IP</td>
+					<td>(IP)</td>
+			</tr>
+			<tr>
+					<td>Shape</td>
+					<td>VM.Standard.E2.1.Micro</td>
+			</tr>
+			<tr>
+					<td>OCPU</td>
+					<td>1</td>
+			</tr>
+			<tr>
+					<td>Memory</td>
+					<td>1 GB</td>
+			</tr>
+			<tr>
+					<td>Availability Domain</td>
+					<td>AD-1</td>
+			</tr>
+	</tbody>
+</table>
+<hr>
+<h2 id="ssh-접속-확인">SSH 접속 확인<a hidden class="anchor" aria-hidden="true" href="#ssh-접속-확인">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">chmod <span class="m">600</span> private_key.pem
+</span></span><span class="line"><span class="cl">ssh -i private_key.pem ubuntu@&lt;서버 IP&gt;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 접속 후 확인</span>
+</span></span><span class="line"><span class="cl">$ uname -a
+</span></span><span class="line"><span class="cl">Linux instance-lab 6.1.0-28-generic <span class="c1">#49-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Linux</span>
+</span></span></code></pre></div><hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>1차 시도 (실패)</th>
+					<th>2차 시도 (성공)</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Shape</td>
+					<td>VM.Standard.A1.Flex</td>
+					<td>VM.Standard.E2.1.Micro</td>
+			</tr>
+			<tr>
+					<td>CPU</td>
+					<td>ARM AMPERE</td>
+					<td>AMD EPYC</td>
+			</tr>
+			<tr>
+					<td>Memory</td>
+					<td>6 GB</td>
+					<td>1 GB</td>
+			</tr>
+			<tr>
+					<td>결과</td>
+					<td>Out of host capacity</td>
+					<td><strong>Running</strong></td>
+			</tr>
+	</tbody>
+</table>
+<p>Free Tier에서 ARM 자원이 부족하다면 AMD로 전환하는 게 현실적인 해결책이다. 메모리가 6GB → 1GB로 줄어들지만, AI 매매 시스템의 신호 생성과 주문 실행 정도는 1GB로도 충분히 돌아간다.</p>
+<hr>
+<h2 id="참고">참고<a hidden class="anchor" aria-hidden="true" href="#참고">#</a></h2>
+<ul>
+<li><a href="https://docs.oracle.com/en-us/iaas/">Oracle Cloud Infrastructure Documentation</a></li>
+<li><a href="https://www.oracle.com/cloud/free/">Always Free Tier Services</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/oracle-cloud-server-setup/">
+    <span class="title">« 이전 페이지</span>
+    <span>Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설정, 설계">
+<meta name="description" content="Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록">
+  <meta property="og:description" content="Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-16T09:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-16T09:00:00+09:00">
+    <meta property="article:tag" content="설정">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록">
+  <meta name="twitter:description" content="Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록",
+      "item": "https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록",
+  "name": "Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록",
+  "description": "Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.",
+  "keywords": [
+    "설정", "설계"
+  ],
+  "articleBody": "작성일: 2026년 6월 16일\n최종 수정: 2026년 6월 16일\n분야: Cloud Infrastructure\n난이도: Intermediate\n상태: Production Ready\n들어가며 결론부터 말하면, 3,310번의 실패 끝에 A1.Flex 확보에 성공했다.\nOracle Cloud Free Tier에는 평생 무료로 쓸 수 있는 ARM 인스턴스가 있다. VM.Standard.A1.Flex — 최대 4 OCPU, 24GB RAM. 문제는 콘솔에서 직접 만들려 하면 Out of host capacity 오류만 돌아온다는 것이다.\n자동 재시도 스크립트를 E2.1.Micro 서버에 올려두고 11일을 기다렸다. 2026년 6월 5일에 시작해서 6월 16일 오전 8시 31분에 성공 알림을 받았다.\n이 글은 OCI CLI 설치부터 스크립트 작성, 그리고 확보까지의 전 과정을 기록한다.\n이전 서버 구축 과정은 Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공에서 확인할 수 있다.\nOracle Cloud Free Tier 리소스 구성 Free Tier에서 평생 무료로 사용할 수 있는 컴퓨팅 리소스는 두 종류다.\n인스턴스 스펙 아키텍처 수량 VM.Standard.E2.1.Micro 1 OCPU / 1GB RAM AMD x86 최대 2개 VM.Standard.A1.Flex 최대 4 OCPU / 24GB RAM ARM 합산 한도 내 자유 분할 E2.1.Micro 하나를 자동매매 스크립트 서버로 운영하던 중 A1.Flex의 존재를 알게 됐다. ARM 기반에 24GB RAM이면 Hermes Agent와 로컬 LLM 모델까지 올릴 수 있다. 당연히 도전해야 했다.\n1단계: OCI CLI 설치 A1.Flex는 콘솔 UI로는 Out of host capacity 오류만 반복된다. 자동 재시도 스크립트를 돌리려면 OCI CLI가 필요하다.\n❌ 에러 원인: ModuleNotFoundError: No module named 'apt_pkg' Ubuntu 시스템 Python 버전과 apt_pkg 컴파일 버전이 달랐다.\npython3 --version # Python 3.11 ls /usr/lib/python3/dist-packages/apt_pkg*.so # apt_pkg.cpython-310-x86_64-linux-gnu.so 시스템은 3.11인데 apt_pkg는 3.10으로 빌드되어 있었다. 심볼릭 링크가 존재하지 않는 파일을 가리키고 있는 상태.\n해결 방법:\ncd /usr/lib/python3/dist-packages sudo ln -sf apt_pkg.cpython-310-x86_64-linux-gnu.so apt_pkg.so ✅ 가상환경으로 OCI CLI 설치 시스템 Python을 건드리지 않는 가장 안전한 방법이다.\npython3 -m venv ~/oci-env source ~/oci-env/bin/activate pip install oci-cli pip install cffi # _cffi_backend 누락 오류 해결 oci --version # 3.85.0 스크립트에서 사용할 때는 항상 가상환경 활성화가 먼저다.\nsource ~/oci-env/bin/activate 2단계: OCI CLI 설정 자동화 스크립트에서는 매번 패스프레이즈를 입력할 수 없으므로 패스프레이즈 없는 API 키를 만들어 공개 키만 콘솔의 프로필 설정에 등록했다. 그다음 CLI 설정 파일에 사용자·테넌시 식별자, 키 파일 경로, 리전을 적고 리전 목록 조회로 연결을 확인했다. 비밀 키는 권한을 최소화해 서버에만 두고, 식별자와 경로는 보안상 생략한다.\n3단계: 필요한 OCID 값 수집 스크립트 작성 전에 필요한 값들을 미리 확보한다.\n# Availability Domain 확인 oci iam availability-domain list # → # 현재 인스턴스가 연결된 Subnet OCID 확인 curl -s \u003c인스턴스 메타데이터 엔드포인트\u003e/vnics/ oci network vnic get --vnic-id # → subnet-id 확인 # Ubuntu 24.04 ARM 최신 이미지 OCID 확인 oci compute image list \\ --compartment-id \\ --operating-system \"Canonical Ubuntu\" \\ --shape \"VM.Standard.A1.Flex\" \\ --sort-by TIMECREATED \\ --all \\ | grep -E '\"id\"|\"display-name\"' # → Canonical-Ubuntu-24.04-aarch64-2026.04.30-1 선택 Root Compartment만 사용 중이라면 Tenancy OCID = Compartment OCID 다.\n4단계: A1.Flex 확보 전략 — 단계적 확장 처음부터 4 OCPU / 24GB를 노리면 Out of host capacity에 계속 막힌다. 작은 빈자리를 먼저 잡고 단계적으로 올리는 방식이 성공 확률이 높다.\n1 OCPU / 6GB → 2 / 12 → 3 / 18 → 4 / 24 이 전략은 상구너의 개발노트에서 참고했다.\n5단계: 자동 재시도 스크립트 cat \u003e ~/a1_retry.sh \u003c\u003c 'EOF' #!/bin/bash source ~/oci-env/bin/activate COMPARTMENT_ID=\"\" SUBNET_ID=\"\" IMAGE_ID=\"\" AVAILABILITY_DOMAIN=\"\" SSH_KEY=\"$(cat ~/.ssh/authorized_keys)\" OCPUS=1 MEMORY_GB=6 DISPLAY_NAME=\"a1-flex-instance\" LOG_FILE=\"$HOME/a1_retry.log\" echo \"=== A1.Flex 1/6 확보 시작: $(date) ===\" \u003e\u003e \"$LOG_FILE\" while true; do echo \"[$(date)] 생성 시도 중... (${OCPUS} OCPU / ${MEMORY_GB}GB)\" \u003e\u003e \"$LOG_FILE\" RESULT=$(oci compute instance launch \\ --compartment-id \"$COMPARTMENT_ID\" \\ --availability-domain \"$AVAILABILITY_DOMAIN\" \\ --shape \"VM.Standard.A1.Flex\" \\ --shape-config \"{\\\"ocpus\\\": $OCPUS, \\\"memoryInGBs\\\": $MEMORY_GB}\" \\ --subnet-id \"$SUBNET_ID\" \\ --image-id \"$IMAGE_ID\" \\ --display-name \"$DISPLAY_NAME\" \\ --ssh-authorized-keys-file \u003c(echo \"$SSH_KEY\") \\ --assign-public-ip true \\ 2\u003e\u00261) if echo \"$RESULT\" | grep -q '\"lifecycle-state\"'; then echo \"[$(date)] ✅ 성공!\" \u003e\u003e \"$LOG_FILE\" echo \"$RESULT\" \u003e\u003e \"$LOG_FILE\" break else echo \"[$(date)] ❌ 실패 — 180초 후 재시도\" \u003e\u003e \"$LOG_FILE\" sleep 180 fi done EOF chmod +x ~/a1_retry.sh 백그라운드 실행 nohup ~/a1_retry.sh \u0026 tail -f ~/a1_retry.log Ctrl+C로 로그 모니터링만 종료해도 스크립트는 계속 실행된다.\n재시도 간격 180초(3분) 권장. 너무 짧으면 OCI API rate limit에 걸릴 수 있다.\n결과 3,310번의 실패 끝에 성공했다.\n=== A1.Flex 1/6 확보 시작: Fri Jun 5 16:19:29 KST 2026 === [Fri Jun 5 16:19:29 KST 2026] 생성 시도 중... (1 OCPU / 6GB) ... [Tue Jun 16 08:31:18 KST 2026] ✅ 성공! 1 OCPU / 6GB 인스턴스 생성됨 항목 값 시작 2026년 6월 5일 (금) 16:19 성공 2026년 6월 16일 (화) 08:31 소요 기간 약 11일 총 시도 횟수 3,310회 춘천 리전 ARM 용량은 그만큼 경쟁이 치열하다. 포기하지 않는 것이 유일한 전략이다.\n현재 인스턴스 구성 인스턴스 스펙 역할 instance-lab (E2) 1 OCPU / 1GB 자동매매 스크립트 a1-flex-instance (A1) 1→4 OCPU / 6→24GB Hermes Agent / LLM 정리 단계 내용 비고 OCI CLI 설치 가상환경(venv) 사용 시스템 Python 충돌 회피 API Key 패스프레이즈 없이 생성 자동화 필수 조건 확보 전략 1/6 → 2/12 → 3/18 → 4/24 단계적 확장 한 번에 큰 스펙 시도 금지 재시도 스크립트 180초 간격, nohup 백그라운드 실행 API rate limit 주의 소요 시간 11일, 3,310회 춘천 리전 ARM 경쟁률 반영 다음 단계로는 A1 인스턴스 SSH 접속 확인 → 스펙 단계적 업그레이드(4 OCPU / 24GB) → Hermes Agent 설치 순으로 진행할 예정이다.\n참고 Oracle Cloud A1 Flex 4 cpu / 24GB mem 성공기 — 상구너의 개발노트 OCI CLI 공식 문서 OCI Always Free 리소스 안내 ",
+  "wordCount" : "1765",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-16T09:00:00+09:00",
+  "dateModified": "2026-06-16T09:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록
+    </h1>
+    <div class="post-description">
+      Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-16T09:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#oracle-cloud-free-tier-%eb%a6%ac%ec%86%8c%ec%8a%a4-%ea%b5%ac%ec%84%b1" aria-label="Oracle Cloud Free Tier 리소스 구성">Oracle Cloud Free Tier 리소스 구성</a></li>
+            <li>
+                <a href="#1%eb%8b%a8%ea%b3%84-oci-cli-%ec%84%a4%ec%b9%98" aria-label="1단계: OCI CLI 설치">1단계: OCI CLI 설치</a><ul>
+                    
+            <li>
+                <a href="#-%ec%97%90%eb%9f%ac-%ec%9b%90%ec%9d%b8-modulenotfounderror-no-module-named-apt_pkg" aria-label="❌ 에러 원인: ModuleNotFoundError: No module named &#39;apt_pkg&#39;">❌ 에러 원인: ModuleNotFoundError: No module named 'apt_pkg'</a></li>
+            <li>
+                <a href="#-%ea%b0%80%ec%83%81%ed%99%98%ea%b2%bd%ec%9c%bc%eb%a1%9c-oci-cli-%ec%84%a4%ec%b9%98" aria-label="✅ 가상환경으로 OCI CLI 설치">✅ 가상환경으로 OCI CLI 설치</a></li></ul>
+            </li>
+            <li>
+                <a href="#2%eb%8b%a8%ea%b3%84-oci-cli-%ec%84%a4%ec%a0%95" aria-label="2단계: OCI CLI 설정">2단계: OCI CLI 설정</a></li>
+            <li>
+                <a href="#3%eb%8b%a8%ea%b3%84-%ed%95%84%ec%9a%94%ed%95%9c-ocid-%ea%b0%92-%ec%88%98%ec%a7%91" aria-label="3단계: 필요한 OCID 값 수집">3단계: 필요한 OCID 값 수집</a></li>
+            <li>
+                <a href="#4%eb%8b%a8%ea%b3%84-a1flex-%ed%99%95%eb%b3%b4-%ec%a0%84%eb%9e%b5--%eb%8b%a8%ea%b3%84%ec%a0%81-%ed%99%95%ec%9e%a5" aria-label="4단계: A1.Flex 확보 전략 — 단계적 확장">4단계: A1.Flex 확보 전략 — 단계적 확장</a></li>
+            <li>
+                <a href="#5%eb%8b%a8%ea%b3%84-%ec%9e%90%eb%8f%99-%ec%9e%ac%ec%8b%9c%eb%8f%84-%ec%8a%a4%ed%81%ac%eb%a6%bd%ed%8a%b8" aria-label="5단계: 자동 재시도 스크립트">5단계: 자동 재시도 스크립트</a><ul>
+                    
+            <li>
+                <a href="#%eb%b0%b1%ea%b7%b8%eb%9d%bc%ec%9a%b4%eb%93%9c-%ec%8b%a4%ed%96%89" aria-label="백그라운드 실행">백그라운드 실행</a></li></ul>
+            </li>
+            <li>
+                <a href="#%ea%b2%b0%ea%b3%bc" aria-label="결과">결과</a><ul>
+                    
+            <li>
+                <a href="#%ed%98%84%ec%9e%ac-%ec%9d%b8%ec%8a%a4%ed%84%b4%ec%8a%a4-%ea%b5%ac%ec%84%b1" aria-label="현재 인스턴스 구성">현재 인스턴스 구성</a></li></ul>
+            </li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a></li>
+            <li>
+                <a href="#%ec%b0%b8%ea%b3%a0" aria-label="참고">참고</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 16일<br>
+<strong>최종 수정</strong>: 2026년 6월 16일<br>
+<strong>분야</strong>: Cloud Infrastructure<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>결론부터 말하면, <strong>3,310번의 실패 끝에 A1.Flex 확보에 성공했다.</strong></p>
+<p>Oracle Cloud Free Tier에는 평생 무료로 쓸 수 있는 ARM 인스턴스가 있다. VM.Standard.A1.Flex — 최대 4 OCPU, 24GB RAM. 문제는 콘솔에서 직접 만들려 하면 <code>Out of host capacity</code> 오류만 돌아온다는 것이다.</p>
+<p>자동 재시도 스크립트를 E2.1.Micro 서버에 올려두고 11일을 기다렸다. 2026년 6월 5일에 시작해서 6월 16일 오전 8시 31분에 성공 알림을 받았다.</p>
+<p>이 글은 OCI CLI 설치부터 스크립트 작성, 그리고 확보까지의 전 과정을 기록한다.</p>
+<p>이전 서버 구축 과정은 <a href="/posts/oracle-cloud-setup-1">Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공</a>에서 확인할 수 있다.</p>
+<hr>
+<h2 id="oracle-cloud-free-tier-리소스-구성">Oracle Cloud Free Tier 리소스 구성<a hidden class="anchor" aria-hidden="true" href="#oracle-cloud-free-tier-리소스-구성">#</a></h2>
+<p>Free Tier에서 평생 무료로 사용할 수 있는 컴퓨팅 리소스는 두 종류다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>인스턴스</th>
+					<th>스펙</th>
+					<th>아키텍처</th>
+					<th>수량</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>VM.Standard.E2.1.Micro</td>
+					<td>1 OCPU / 1GB RAM</td>
+					<td>AMD x86</td>
+					<td>최대 2개</td>
+			</tr>
+			<tr>
+					<td>VM.Standard.A1.Flex</td>
+					<td>최대 4 OCPU / 24GB RAM</td>
+					<td>ARM</td>
+					<td>합산 한도 내 자유 분할</td>
+			</tr>
+	</tbody>
+</table>
+<p>E2.1.Micro 하나를 자동매매 스크립트 서버로 운영하던 중 A1.Flex의 존재를 알게 됐다. ARM 기반에 24GB RAM이면 Hermes Agent와 로컬 LLM 모델까지 올릴 수 있다. 당연히 도전해야 했다.</p>
+<hr>
+<h2 id="1단계-oci-cli-설치">1단계: OCI CLI 설치<a hidden class="anchor" aria-hidden="true" href="#1단계-oci-cli-설치">#</a></h2>
+<p>A1.Flex는 콘솔 UI로는 <code>Out of host capacity</code> 오류만 반복된다. 자동 재시도 스크립트를 돌리려면 OCI CLI가 필요하다.</p>
+<h3 id="-에러-원인-modulenotfounderror-no-module-named-apt_pkg">❌ 에러 원인: <code>ModuleNotFoundError: No module named 'apt_pkg'</code><a hidden class="anchor" aria-hidden="true" href="#-에러-원인-modulenotfounderror-no-module-named-apt_pkg">#</a></h3>
+<p>Ubuntu 시스템 Python 버전과 <code>apt_pkg</code> 컴파일 버전이 달랐다.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 --version
+</span></span><span class="line"><span class="cl"><span class="c1"># Python 3.11</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">ls /usr/lib/python3/dist-packages/apt_pkg*.so
+</span></span><span class="line"><span class="cl"><span class="c1"># apt_pkg.cpython-310-x86_64-linux-gnu.so</span>
+</span></span></code></pre></div><p>시스템은 3.11인데 <code>apt_pkg</code>는 3.10으로 빌드되어 있었다. 심볼릭 링크가 존재하지 않는 파일을 가리키고 있는 상태.</p>
+<p><strong>해결 방법:</strong></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">cd</span> /usr/lib/python3/dist-packages
+</span></span><span class="line"><span class="cl">sudo ln -sf apt_pkg.cpython-310-x86_64-linux-gnu.so apt_pkg.so
+</span></span></code></pre></div><h3 id="-가상환경으로-oci-cli-설치">✅ 가상환경으로 OCI CLI 설치<a hidden class="anchor" aria-hidden="true" href="#-가상환경으로-oci-cli-설치">#</a></h3>
+<p>시스템 Python을 건드리지 않는 가장 안전한 방법이다.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">python3 -m venv ~/oci-env
+</span></span><span class="line"><span class="cl"><span class="nb">source</span> ~/oci-env/bin/activate
+</span></span><span class="line"><span class="cl">pip install oci-cli
+</span></span><span class="line"><span class="cl">pip install cffi        <span class="c1"># _cffi_backend 누락 오류 해결</span>
+</span></span><span class="line"><span class="cl">oci --version           <span class="c1"># 3.85.0</span>
+</span></span></code></pre></div><p>스크립트에서 사용할 때는 항상 가상환경 활성화가 먼저다.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">source</span> ~/oci-env/bin/activate
+</span></span></code></pre></div><hr>
+<h2 id="2단계-oci-cli-설정">2단계: OCI CLI 설정<a hidden class="anchor" aria-hidden="true" href="#2단계-oci-cli-설정">#</a></h2>
+<p>자동화 스크립트에서는 매번 패스프레이즈를 입력할 수 없으므로 패스프레이즈 없는 API 키를 만들어 공개 키만 콘솔의 프로필 설정에 등록했다. 그다음 CLI 설정 파일에 사용자·테넌시 식별자, 키 파일 경로, 리전을 적고 리전 목록 조회로 연결을 확인했다. 비밀 키는 권한을 최소화해 서버에만 두고, 식별자와 경로는 보안상 생략한다.</p>
+<hr>
+<h2 id="3단계-필요한-ocid-값-수집">3단계: 필요한 OCID 값 수집<a hidden class="anchor" aria-hidden="true" href="#3단계-필요한-ocid-값-수집">#</a></h2>
+<p>스크립트 작성 전에 필요한 값들을 미리 확보한다.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Availability Domain 확인</span>
+</span></span><span class="line"><span class="cl">oci iam availability-domain list
+</span></span><span class="line"><span class="cl"><span class="c1"># → &lt;AD&gt;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 현재 인스턴스가 연결된 Subnet OCID 확인</span>
+</span></span><span class="line"><span class="cl">curl -s &lt;인스턴스 메타데이터 엔드포인트&gt;/vnics/
+</span></span><span class="line"><span class="cl">oci network vnic get --vnic-id &lt;vnic-id&gt;
+</span></span><span class="line"><span class="cl"><span class="c1"># → subnet-id 확인</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Ubuntu 24.04 ARM 최신 이미지 OCID 확인</span>
+</span></span><span class="line"><span class="cl">oci compute image list <span class="se">\
+</span></span></span><span class="line"><span class="cl">  --compartment-id &lt;tenancy-ocid&gt; <span class="se">\
+</span></span></span><span class="line"><span class="cl">  --operating-system <span class="s2">&#34;Canonical Ubuntu&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">  --shape <span class="s2">&#34;VM.Standard.A1.Flex&#34;</span> <span class="se">\
+</span></span></span><span class="line"><span class="cl">  --sort-by TIMECREATED <span class="se">\
+</span></span></span><span class="line"><span class="cl">  --all <span class="se">\
+</span></span></span><span class="line"><span class="cl">  <span class="p">|</span> grep -E <span class="s1">&#39;&#34;id&#34;|&#34;display-name&#34;&#39;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># → Canonical-Ubuntu-24.04-aarch64-2026.04.30-1 선택</span>
+</span></span></code></pre></div><blockquote>
+<p>Root Compartment만 사용 중이라면 Tenancy OCID = Compartment OCID 다.</p>
+</blockquote>
+<hr>
+<h2 id="4단계-a1flex-확보-전략--단계적-확장">4단계: A1.Flex 확보 전략 — 단계적 확장<a hidden class="anchor" aria-hidden="true" href="#4단계-a1flex-확보-전략--단계적-확장">#</a></h2>
+<p>처음부터 4 OCPU / 24GB를 노리면 <code>Out of host capacity</code>에 계속 막힌다. 작은 빈자리를 먼저 잡고 단계적으로 올리는 방식이 성공 확률이 높다.</p>
+<pre tabindex="0"><code>1 OCPU / 6GB  →  2 / 12  →  3 / 18  →  4 / 24
+</code></pre><p>이 전략은 <a href="https://blog.sanguneo.com/77">상구너의 개발노트</a>에서 참고했다.</p>
+<hr>
+<h2 id="5단계-자동-재시도-스크립트">5단계: 자동 재시도 스크립트<a hidden class="anchor" aria-hidden="true" href="#5단계-자동-재시도-스크립트">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat &gt; ~/a1_retry.sh <span class="s">&lt;&lt; &#39;EOF&#39;
+</span></span></span><span class="line"><span class="cl"><span class="s">#!/bin/bash
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">source ~/oci-env/bin/activate
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">COMPARTMENT_ID=&#34;&lt;OCID&gt;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">SUBNET_ID=&#34;&lt;OCID&gt;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">IMAGE_ID=&#34;&lt;OCID&gt;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">AVAILABILITY_DOMAIN=&#34;&lt;AD&gt;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">SSH_KEY=&#34;$(cat ~/.ssh/authorized_keys)&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">OCPUS=1
+</span></span></span><span class="line"><span class="cl"><span class="s">MEMORY_GB=6
+</span></span></span><span class="line"><span class="cl"><span class="s">DISPLAY_NAME=&#34;a1-flex-instance&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">LOG_FILE=&#34;$HOME/a1_retry.log&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">echo &#34;=== A1.Flex 1/6 확보 시작: $(date) ===&#34; &gt;&gt; &#34;$LOG_FILE&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">while true; do
+</span></span></span><span class="line"><span class="cl"><span class="s">    echo &#34;[$(date)] 생성 시도 중... (${OCPUS} OCPU / ${MEMORY_GB}GB)&#34; &gt;&gt; &#34;$LOG_FILE&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">    RESULT=$(oci compute instance launch \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --compartment-id &#34;$COMPARTMENT_ID&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --availability-domain &#34;$AVAILABILITY_DOMAIN&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --shape &#34;VM.Standard.A1.Flex&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --shape-config &#34;{\&#34;ocpus\&#34;: $OCPUS, \&#34;memoryInGBs\&#34;: $MEMORY_GB}&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --subnet-id &#34;$SUBNET_ID&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --image-id &#34;$IMAGE_ID&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --display-name &#34;$DISPLAY_NAME&#34; \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --ssh-authorized-keys-file &lt;(echo &#34;$SSH_KEY&#34;) \
+</span></span></span><span class="line"><span class="cl"><span class="s">        --assign-public-ip true \
+</span></span></span><span class="line"><span class="cl"><span class="s">        2&gt;&amp;1)
+</span></span></span><span class="line"><span class="cl"><span class="s">
+</span></span></span><span class="line"><span class="cl"><span class="s">    if echo &#34;$RESULT&#34; | grep -q &#39;&#34;lifecycle-state&#34;&#39;; then
+</span></span></span><span class="line"><span class="cl"><span class="s">        echo &#34;[$(date)] ✅ 성공!&#34; &gt;&gt; &#34;$LOG_FILE&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">        echo &#34;$RESULT&#34; &gt;&gt; &#34;$LOG_FILE&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">        break
+</span></span></span><span class="line"><span class="cl"><span class="s">    else
+</span></span></span><span class="line"><span class="cl"><span class="s">        echo &#34;[$(date)] ❌ 실패 — 180초 후 재시도&#34; &gt;&gt; &#34;$LOG_FILE&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s">        sleep 180
+</span></span></span><span class="line"><span class="cl"><span class="s">    fi
+</span></span></span><span class="line"><span class="cl"><span class="s">done
+</span></span></span><span class="line"><span class="cl"><span class="s">EOF</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">chmod +x ~/a1_retry.sh
+</span></span></code></pre></div><h3 id="백그라운드-실행">백그라운드 실행<a hidden class="anchor" aria-hidden="true" href="#백그라운드-실행">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">nohup ~/a1_retry.sh <span class="p">&amp;</span>
+</span></span><span class="line"><span class="cl">tail -f ~/a1_retry.log
+</span></span></code></pre></div><p><code>Ctrl+C</code>로 로그 모니터링만 종료해도 스크립트는 계속 실행된다.</p>
+<blockquote>
+<p>재시도 간격 180초(3분) 권장. 너무 짧으면 OCI API rate limit에 걸릴 수 있다.</p>
+</blockquote>
+<hr>
+<h2 id="결과">결과<a hidden class="anchor" aria-hidden="true" href="#결과">#</a></h2>
+<p><strong>3,310번의 실패 끝에 성공했다.</strong></p>
+<pre tabindex="0"><code>=== A1.Flex 1/6 확보 시작: Fri Jun  5 16:19:29 KST 2026 ===
+[Fri Jun  5 16:19:29 KST 2026] 생성 시도 중... (1 OCPU / 6GB)
+...
+[Tue Jun 16 08:31:18 KST 2026] ✅ 성공! 1 OCPU / 6GB 인스턴스 생성됨
+</code></pre><table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>값</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>시작</td>
+					<td>2026년 6월 5일 (금) 16:19</td>
+			</tr>
+			<tr>
+					<td>성공</td>
+					<td>2026년 6월 16일 (화) 08:31</td>
+			</tr>
+			<tr>
+					<td>소요 기간</td>
+					<td><strong>약 11일</strong></td>
+			</tr>
+			<tr>
+					<td>총 시도 횟수</td>
+					<td><strong>3,310회</strong></td>
+			</tr>
+	</tbody>
+</table>
+<p>춘천 리전 ARM 용량은 그만큼 경쟁이 치열하다. 포기하지 않는 것이 유일한 전략이다.</p>
+<h3 id="현재-인스턴스-구성">현재 인스턴스 구성<a hidden class="anchor" aria-hidden="true" href="#현재-인스턴스-구성">#</a></h3>
+<table>
+	<thead>
+			<tr>
+					<th>인스턴스</th>
+					<th>스펙</th>
+					<th>역할</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>instance-lab (E2)</td>
+					<td>1 OCPU / 1GB</td>
+					<td>자동매매 스크립트</td>
+			</tr>
+			<tr>
+					<td>a1-flex-instance (A1)</td>
+					<td>1→4 OCPU / 6→24GB</td>
+					<td>Hermes Agent / LLM</td>
+			</tr>
+	</tbody>
+</table>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>단계</th>
+					<th>내용</th>
+					<th>비고</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>OCI CLI 설치</td>
+					<td>가상환경(venv) 사용</td>
+					<td>시스템 Python 충돌 회피</td>
+			</tr>
+			<tr>
+					<td>API Key</td>
+					<td>패스프레이즈 없이 생성</td>
+					<td>자동화 필수 조건</td>
+			</tr>
+			<tr>
+					<td>확보 전략</td>
+					<td>1/6 → 2/12 → 3/18 → 4/24 단계적 확장</td>
+					<td>한 번에 큰 스펙 시도 금지</td>
+			</tr>
+			<tr>
+					<td>재시도 스크립트</td>
+					<td>180초 간격, nohup 백그라운드 실행</td>
+					<td>API rate limit 주의</td>
+			</tr>
+			<tr>
+					<td>소요 시간</td>
+					<td>11일, 3,310회</td>
+					<td>춘천 리전 ARM 경쟁률 반영</td>
+			</tr>
+	</tbody>
+</table>
+<p>다음 단계로는 A1 인스턴스 SSH 접속 확인 → 스펙 단계적 업그레이드(4 OCPU / 24GB) → Hermes Agent 설치 순으로 진행할 예정이다.</p>
+<hr>
+<h2 id="참고">참고<a hidden class="anchor" aria-hidden="true" href="#참고">#</a></h2>
+<ul>
+<li><a href="https://blog.sanguneo.com/77">Oracle Cloud A1 Flex 4 cpu / 24GB mem 성공기 — 상구너의 개발노트</a></li>
+<li><a href="https://docs.oracle.com/iaas/Content/API/SDKDocs/cliinstall.htm">OCI CLI 공식 문서</a></li>
+<li><a href="https://docs.oracle.com/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm">OCI Always Free 리소스 안내</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/">
+    <span class="title">« 이전 페이지</span>
+    <span>Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

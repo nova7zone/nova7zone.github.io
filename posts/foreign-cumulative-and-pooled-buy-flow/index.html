@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="설계">
+<meta name="description" content="항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환">
+  <meta property="og:description" content="항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-18T22:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-18T22:00:00+09:00">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환">
+  <meta name="twitter:description" content="항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환",
+      "item": "https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환",
+  "description": "항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 + 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.",
+  "keywords": [
+    "설계"
+  ],
+  "articleBody": "작성일: 2026년 6월 18일\n최종 수정: 2026년 6월 18일\n분야: AI Trading, Development\n난이도: Advanced\n상태: Production Ready\n들어가며 이전 글에서 거래량순위 API 한도를 확인하고 universe 목표치를 60으로 재조정했다. 같은 날 후반에는 외국인·기관 수급 지표와 strategy_v2 매수 흐름 구조 두 가지를 큰 폭으로 손봤다.\n결론부터 말하면, Group B(smart_money) 조건이 의존하던 get_foreign_net()이 사실 항상 None만 반환하는 placeholder였다는 걸 확인하고 실제 KIS API로 구현했다. 이어서 strategy_v2의 매수 흐름을 그룹별 슬롯 순차 실행 구조에서 09시 통합 선정 + 장중 풀링 매수로 바꿨다. 마지막으로 새 수급 API가 KIS의 시각 제약에 걸리는 문제와 docs에 남아있던 옛 구조 서술을 함께 정리했다.\nforeign_cumulative 실구현 — 외국인·기관 20일 누적 순매수 get_foreign_net()이 항상 None을 반환하는 placeholder라서, Group B(smart_money) 조건이 매번 fallback_relative_strength로만 동작하고 있었다. KIS 공식 GitHub 샘플에서 종목코드 단위로 외국인·기관 일별 순매수를 주는 엔드포인트(FHPTJ04160001, investor-trade-by-stock-daily)를 확인했다. 거래량순위처럼 랭킹형이 아니라 종목별 일별 시리즈를 주기 때문에 20일 누적 계산이 가능했다.\napi/api_constants.py: TrId.INVESTOR_TRADE_DAILY + 경로 상수 추가 api/kis_api.py: get_investor_trade_daily(code, base_date, count=20) 신규 api/dry_run_client.py: 동일 메서드를 오버라이드해 dry-run 시 빈 리스트 반환 strategy_v2/krx_api_client.py(이후 market_data_helpers.py로 이름 변경): get_foreign_net() 실제 구현 — 외국인 순매수 거래대금(frgn_ntby_tr_pbmn) + 기관계 순매수 거래대금(orgn_ntby_tr_pbmn)을 거래대금(원) 기준으로 20일 합산(수량 기준은 종목 간 가격 차이로 불공정 비교가 되므로 제외) 실패/데이터 없음 시 None 반환 원칙은 유지 — Group B의 fallback_relative_strength 안전망은 변경하지 않음 신규 테스트 6개 추가, 기존 placeholder 테스트는 실제 동작 검증으로 교체. pytest tests/ 483개 전체 통과. OCI 실측 검증은 다음 단계로 미뤘다.\n곧이어, 실제로 KRX API를 호출하지 않고 KISApiClient를 감싸 업종·VKOSPI·수급 보조 데이터를 조회하는 이 모듈의 파일명(krx_api_client.py)이 실제 역할과 맞지 않는다는 걸 깨닫고 market_data_helpers.py로 이름을 바꿨다(동작 변경 없음, import 경로만 갱신).\nstrategy_v2 매수 흐름: 09시 4그룹 통합 선정 + 장중 풀링 매수 기존 strategy_v2는 A/B/C/D 4개 그룹이 각각 09:00/09:15/09:30/09:45에 “1차+2차 스크리닝+즉시 매수\"를 수행하는 슬롯 구조였다. 이를 다음과 같이 바꿨다.\n09:00~09:59 사이 1회 4개 그룹 전체를 통합 스크리닝해 점수 내림차순 후보 풀을 생성 이후 장중(15:30까지) 15분 단위로 그 풀에서 매수만 이어감 — 재스크리닝·점수 재검증 없이, 건전성 조건(현금/보유한도/섹터캡/일일손실한도/공포 하드블록)만 매 시도마다 재확인 [기존] 09:00 GroupA 풀스크리닝+매수 → 09:15 GroupB → 09:30 GroupC → 09:45 GroupD [변경] 09:00~09:59 4그룹 통합 스크리닝 → 후보 풀 1개 생성 → 09:00~15:30 15분마다 풀에서 건전성 확인 후 매수만 반복 screening/first_stage_groups.py: get_current_slot/get_pending_slots/mark_slot_executed/_SLOT_GROUP_MAP 제거, is_selection_window/save_candidate_pool/load_candidate_pool/run_full_screening 추가 run_full_screening()은 4그룹 결과를 병합한 뒤 deduplicate()를 단 1회만 적용 — 그룹별로 개별 적용하면 섹터 캡이 그룹 수만큼 중복 허용되는 문제를 방지 trading/buy.py: run_buy()를 슬롯 루프 → 후보 풀 기반 흐름으로 재작성 strategy_v2/DEVELOPMENT_SPEC.md에 통합 풀 방식으로 갱신, carry-over 개념 폐기를 명시 pytest tests/ 488개 전체 통과.\n❌ TIME LIMIT 오류: 새 수급 API가 KIS 시각 제약에 걸림 새로 만든 foreign_cumulative 기능을 OCI에서 실측해보니 FHPTJ04160001 호출이 유니버스 전체에서 “TIME LIMIT 00:00 ~ 15:40\"으로 거부되고 있었다.\nget_foreign_net()이 FID_INPUT_DATE_1에 오늘 날짜를 넘긴 게 원인이었다. 당일 투자자매매동향은 장마감 정산(15:40) 전까지 KIS가 조회를 막는 것으로 추정된다. 애초에 사전장에서 “최근 20거래일 누적\"을 계산할 때 오늘 데이터가 포함될 수 없으므로, 전 영업일을 기준일로 쓰는 게 의미상으로도 옳았다.\nutils/time_utils.py: previous_business_day() 신규 — 기준일 이전 가장 최근 평일 반환 market_data_helpers.py: get_foreign_net()이 today_kst() 대신 previous_business_day()로 FID_INPUT_DATE_1 계산 OCI 재검증 결과 TIME LIMIT 경고가 사라지고 foreign_cumulative=60종목으로 정상 채워졌다(이전엔 항상 0이었음).\ndocs/전략확인 페이지 stale 정보 정리 슬롯제 → 통합 선정+풀링 매수로 바뀐 만큼, 문서와 화면에 남아있던 옛 구조 서술도 함께 정리했다.\ndocs/TRADING_FLOW.md: v2 매수 흐름 전체 개정 + 그룹 표 top_n 오기(40 → 실제 15) 수정 docs/USAGE.md/docs/UPDATE.md: 누락된 v2 cron 항목(--pre-market/--next-pre-market/--reconcile) 추가 web/strategy_flow.py: build_v2_buy_flow()가 여전히 구 슬롯제 Mermaid 그래프(SLOTA→SLOTB→SLOTC→SLOTD)를 생성하던 버그 수정 OCI 실제 /etc/crontab 확인 결과 --pre-market이 07:00에 실행 중임을 확인 — docs에 “08:00\"으로 잘못 적혀 있던 부분을 전체 수정 마지막으로 build-docs/release-notes-draft-v0.4.4.md, v0.5.0.md 초안을 추가했다. pytest tests/ 489개 전체 통과.\n정리 작업 내용 foreign_cumulative placeholder였던 수급 지표를 KIS 종목별 투자자매매동향 API로 실구현 v2 매수 구조 슬롯 순차 실행 → 09시 통합 선정 + 장중 풀링 매수로 전환 TIME LIMIT 버그 당일 데이터 조회 시각 제약 → 전 영업일 기준으로 변경 docs 정리 슬롯제 잔존 표현·top_n 오기·cron 시각 stale 정보 일괄 수정 테스트 pytest tests/ 489개 전체 통과 이번 작업으로 “placeholder인 채로 방치된 지표\"와 “구조가 바뀌었는데 문서/화면엔 남아있는 옛 서술” 두 가지 종류의 기술 부채를 같은 날 한 번에 청산했다.\n다음 글에서는 6/19에 진행한 strategy_v2 ATR 필터 hard block 제거와 계좌별 원금/평가금액/수익률 표시 기능을 다룬다.\n",
+  "wordCount" : "2396",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-18T22:00:00+09:00",
+  "dateModified": "2026-06-18T22:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환
+    </h1>
+    <div class="post-description">
+      항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-18T22:00:00+09:00'>2026년 6월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#foreign_cumulative-%ec%8b%a4%ea%b5%ac%ed%98%84--%ec%99%b8%ea%b5%ad%ec%9d%b8%ea%b8%b0%ea%b4%80-20%ec%9d%bc-%eb%88%84%ec%a0%81-%ec%88%9c%eb%a7%a4%ec%88%98" aria-label="foreign_cumulative 실구현 — 외국인·기관 20일 누적 순매수">foreign_cumulative 실구현 — 외국인·기관 20일 누적 순매수</a></li>
+            <li>
+                <a href="#strategy_v2-%eb%a7%a4%ec%88%98-%ed%9d%90%eb%a6%84-09%ec%8b%9c-4%ea%b7%b8%eb%a3%b9-%ed%86%b5%ed%95%a9-%ec%84%a0%ec%a0%95--%ec%9e%a5%ec%a4%91-%ed%92%80%eb%a7%81-%eb%a7%a4%ec%88%98" aria-label="strategy_v2 매수 흐름: 09시 4그룹 통합 선정 &#43; 장중 풀링 매수">strategy_v2 매수 흐름: 09시 4그룹 통합 선정 + 장중 풀링 매수</a></li>
+            <li>
+                <a href="#-time-limit-%ec%98%a4%eb%a5%98-%ec%83%88-%ec%88%98%ea%b8%89-api%ea%b0%80-kis-%ec%8b%9c%ea%b0%81-%ec%a0%9c%ec%95%bd%ec%97%90-%ea%b1%b8%eb%a6%bc" aria-label="❌ TIME LIMIT 오류: 새 수급 API가 KIS 시각 제약에 걸림">❌ TIME LIMIT 오류: 새 수급 API가 KIS 시각 제약에 걸림</a></li>
+            <li>
+                <a href="#docs%ec%a0%84%eb%9e%b5%ed%99%95%ec%9d%b8-%ed%8e%98%ec%9d%b4%ec%a7%80-stale-%ec%a0%95%eb%b3%b4-%ec%a0%95%eb%a6%ac" aria-label="docs/전략확인 페이지 stale 정보 정리">docs/전략확인 페이지 stale 정보 정리</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 18일<br>
+<strong>최종 수정</strong>: 2026년 6월 18일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Advanced<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/volume-rank-pagination-saga/">이전 글</a>에서 거래량순위 API 한도를 확인하고 universe 목표치를 60으로 재조정했다. 같은 날 후반에는 <strong>외국인·기관 수급 지표</strong>와 <strong>strategy_v2 매수 흐름 구조</strong> 두 가지를 큰 폭으로 손봤다.</p>
+<p>결론부터 말하면, Group B(smart_money) 조건이 의존하던 <code>get_foreign_net()</code>이 사실 항상 <code>None</code>만 반환하는 placeholder였다는 걸 확인하고 실제 KIS API로 구현했다. 이어서 strategy_v2의 매수 흐름을 그룹별 슬롯 순차 실행 구조에서 09시 통합 선정 + 장중 풀링 매수로 바꿨다. 마지막으로 새 수급 API가 KIS의 시각 제약에 걸리는 문제와 docs에 남아있던 옛 구조 서술을 함께 정리했다.</p>
+<hr>
+<h2 id="foreign_cumulative-실구현--외국인기관-20일-누적-순매수">foreign_cumulative 실구현 — 외국인·기관 20일 누적 순매수<a hidden class="anchor" aria-hidden="true" href="#foreign_cumulative-실구현--외국인기관-20일-누적-순매수">#</a></h2>
+<p><code>get_foreign_net()</code>이 항상 <code>None</code>을 반환하는 placeholder라서, Group B(smart_money) 조건이 매번 <code>fallback_relative_strength</code>로만 동작하고 있었다. KIS 공식 GitHub 샘플에서 종목코드 단위로 외국인·기관 일별 순매수를 주는 엔드포인트(<code>FHPTJ04160001</code>, investor-trade-by-stock-daily)를 확인했다. 거래량순위처럼 랭킹형이 아니라 종목별 일별 시리즈를 주기 때문에 20일 누적 계산이 가능했다.</p>
+<ul>
+<li><code>api/api_constants.py</code>: <code>TrId.INVESTOR_TRADE_DAILY</code> + 경로 상수 추가</li>
+<li><code>api/kis_api.py</code>: <code>get_investor_trade_daily(code, base_date, count=20)</code> 신규</li>
+<li><code>api/dry_run_client.py</code>: 동일 메서드를 오버라이드해 dry-run 시 빈 리스트 반환</li>
+<li><code>strategy_v2/krx_api_client.py</code>(이후 <code>market_data_helpers.py</code>로 이름 변경): <code>get_foreign_net()</code> 실제 구현 — 외국인 순매수 거래대금(<code>frgn_ntby_tr_pbmn</code>) + 기관계 순매수 거래대금(<code>orgn_ntby_tr_pbmn</code>)을 <strong>거래대금(원) 기준</strong>으로 20일 합산(수량 기준은 종목 간 가격 차이로 불공정 비교가 되므로 제외)</li>
+<li>실패/데이터 없음 시 <code>None</code> 반환 원칙은 유지 — Group B의 <code>fallback_relative_strength</code> 안전망은 변경하지 않음</li>
+</ul>
+<p>신규 테스트 6개 추가, 기존 placeholder 테스트는 실제 동작 검증으로 교체. <code>pytest tests/</code> 483개 전체 통과. OCI 실측 검증은 다음 단계로 미뤘다.</p>
+<p>곧이어, 실제로 KRX API를 호출하지 않고 <code>KISApiClient</code>를 감싸 업종·VKOSPI·수급 보조 데이터를 조회하는 이 모듈의 파일명(<code>krx_api_client.py</code>)이 실제 역할과 맞지 않는다는 걸 깨닫고 <code>market_data_helpers.py</code>로 이름을 바꿨다(동작 변경 없음, import 경로만 갱신).</p>
+<hr>
+<h2 id="strategy_v2-매수-흐름-09시-4그룹-통합-선정--장중-풀링-매수">strategy_v2 매수 흐름: 09시 4그룹 통합 선정 + 장중 풀링 매수<a hidden class="anchor" aria-hidden="true" href="#strategy_v2-매수-흐름-09시-4그룹-통합-선정--장중-풀링-매수">#</a></h2>
+<p>기존 strategy_v2는 A/B/C/D 4개 그룹이 각각 09:00/09:15/09:30/09:45에 &ldquo;1차+2차 스크리닝+즉시 매수&quot;를 수행하는 슬롯 구조였다. 이를 다음과 같이 바꿨다.</p>
+<ul>
+<li>09:00~09:59 사이 <strong>1회</strong> 4개 그룹 전체를 통합 스크리닝해 점수 내림차순 후보 풀을 생성</li>
+<li>이후 장중(15:30까지) 15분 단위로 그 풀에서 매수만 이어감 — 재스크리닝·점수 재검증 없이, 건전성 조건(현금/보유한도/섹터캡/일일손실한도/공포 하드블록)만 매 시도마다 재확인</li>
+</ul>
+<pre tabindex="0"><code>[기존] 09:00 GroupA 풀스크리닝+매수 → 09:15 GroupB → 09:30 GroupC → 09:45 GroupD
+[변경] 09:00~09:59 4그룹 통합 스크리닝 → 후보 풀 1개 생성
+       → 09:00~15:30 15분마다 풀에서 건전성 확인 후 매수만 반복
+</code></pre><ul>
+<li><code>screening/first_stage_groups.py</code>: <code>get_current_slot</code>/<code>get_pending_slots</code>/<code>mark_slot_executed</code>/<code>_SLOT_GROUP_MAP</code> 제거, <code>is_selection_window</code>/<code>save_candidate_pool</code>/<code>load_candidate_pool</code>/<code>run_full_screening</code> 추가</li>
+<li><code>run_full_screening()</code>은 4그룹 결과를 병합한 뒤 <code>deduplicate()</code>를 <strong>단 1회만</strong> 적용 — 그룹별로 개별 적용하면 섹터 캡이 그룹 수만큼 중복 허용되는 문제를 방지</li>
+<li><code>trading/buy.py</code>: <code>run_buy()</code>를 슬롯 루프 → 후보 풀 기반 흐름으로 재작성</li>
+<li><code>strategy_v2/DEVELOPMENT_SPEC.md</code>에 통합 풀 방식으로 갱신, carry-over 개념 폐기를 명시</li>
+</ul>
+<p><code>pytest tests/</code> 488개 전체 통과.</p>
+<hr>
+<h2 id="-time-limit-오류-새-수급-api가-kis-시각-제약에-걸림">❌ TIME LIMIT 오류: 새 수급 API가 KIS 시각 제약에 걸림<a hidden class="anchor" aria-hidden="true" href="#-time-limit-오류-새-수급-api가-kis-시각-제약에-걸림">#</a></h2>
+<p>새로 만든 <code>foreign_cumulative</code> 기능을 OCI에서 실측해보니 <code>FHPTJ04160001</code> 호출이 유니버스 전체에서 &ldquo;TIME LIMIT 00:00 ~ 15:40&quot;으로 거부되고 있었다.</p>
+<p><code>get_foreign_net()</code>이 <code>FID_INPUT_DATE_1</code>에 <strong>오늘 날짜</strong>를 넘긴 게 원인이었다. 당일 투자자매매동향은 장마감 정산(15:40) 전까지 KIS가 조회를 막는 것으로 추정된다. 애초에 사전장에서 &ldquo;최근 20거래일 누적&quot;을 계산할 때 오늘 데이터가 포함될 수 없으므로, 전 영업일을 기준일로 쓰는 게 의미상으로도 옳았다.</p>
+<ul>
+<li><code>utils/time_utils.py</code>: <code>previous_business_day()</code> 신규 — 기준일 이전 가장 최근 평일 반환</li>
+<li><code>market_data_helpers.py</code>: <code>get_foreign_net()</code>이 <code>today_kst()</code> 대신 <code>previous_business_day()</code>로 <code>FID_INPUT_DATE_1</code> 계산</li>
+</ul>
+<p>OCI 재검증 결과 TIME LIMIT 경고가 사라지고 <code>foreign_cumulative=60종목</code>으로 정상 채워졌다(이전엔 항상 0이었음).</p>
+<hr>
+<h2 id="docs전략확인-페이지-stale-정보-정리">docs/전략확인 페이지 stale 정보 정리<a hidden class="anchor" aria-hidden="true" href="#docs전략확인-페이지-stale-정보-정리">#</a></h2>
+<p>슬롯제 → 통합 선정+풀링 매수로 바뀐 만큼, 문서와 화면에 남아있던 옛 구조 서술도 함께 정리했다.</p>
+<ul>
+<li><code>docs/TRADING_FLOW.md</code>: v2 매수 흐름 전체 개정 + 그룹 표 <code>top_n</code> 오기(40 → 실제 15) 수정</li>
+<li><code>docs/USAGE.md</code>/<code>docs/UPDATE.md</code>: 누락된 v2 cron 항목(<code>--pre-market</code>/<code>--next-pre-market</code>/<code>--reconcile</code>) 추가</li>
+<li><code>web/strategy_flow.py</code>: <code>build_v2_buy_flow()</code>가 여전히 구 슬롯제 Mermaid 그래프(SLOTA→SLOTB→SLOTC→SLOTD)를 생성하던 버그 수정</li>
+<li>OCI 실제 <code>/etc/crontab</code> 확인 결과 <code>--pre-market</code>이 07:00에 실행 중임을 확인 — docs에 &ldquo;08:00&quot;으로 잘못 적혀 있던 부분을 전체 수정</li>
+</ul>
+<p>마지막으로 <code>build-docs/release-notes-draft-v0.4.4.md</code>, <code>v0.5.0.md</code> 초안을 추가했다. <code>pytest tests/</code> 489개 전체 통과.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>작업</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>foreign_cumulative</td>
+					<td>placeholder였던 수급 지표를 KIS 종목별 투자자매매동향 API로 실구현</td>
+			</tr>
+			<tr>
+					<td>v2 매수 구조</td>
+					<td>슬롯 순차 실행 → 09시 통합 선정 + 장중 풀링 매수로 전환</td>
+			</tr>
+			<tr>
+					<td>TIME LIMIT 버그</td>
+					<td>당일 데이터 조회 시각 제약 → 전 영업일 기준으로 변경</td>
+			</tr>
+			<tr>
+					<td>docs 정리</td>
+					<td>슬롯제 잔존 표현·top_n 오기·cron 시각 stale 정보 일괄 수정</td>
+			</tr>
+			<tr>
+					<td>테스트</td>
+					<td><code>pytest tests/</code> 489개 전체 통과</td>
+			</tr>
+	</tbody>
+</table>
+<p>이번 작업으로 &ldquo;placeholder인 채로 방치된 지표&quot;와 &ldquo;구조가 바뀌었는데 문서/화면엔 남아있는 옛 서술&rdquo; 두 가지 종류의 기술 부채를 같은 날 한 번에 청산했다.</p>
+<p>다음 글에서는 6/19에 진행한 <strong>strategy_v2 ATR 필터 hard block 제거</strong>와 <strong>계좌별 원금/평가금액/수익률 표시 기능</strong>을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/volume-rank-pagination-saga/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

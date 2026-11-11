@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="버그수정, 배포">
+<meta name="description" content="IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설">
+  <meta property="og:description" content="IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-21T10:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-21T10:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="배포">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설">
+  <meta name="twitter:description" content="IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설",
+      "item": "https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설",
+  "description": "IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.",
+  "keywords": [
+    "버그수정", "배포"
+  ],
+  "articleBody": "작성일: 2026년 6월 21일\n최종 수정: 2026년 6월 21일\n분야: AI Trading, Development\n난이도: Advanced\n상태: Production Ready\n들어가며 이전 글에서 추가계좌 오삭제 버그와 REVIVE 로직을 고치고 v0.5.1을 릴리즈했다. 6월 21일은 단순한 화면 표시 버그를 추적하다가 6일간 방치돼 있던 서비스 인프라 결함 두 건을 발견하는 것으로 시작됐다.\n결론부터 말하면, IRP 디폴트옵션 값이 안 보인다는 보고를 추적하다가, 사실은 6/13 디렉터리 이동 이후 kis-web.service가 옛 경로를 참조하고 있어서 6일째 죽어 있었고, 그동안 수동으로 nohup uvicorn을 직접 띄워서 써왔다는 걸 알게 됐다. 호스트 바인딩 문제까지 함께 고친 뒤, DB 조회 전용 페이지를 새로 만들고 README의 전략 설명도 정리했다.\nIRP 디폴트옵션 표시 버그 + OCI 운영 인프라 결함 2건 (PR #48, #49) 사용자 보고는 “IRP 계좌 보유종목 페이지에 디폴트옵션 수동 입력값이 안 보인다\"였다. systematic-debugging으로 단계별 추적했다.\n1차 원인: 표시 위치가 도움말 문구 끝에 작은 회색 글씨로 붙어 있어서, 실제로는 정상 렌더링되고 있었는데 사용자가 보지 못하고 지나친 것이었다. account_holdings.html에서 입력칸 아래 줄에 굵은 글씨로 분리해 표시하도록 수정했다.\n디버깅하는 과정에서 전혀 별개인 운영 인프라 결함 두 건을 더 발견했다.\n결함 1 — kis-web.service가 6일째 dead 상태: kis-web.service가 6/13 디렉터리 이동(~/kis-auto-trading-bot → ~/trader/kis-auto-trading-bot) 이전 경로(WorkingDirectory, EnvironmentFile, ExecStart)를 그대로 참조하고 있었다. 6/14 10:14에 정상 종료됐는데, Restart=on-failure 설정 때문에 크래시가 아닌 정상 종료는 자동 재기동이 안 됐다. 이후 6일간 dead 상태였고, systemctl restart도 존재하지 않는 경로라 조용히 실패하고 있었다. 그래서 그동안 수동으로 nohup uvicorn을 직접 띄워서 써왔던 것이다.\n[6/13] 디렉터리 이동: ~/kis-auto-trading-bot → ~/trader/kis-auto-trading-bot [6/14 10:14] kis-web.service 정상 종료 (경로 불일치) → 자동 재기동 안 됨 [6/14~6/20] 6일간 dead 상태, 수동 nohup uvicorn으로 우회 운영 [6/21] kis-web.service + 배포 문서 6개 경로 정정 crontab -l로 재확인한 실제 운영 경로를 기준으로 kis-web.service와 배포 문서 6개(README.md, docs/{INSTALL,BACKTEST_DATA_GUIDE,UPDATE,WEBSERVICE_DEPLOY,OCI_QUICKSTART}.md)를 모두 정정했다. 6/20 문서 정리 때 README의 cron 경로를 반대 방향(~/trader → ~/kis-auto-trading-bot)으로 잘못 “정정\"했던 것도 이번에 함께 바로잡았다.\n결함 2 — 호스트 바인딩이 SSH 터널 전용으로 고정: 결함 1을 고치고 재기동했는데도 외부 IP 접속이 안 된다는 재보고가 들어왔다. 서비스 파일이 SSH 터널 전용 --host (IP)로 바인딩돼 있어서, 평소 쓰던 외부 IP 직접 접속(OCI 보안그룹 IP 제한 방식)이 막혀 있었다. --host (IP)으로 변경하고, docs/WEBSERVICE_DEPLOY.md의 “IP 직접 접근” 섹션에 바인딩 설정 필요성을 안내로 추가했다.\n부수적으로, 로컬 origin(nova7zone)과 OCI 서버 origin(Evan-ai-pro)이 다른 줄 알았는데 GitHub repo rename으로 인한 자동 리다이렉트일 뿐 동일 저장소라는 것도 확인했다. PR #48(feature/build→master), PR #49 모두 사용자가 직접 머지하고, OCI에서 화면 표시·사이트 접속 모두 최종 확인을 완료했다.\nDB 조회 전용 페이지(/db-browser) 신규 구현 next-tasks.md에 남아있던 “DB 내용 조회용 웹 페이지” 요청을 구체화했다. brainstorming으로 범위를 확정(7개 테이블 전체, 원본 컬럼 그대로, 50행 페이징, mode 드롭다운 필터, 신규 “DB 조회” 메뉴)한 뒤 설계 → 계획 → 4개 Task로 구현했다.\ndb/repository.py: TABLE_LABELS(7개 테이블 화이트리스트, SQL Injection 방지 겸용), get_table_columns/get_table_row_count/get_table_page 범용 함수 추가 — 정렬은 created_at이 있으면 DESC, 없으면(position_strategy_history만 해당) id DESC web/routers/pages.py: GET /db-browser(테이블 카드 목록 + 행 수), GET /db-browser/{table_name}(페이징·mode 필터, 화이트리스트에 없는 테이블명은 404) web/templates/db_browser.html, db_browser_table.html 신규, 사이드바에 “DB 조회” 메뉴 추가 Task별 구현→리뷰 루프가 모두 1회에 통과했고(재작업 없음), 최종 전체 브랜치 리뷰도 Critical/Important 없이 승인됐다(“Ready to merge: Yes”, Minor 6건만 기록). pytest tests/ 575개 전체 통과. uvicorn을 기동해 신규 라우트가 기존 페이지와 동일하게 인증 미들웨어에 걸려 /login으로 307 리다이렉트되는지(500 없음), 실제 data/trading.db로 라우트 함수를 직접 호출해 렌더링이 정상인지 확인했다. TOTP 로그인 후 실제 클릭 확인은 사용자가 직접 필요한 항목으로 남겼다.\nREADME.md v1/v2 전략 설명 축소·정리 “README.md에 매매전략 v1, v2 내용이 정리가 안 된 듯하다\"는 보고가 있었다. 실제 코드와 대조해봤지만 README/CLAUDE.md 자체에 사실 오류는 없었다 — 대신 docs/SETTINGS_REFERENCE.md, docs/TRADING_FLOW.md에 v1+v2 모두 더 상세하고 최신으로 정리된 동일 내용이 이미 있어서, README가 그 내용을 중복 보유하고 있던 게 근본 원인이었다.\n사용자 요청대로 “전략 v1/v2는 간단 소개만, 세부 운영은 docs 폴더 문서로” 방향으로 정리했다.\nREADME.md에 “매매 전략: strategy_v1 / strategy_v2” 섹션 신설(각 버전 4줄 요약 + 관련 문서 링크) market_filter/first_stage/second_stage 설정 섹션 전체 제거 “거래 설정” preset 표는 한 단락 요약 + 링크로 축소 점검 중 별도로 발견한 오기도 정정했다 — 실행 흐름 다이어그램과 핵심 모듈 표에 “5가지 매도 우선순위\"라는 옛 표기가 남아 있었는데, 실제로는 4단계로 바뀐 지 한참이었다.\nREADME.md가 436줄에서 약 80줄 줄었다(41 insertions, 121 deletions). 코드 변경은 없었다(문서만).\n정리 항목 발견 조치 IRP 표시 버그 회색 글씨라 안 보였을 뿐, 실제론 정상 렌더링 입력칸 아래 굵은 글씨로 분리 표시 운영 인프라 결함 1 kis-web.service가 옛 경로 참조 → 6일간 dead 서비스 파일 + 문서 6개 경로 정정 운영 인프라 결함 2 --host (IP)로 외부 IP 접속 차단 --host (IP)으로 변경 DB 조회 페이지 DB 내용을 직접 볼 방법이 없었음 /db-browser 신설(7개 테이블, 페이징, mode 필터) README 정리 v1/v2 전략 설명이 docs와 중복 4줄 요약 + 링크로 축소(436→약350줄) 화면에 안 보이는 값을 추적하다가 운영 서버가 6일간 죽어 있었다는 걸 알게 된 셈인데, “수동으로 우회해서 잘 쓰고 있었다\"는 사실이 진짜 문제를 더 오래 가려준 경우였다.\n다음 글에서는 같은 날 이어서 진행한 웹 백테스트 기능 사전조사부터 v0.5.2 릴리즈까지를 다룬다.\n",
+  "wordCount" : "2714",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-21T10:00:00+09:00",
+  "dateModified": "2026-06-21T10:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설
+    </h1>
+    <div class="post-description">
+      IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-21T10:00:00+09:00'>2026년 6월 21일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#irp-%eb%94%94%ed%8f%b4%ed%8a%b8%ec%98%b5%ec%85%98-%ed%91%9c%ec%8b%9c-%eb%b2%84%ea%b7%b8--oci-%ec%9a%b4%ec%98%81-%ec%9d%b8%ed%94%84%eb%9d%bc-%ea%b2%b0%ed%95%a8-2%ea%b1%b4-pr-48-49" aria-label="IRP 디폴트옵션 표시 버그 &#43; OCI 운영 인프라 결함 2건 (PR #48, #49)">IRP 디폴트옵션 표시 버그 + OCI 운영 인프라 결함 2건 (PR #48, #49)</a></li>
+            <li>
+                <a href="#db-%ec%a1%b0%ed%9a%8c-%ec%a0%84%ec%9a%a9-%ed%8e%98%ec%9d%b4%ec%a7%80db-browser-%ec%8b%a0%ea%b7%9c-%ea%b5%ac%ed%98%84" aria-label="DB 조회 전용 페이지(/db-browser) 신규 구현">DB 조회 전용 페이지(/db-browser) 신규 구현</a></li>
+            <li>
+                <a href="#readmemd-v1v2-%ec%a0%84%eb%9e%b5-%ec%84%a4%eb%aa%85-%ec%b6%95%ec%86%8c%ec%a0%95%eb%a6%ac" aria-label="README.md v1/v2 전략 설명 축소·정리">README.md v1/v2 전략 설명 축소·정리</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 21일<br>
+<strong>최종 수정</strong>: 2026년 6월 21일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Advanced<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/account-sync-revive-and-v051-release/">이전 글</a>에서 추가계좌 오삭제 버그와 REVIVE 로직을 고치고 v0.5.1을 릴리즈했다. 6월 21일은 단순한 화면 표시 버그를 추적하다가 <strong>6일간 방치돼 있던 서비스 인프라 결함 두 건</strong>을 발견하는 것으로 시작됐다.</p>
+<p>결론부터 말하면, IRP 디폴트옵션 값이 안 보인다는 보고를 추적하다가, 사실은 6/13 디렉터리 이동 이후 <code>kis-web.service</code>가 옛 경로를 참조하고 있어서 6일째 죽어 있었고, 그동안 수동으로 <code>nohup uvicorn</code>을 직접 띄워서 써왔다는 걸 알게 됐다. 호스트 바인딩 문제까지 함께 고친 뒤, DB 조회 전용 페이지를 새로 만들고 README의 전략 설명도 정리했다.</p>
+<hr>
+<h2 id="irp-디폴트옵션-표시-버그--oci-운영-인프라-결함-2건-pr-48-49">IRP 디폴트옵션 표시 버그 + OCI 운영 인프라 결함 2건 (PR #48, #49)<a hidden class="anchor" aria-hidden="true" href="#irp-디폴트옵션-표시-버그--oci-운영-인프라-결함-2건-pr-48-49">#</a></h2>
+<p>사용자 보고는 &ldquo;IRP 계좌 보유종목 페이지에 디폴트옵션 수동 입력값이 안 보인다&quot;였다. systematic-debugging으로 단계별 추적했다.</p>
+<p><strong>1차 원인</strong>: 표시 위치가 도움말 문구 끝에 작은 회색 글씨로 붙어 있어서, 실제로는 정상 렌더링되고 있었는데 사용자가 보지 못하고 지나친 것이었다. <code>account_holdings.html</code>에서 입력칸 아래 줄에 굵은 글씨로 분리해 표시하도록 수정했다.</p>
+<p>디버깅하는 과정에서 전혀 별개인 운영 인프라 결함 두 건을 더 발견했다.</p>
+<p><strong>결함 1 — kis-web.service가 6일째 dead 상태</strong>: <code>kis-web.service</code>가 6/13 디렉터리 이동(<code>~/kis-auto-trading-bot</code> → <code>~/trader/kis-auto-trading-bot</code>) 이전 경로(<code>WorkingDirectory</code>, <code>EnvironmentFile</code>, <code>ExecStart</code>)를 그대로 참조하고 있었다. 6/14 10:14에 정상 종료됐는데, <code>Restart=on-failure</code> 설정 때문에 크래시가 아닌 정상 종료는 자동 재기동이 안 됐다. 이후 6일간 dead 상태였고, <code>systemctl restart</code>도 존재하지 않는 경로라 조용히 실패하고 있었다. 그래서 그동안 수동으로 <code>nohup uvicorn</code>을 직접 띄워서 써왔던 것이다.</p>
+<pre tabindex="0"><code>[6/13] 디렉터리 이동: ~/kis-auto-trading-bot → ~/trader/kis-auto-trading-bot
+[6/14 10:14] kis-web.service 정상 종료 (경로 불일치) → 자동 재기동 안 됨
+[6/14~6/20] 6일간 dead 상태, 수동 nohup uvicorn으로 우회 운영
+[6/21] kis-web.service + 배포 문서 6개 경로 정정
+</code></pre><p><code>crontab -l</code>로 재확인한 실제 운영 경로를 기준으로 <code>kis-web.service</code>와 배포 문서 6개(<code>README.md</code>, <code>docs/{INSTALL,BACKTEST_DATA_GUIDE,UPDATE,WEBSERVICE_DEPLOY,OCI_QUICKSTART}.md</code>)를 모두 정정했다. 6/20 문서 정리 때 README의 cron 경로를 반대 방향(<code>~/trader</code> → <code>~/kis-auto-trading-bot</code>)으로 잘못 &ldquo;정정&quot;했던 것도 이번에 함께 바로잡았다.</p>
+<p><strong>결함 2 — 호스트 바인딩이 SSH 터널 전용으로 고정</strong>: 결함 1을 고치고 재기동했는데도 외부 IP 접속이 안 된다는 재보고가 들어왔다. 서비스 파일이 SSH 터널 전용 <code>--host (IP)</code>로 바인딩돼 있어서, 평소 쓰던 외부 IP 직접 접속(OCI 보안그룹 IP 제한 방식)이 막혀 있었다. <code>--host (IP)</code>으로 변경하고, <code>docs/WEBSERVICE_DEPLOY.md</code>의 &ldquo;IP 직접 접근&rdquo; 섹션에 바인딩 설정 필요성을 안내로 추가했다.</p>
+<p>부수적으로, 로컬 origin(<code>nova7zone</code>)과 OCI 서버 origin(<code>Evan-ai-pro</code>)이 다른 줄 알았는데 GitHub repo rename으로 인한 자동 리다이렉트일 뿐 동일 저장소라는 것도 확인했다. PR #48(<code>feature/build</code>→<code>master</code>), PR #49 모두 사용자가 직접 머지하고, OCI에서 화면 표시·사이트 접속 모두 최종 확인을 완료했다.</p>
+<hr>
+<h2 id="db-조회-전용-페이지db-browser-신규-구현">DB 조회 전용 페이지(/db-browser) 신규 구현<a hidden class="anchor" aria-hidden="true" href="#db-조회-전용-페이지db-browser-신규-구현">#</a></h2>
+<p><code>next-tasks.md</code>에 남아있던 &ldquo;DB 내용 조회용 웹 페이지&rdquo; 요청을 구체화했다. brainstorming으로 범위를 확정(7개 테이블 전체, 원본 컬럼 그대로, 50행 페이징, mode 드롭다운 필터, 신규 &ldquo;DB 조회&rdquo; 메뉴)한 뒤 설계 → 계획 → 4개 Task로 구현했다.</p>
+<ul>
+<li><code>db/repository.py</code>: <code>TABLE_LABELS</code>(7개 테이블 화이트리스트, SQL Injection 방지 겸용), <code>get_table_columns</code>/<code>get_table_row_count</code>/<code>get_table_page</code> 범용 함수 추가 — 정렬은 <code>created_at</code>이 있으면 DESC, 없으면(<code>position_strategy_history</code>만 해당) <code>id DESC</code></li>
+<li><code>web/routers/pages.py</code>: <code>GET /db-browser</code>(테이블 카드 목록 + 행 수), <code>GET /db-browser/{table_name}</code>(페이징·mode 필터, 화이트리스트에 없는 테이블명은 404)</li>
+<li><code>web/templates/db_browser.html</code>, <code>db_browser_table.html</code> 신규, 사이드바에 &ldquo;DB 조회&rdquo; 메뉴 추가</li>
+</ul>
+<p>Task별 구현→리뷰 루프가 모두 1회에 통과했고(재작업 없음), 최종 전체 브랜치 리뷰도 Critical/Important 없이 승인됐다(&ldquo;Ready to merge: Yes&rdquo;, Minor 6건만 기록). <code>pytest tests/</code> 575개 전체 통과. uvicorn을 기동해 신규 라우트가 기존 페이지와 동일하게 인증 미들웨어에 걸려 <code>/login</code>으로 307 리다이렉트되는지(500 없음), 실제 <code>data/trading.db</code>로 라우트 함수를 직접 호출해 렌더링이 정상인지 확인했다. TOTP 로그인 후 실제 클릭 확인은 사용자가 직접 필요한 항목으로 남겼다.</p>
+<hr>
+<h2 id="readmemd-v1v2-전략-설명-축소정리">README.md v1/v2 전략 설명 축소·정리<a hidden class="anchor" aria-hidden="true" href="#readmemd-v1v2-전략-설명-축소정리">#</a></h2>
+<p>&ldquo;README.md에 매매전략 v1, v2 내용이 정리가 안 된 듯하다&quot;는 보고가 있었다. 실제 코드와 대조해봤지만 README/CLAUDE.md 자체에 사실 오류는 없었다 — 대신 <code>docs/SETTINGS_REFERENCE.md</code>, <code>docs/TRADING_FLOW.md</code>에 v1+v2 모두 더 상세하고 최신으로 정리된 동일 내용이 이미 있어서, README가 그 내용을 중복 보유하고 있던 게 근본 원인이었다.</p>
+<p>사용자 요청대로 &ldquo;전략 v1/v2는 간단 소개만, 세부 운영은 docs 폴더 문서로&rdquo; 방향으로 정리했다.</p>
+<ul>
+<li>README.md에 &ldquo;매매 전략: strategy_v1 / strategy_v2&rdquo; 섹션 신설(각 버전 4줄 요약 + 관련 문서 링크)</li>
+<li><code>market_filter</code>/<code>first_stage</code>/<code>second_stage</code> 설정 섹션 전체 제거</li>
+<li>&ldquo;거래 설정&rdquo; preset 표는 한 단락 요약 + 링크로 축소</li>
+</ul>
+<p>점검 중 별도로 발견한 오기도 정정했다 — 실행 흐름 다이어그램과 핵심 모듈 표에 &ldquo;5가지 매도 우선순위&quot;라는 옛 표기가 남아 있었는데, 실제로는 4단계로 바뀐 지 한참이었다.</p>
+<p>README.md가 436줄에서 약 80줄 줄었다(41 insertions, 121 deletions). 코드 변경은 없었다(문서만).</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>발견</th>
+					<th>조치</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>IRP 표시 버그</td>
+					<td>회색 글씨라 안 보였을 뿐, 실제론 정상 렌더링</td>
+					<td>입력칸 아래 굵은 글씨로 분리 표시</td>
+			</tr>
+			<tr>
+					<td>운영 인프라 결함 1</td>
+					<td><code>kis-web.service</code>가 옛 경로 참조 → 6일간 dead</td>
+					<td>서비스 파일 + 문서 6개 경로 정정</td>
+			</tr>
+			<tr>
+					<td>운영 인프라 결함 2</td>
+					<td><code>--host (IP)</code>로 외부 IP 접속 차단</td>
+					<td><code>--host (IP)</code>으로 변경</td>
+			</tr>
+			<tr>
+					<td>DB 조회 페이지</td>
+					<td>DB 내용을 직접 볼 방법이 없었음</td>
+					<td><code>/db-browser</code> 신설(7개 테이블, 페이징, mode 필터)</td>
+			</tr>
+			<tr>
+					<td>README 정리</td>
+					<td>v1/v2 전략 설명이 docs와 중복</td>
+					<td>4줄 요약 + 링크로 축소(436→약350줄)</td>
+			</tr>
+	</tbody>
+</table>
+<p>화면에 안 보이는 값을 추적하다가 운영 서버가 6일간 죽어 있었다는 걸 알게 된 셈인데, &ldquo;수동으로 우회해서 잘 쓰고 있었다&quot;는 사실이 진짜 문제를 더 오래 가려준 경우였다.</p>
+<p>다음 글에서는 같은 날 이어서 진행한 <strong>웹 백테스트 기능 사전조사부터 v0.5.2 릴리즈까지</strong>를 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/web-backtest-investigation-and-v052-release/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

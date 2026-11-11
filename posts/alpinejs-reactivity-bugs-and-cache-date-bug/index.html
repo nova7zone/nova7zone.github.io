@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="버그수정">
+<meta name="description" content="브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그">
+  <meta property="og:description" content="브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-29T10:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-29T10:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그">
+  <meta name="twitter:description" content="브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그",
+      "item": "https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그",
+  "description": "브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.",
+  "keywords": [
+    "버그수정"
+  ],
+  "articleBody": "작성일: 2026년 6월 29일\n최종 수정: 2026년 6월 29일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 29시간 좀비 주문 사고를 해결했다. 6월 29일은 프론트엔드 버그 두 건과 로깅·캐시 관련 버그 두 건, 총 네 건을 하루에 몰아 처리한 날이다.\n결론부터 말하면, 추가 계좌 투자원금 입력칸이 영구히 비활성화되는 버그를 브라우저 콘솔로 직접 추적해 Alpine.js의 반응성 엣지케이스임을 확인했다. 이어서 LOG_LEVEL=DEBUG가 콘솔에 전혀 반영되지 않던 버그, 그리고 cache_manager가 배포 이후 한 번도 “오늘 날짜” 캐시를 못 찾고 있던 구조적 버그도 함께 고쳤다.\n저장 버튼이 요청 실패 시 영구 잠기는 버그 사용자 제보: “웹 대시보드 - 설정 - 추가 계좌 투자원금” 카드의 입력칸/버튼이 회색으로 눌리지 않는다.\nweb/templates/settings.html의 setCapital/setExtraAccountCapital/applyCapitalFlow/applyExtraAccountCapitalFlow 4개 함수 모두 저장 시작 시 capitalSaving/extraCapitalSaving[account_id]를 true로 설정한 뒤 try/catch 없이 fetch→res.json()을 호출하고 있었다. 세션 만료(로그인 페이지로 리다이렉트되어 응답이 JSON이 아님)나 네트워크 오류로 예외가 발생하면, 그 플래그를 다시 false로 되돌리는 코드가 실행되지 않아 새로고침 전까지 버튼이 영구히 비활성화 상태로 남는 구조였다.\n수정: 4개 함수 모두 try/catch/finally로 감싸 요청 성공/실패/예외 어떤 경로든 saving 플래그가 항상 풀리도록 했다. 예외 발생 시 “요청 실패 — 세션 만료 또는 네트워크 오류일 수 있습니다…” 에러 메시지도 표시하게 했다. 즉시 우회법은 /settings 새로고침(Ctrl+F5)이었다 — saving 플래그는 페이지 로드 시 초기화되기 때문이다.\n고쳤는데도 여전히 비활성 — Alpine.js 반응성 엣지케이스 문제는 여기서 끝나지 않았다. PR #73(위 try/catch/finally 수정) 배포 후에도 “추가 계좌 투자원금” 카드의 입력칸이 여전히 비활성이었다. update_oci.sh로 최신 커밋 배포 확인, kis-web 서비스 재시작 확인, 브라우저 완전 재시작·로그아웃 후 재로그인·시크릿 모드까지 모두 시도해도 동일하게 재현됐다 — 앞의 수정과는 별개의 근본 원인이 있다는 뜻이었다.\n근본 원인은 브라우저 콘솔로 직접 추적했다. extraCapitalSaving: {}라는 별도 객체에 계좌ID를 키로 써서 저장 중 상태를 추적하는 방식이 문제였다. 콘솔에서 Alpine.$data(root).extraCapitalSaving이 빈 객체 {}로 정상인데도 실제 DOM의 disabled 속성은 true로 고착돼 있었다. 콘솔로 강제로 extraCapitalSaving[account_id] = true → false를 한 번 써주면 그 즉시 정상화됐다 — Alpine.js가 빈 반응형 객체에서 존재하지 않는 키를 처음 읽는 순간에는 반응성 추적이 제대로 안 걸리는 엣지케이스였다. 새로고침마다 이 “최초 읽기” 상황이 재현되어 매번 비활성 상태로 멈췄던 것이다.\n수정: 계좌별 저장 상태를 별도 사이드 객체(extraCapitalSaving[account_id]) 대신 각 계좌 객체 자체의 saving 속성으로 이동(acc.saving)했다. init()에서 extraAccounts를 매핑할 때 saving: false를 미리 박아둬서 “존재하지 않는 키\"라는 상황 자체가 생기지 않도록 했다. web/templates/settings.html의 데이터 정의·init()·HTML 바인딩 5곳·저장/입출금 함수 2개 전부 acc.saving으로 교체했다.\n디버깅은 브라우저 DevTools Console에서 사용자와 함께 실시간으로 진행했다 — Elements 패널 $0 + Alpine.$data()로 실제 반응형 상태를 직접 읽고 강제 조작해 반응성 자체를 테스트하는 방식이었다. 정적 코드 분석만으로는 찾기 어려운 프레임워크 레벨 엣지케이스였다.\npytest tests/test_web_pages.py tests/test_config_router_v2.py 75개는 통과했지만, 프론트엔드 JS 전용 수정이라 이 버그 자체는 pytest로 검증할 수 없었다 — OCI 배포 후 실제 화면에서 재확인이 필요했다.\nLOG_LEVEL=DEBUG가 콘솔에 적용되지 않는 버그 사용자 제보: “crontab에 LOG_LEVEL=DEBUG가 실질적인 역할이 없다.”\nsystematic-debugging으로 확인한 결과, utils/logger.py::setup_logging()의 콘솔 핸들러 레벨이 max(effective_level, logging.INFO)로 항상 INFO 이상에 고정돼 있어 LOG_LEVEL=DEBUG를 줘도 cron.log(콘솔 출력)에는 DEBUG 로그가 전혀 찍히지 않았다. trader.log는 _TRADING_LOGGER_PREFIXES 6개 모듈(매매/스크리닝)로만 필터링돼 있어서, api/kis_api.py·runner.py 등 나머지 대다수 모듈의 debug() 호출은 콘솔(floor로 차단)·trader.log(필터로 차단) 어디에도 남을 곳이 없었다.\n수정: 콘솔 핸들러 레벨에서 INFO floor를 제거하고 effective_level을 그대로 적용했다. trader.log 필터는 유지(매매 결정 중심 그대로)했다 — 콘솔엔 필터가 없으므로 LOG_LEVEL=DEBUG 시 전체 모듈의 debug 로그가 cron.log로 노출되고, 기본(INFO)일 때는 기존과 동일하게 동작한다.\nTDD로 진행했다. tests/test_logger.py에 TestSetupLoggingLevel을 추가해 RED를 확인한 뒤 1줄 수정으로 GREEN 전환했다. pytest tests/ 764개 전체 통과를 확인했다.\n캐시가 배포 이후 한 번도 정상 작동하지 않던 버그 사용자 제보: “06-25 18:00 next-pre-market에서 캐시 생성 확인했는데 06-26 09:00에 캐시 없음.”\nlogs/cron_next_pre.log/logs/cron.log 06-22~06-26 5일치 전체를 대조한 결과, 매일 09:00 빠짐없이 재현되는 구조적 버그였다.\n근본 원인은 strategy_v2/cache_manager.py::load()가 date_str 미지정 시 now_kst()(호출 시점 = 오늘) 날짜로 캐시 파일을 찾는데, 캐시는 전날 18:00 생성되어 생성일 기준 파일명(cache_YYYYMMDD.json)으로 저장된다는 데 있었다. strategy_v2/trading/buy.py가 09:00에 인자 없이 호출하면 그날 18:00에야 생성될 파일을 찾으므로 항상 None이었다 — 그룹 A(avg_volume)/C(sector_top40)/D(rsi)가 배포 이후 한 번도 캐시 기반으로 동작하지 못하고 그룹 B(fallback_relative_strength)만 작동하고 있었던 것이다. expiry_hours: 72(주말 갭 대비 설정)는 정상이라 만료 문제가 아니라 파일을 못 찾는 단계의 문제였다.\n수정: 사용자 확인(2개 옵션 중 “가장 최근 캐시 파일 자동 탐색” 선택)에 따라 load()가 date_str 없을 때 cache_dir 내 cache_*.json 중 파일명 날짜 기준 가장 최근 파일을 자동 탐색하도록 변경했다. 만료 판단은 기존처럼 호출자의 is_expired()가 별도 수행한다(동작 분리 유지).\nTDD로 RED(신규 테스트가 “오늘 날짜만 찾던” 기존 동작에서 실패) 확인 후 GREEN 전환했다. tests/test_cache_manager.py에 회귀 테스트 3건을 추가했다(최근 파일 탐색, 빈 디렉터리 None, 깨진 최신 파일 → 오래된 정상 파일 폴백 — 마지막 항목은 코드 리뷰 권고로 추가). 코드 리뷰(general-purpose subagent)는 Critical 없음, Important 1건(깨진 파일 폴백 테스트 누락)을 반영 완료했고, Minor(날짜 정렬이 고정폭 파일명 가정에 의존한다는 점 주석화)도 반영했다.\n작업 시작 시 미커밋 상태로 남아있던 두 파일(web/templates/backtest.html 날짜 기본값 갱신, docs/STRATEGY_V2_full_detail.md 677줄 문서)도 사용자 확인 후 함께 커밋했다. .gitignore에 빠져 있던 런타임 파일 패턴(token_cache_appkey_*/token_cache_extra_*/*.json.lock/*.bak.*/backtest_result_*.json/initial_capital.json/data/cache/)도 추가해 다수의 토큰 캐시·lock·백업 파일이 untracked로 누적되던 문제를 해소했다.\npytest tests/ 762개 전체 통과를 확인했다.\n정리 버그 원인 수정 저장 버튼 영구 잠김 try/catch 없는 fetch, 예외 시 플래그 미복구 try/catch/finally로 전체 감싸기 입력칸 영구 비활성(재발) Alpine.js 빈 객체 최초 키 읽기 반응성 누락 사이드 객체 대신 계좌 객체 자체 속성(acc.saving) LOG_LEVEL=DEBUG 무효 콘솔 핸들러가 INFO floor 강제 effective_level 그대로 적용 캐시 매일 09:00 미스 load()가 “오늘” 날짜로만 파일 탐색 가장 최근 캐시 파일 자동 탐색 네 버그 모두 “고쳤다고 생각했는데 증상이 남아있다\"는 패턴이 하나씩 있었다 — 저장 버튼은 1차 수정 후에도 재발했고, 캐시는 배포 이후 계속 조용히 실패하고 있었다. 브라우저 콘솔에서 실시간으로 반응형 상태를 직접 조작해본 게 정적 분석으로는 안 보이던 원인을 찾는 데 결정적이었다. 다음 글에서는 여전히 6월 29일, CLAUDE.md를 분리하고 개발 문서를 재구성한 뒤 docs-sync를 재점검하고 v0.6.3을 릴리즈하는 과정을 다룬다.\n",
+  "wordCount" : "3625",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-29T10:00:00+09:00",
+  "dateModified": "2026-06-29T10:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그
+    </h1>
+    <div class="post-description">
+      브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-29T10:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#%ec%a0%80%ec%9e%a5-%eb%b2%84%ed%8a%bc%ec%9d%b4-%ec%9a%94%ec%b2%ad-%ec%8b%a4%ed%8c%a8-%ec%8b%9c-%ec%98%81%ea%b5%ac-%ec%9e%a0%ea%b8%b0%eb%8a%94-%eb%b2%84%ea%b7%b8" aria-label="저장 버튼이 요청 실패 시 영구 잠기는 버그">저장 버튼이 요청 실패 시 영구 잠기는 버그</a></li>
+            <li>
+                <a href="#%ea%b3%a0%ec%b3%a4%eb%8a%94%eb%8d%b0%eb%8f%84-%ec%97%ac%ec%a0%84%ed%9e%88-%eb%b9%84%ed%99%9c%ec%84%b1--alpinejs-%eb%b0%98%ec%9d%91%ec%84%b1-%ec%97%a3%ec%a7%80%ec%bc%80%ec%9d%b4%ec%8a%a4" aria-label="고쳤는데도 여전히 비활성 — Alpine.js 반응성 엣지케이스">고쳤는데도 여전히 비활성 — Alpine.js 반응성 엣지케이스</a></li>
+            <li>
+                <a href="#log_leveldebug%ea%b0%80-%ec%bd%98%ec%86%94%ec%97%90-%ec%a0%81%ec%9a%a9%eb%90%98%ec%a7%80-%ec%95%8a%eb%8a%94-%eb%b2%84%ea%b7%b8" aria-label="LOG_LEVEL=DEBUG가 콘솔에 적용되지 않는 버그">LOG_LEVEL=DEBUG가 콘솔에 적용되지 않는 버그</a></li>
+            <li>
+                <a href="#%ec%ba%90%ec%8b%9c%ea%b0%80-%eb%b0%b0%ed%8f%ac-%ec%9d%b4%ed%9b%84-%ed%95%9c-%eb%b2%88%eb%8f%84-%ec%a0%95%ec%83%81-%ec%9e%91%eb%8f%99%ed%95%98%ec%a7%80-%ec%95%8a%eb%8d%98-%eb%b2%84%ea%b7%b8" aria-label="캐시가 배포 이후 한 번도 정상 작동하지 않던 버그">캐시가 배포 이후 한 번도 정상 작동하지 않던 버그</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 29일<br>
+<strong>최종 수정</strong>: 2026년 6월 29일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/sell-qty-before-local-holdings-and-cancel-order-3state/">이전 글</a>에서 29시간 좀비 주문 사고를 해결했다. 6월 29일은 프론트엔드 버그 두 건과 로깅·캐시 관련 버그 두 건, 총 네 건을 하루에 몰아 처리한 날이다.</p>
+<p>결론부터 말하면, 추가 계좌 투자원금 입력칸이 영구히 비활성화되는 버그를 브라우저 콘솔로 직접 추적해 Alpine.js의 반응성 엣지케이스임을 확인했다. 이어서 LOG_LEVEL=DEBUG가 콘솔에 전혀 반영되지 않던 버그, 그리고 cache_manager가 배포 이후 한 번도 &ldquo;오늘 날짜&rdquo; 캐시를 못 찾고 있던 구조적 버그도 함께 고쳤다.</p>
+<hr>
+<h2 id="저장-버튼이-요청-실패-시-영구-잠기는-버그">저장 버튼이 요청 실패 시 영구 잠기는 버그<a hidden class="anchor" aria-hidden="true" href="#저장-버튼이-요청-실패-시-영구-잠기는-버그">#</a></h2>
+<p>사용자 제보: &ldquo;웹 대시보드 - 설정 - 추가 계좌 투자원금&rdquo; 카드의 입력칸/버튼이 회색으로 눌리지 않는다.</p>
+<p><code>web/templates/settings.html</code>의 <code>setCapital</code>/<code>setExtraAccountCapital</code>/<code>applyCapitalFlow</code>/<code>applyExtraAccountCapitalFlow</code> 4개 함수 모두 저장 시작 시 <code>capitalSaving</code>/<code>extraCapitalSaving[account_id]</code>를 <code>true</code>로 설정한 뒤 <code>try/catch</code> 없이 <code>fetch</code>→<code>res.json()</code>을 호출하고 있었다. 세션 만료(로그인 페이지로 리다이렉트되어 응답이 JSON이 아님)나 네트워크 오류로 예외가 발생하면, 그 플래그를 다시 <code>false</code>로 되돌리는 코드가 실행되지 않아 새로고침 전까지 버튼이 영구히 비활성화 상태로 남는 구조였다.</p>
+<p><strong>수정</strong>: 4개 함수 모두 <code>try/catch/finally</code>로 감싸 요청 성공/실패/예외 어떤 경로든 saving 플래그가 항상 풀리도록 했다. 예외 발생 시 &ldquo;요청 실패 — 세션 만료 또는 네트워크 오류일 수 있습니다&hellip;&rdquo; 에러 메시지도 표시하게 했다. 즉시 우회법은 <code>/settings</code> 새로고침(Ctrl+F5)이었다 — saving 플래그는 페이지 로드 시 초기화되기 때문이다.</p>
+<hr>
+<h2 id="고쳤는데도-여전히-비활성--alpinejs-반응성-엣지케이스">고쳤는데도 여전히 비활성 — Alpine.js 반응성 엣지케이스<a hidden class="anchor" aria-hidden="true" href="#고쳤는데도-여전히-비활성--alpinejs-반응성-엣지케이스">#</a></h2>
+<p>문제는 여기서 끝나지 않았다. PR #73(위 try/catch/finally 수정) 배포 후에도 &ldquo;추가 계좌 투자원금&rdquo; 카드의 입력칸이 여전히 비활성이었다. <code>update_oci.sh</code>로 최신 커밋 배포 확인, kis-web 서비스 재시작 확인, 브라우저 완전 재시작·로그아웃 후 재로그인·시크릿 모드까지 모두 시도해도 동일하게 재현됐다 — 앞의 수정과는 별개의 근본 원인이 있다는 뜻이었다.</p>
+<p><strong>근본 원인은 브라우저 콘솔로 직접 추적했다.</strong> <code>extraCapitalSaving: {}</code>라는 별도 객체에 계좌ID를 키로 써서 저장 중 상태를 추적하는 방식이 문제였다. 콘솔에서 <code>Alpine.$data(root).extraCapitalSaving</code>이 빈 객체 <code>{}</code>로 정상인데도 실제 DOM의 <code>disabled</code> 속성은 <code>true</code>로 고착돼 있었다. 콘솔로 강제로 <code>extraCapitalSaving[account_id] = true → false</code>를 한 번 써주면 그 즉시 정상화됐다 — Alpine.js가 빈 반응형 객체에서 <strong>존재하지 않는 키를 처음 읽는 순간</strong>에는 반응성 추적이 제대로 안 걸리는 엣지케이스였다. 새로고침마다 이 &ldquo;최초 읽기&rdquo; 상황이 재현되어 매번 비활성 상태로 멈췄던 것이다.</p>
+<p><strong>수정</strong>: 계좌별 저장 상태를 별도 사이드 객체(<code>extraCapitalSaving[account_id]</code>) 대신 <strong>각 계좌 객체 자체의 <code>saving</code> 속성</strong>으로 이동(<code>acc.saving</code>)했다. <code>init()</code>에서 <code>extraAccounts</code>를 매핑할 때 <code>saving: false</code>를 미리 박아둬서 &ldquo;존재하지 않는 키&quot;라는 상황 자체가 생기지 않도록 했다. <code>web/templates/settings.html</code>의 데이터 정의·init()·HTML 바인딩 5곳·저장/입출금 함수 2개 전부 <code>acc.saving</code>으로 교체했다.</p>
+<p>디버깅은 브라우저 DevTools Console에서 사용자와 함께 실시간으로 진행했다 — Elements 패널 <code>$0</code> + <code>Alpine.$data()</code>로 실제 반응형 상태를 직접 읽고 강제 조작해 반응성 자체를 테스트하는 방식이었다. 정적 코드 분석만으로는 찾기 어려운 프레임워크 레벨 엣지케이스였다.</p>
+<p><code>pytest tests/test_web_pages.py tests/test_config_router_v2.py</code> 75개는 통과했지만, 프론트엔드 JS 전용 수정이라 이 버그 자체는 pytest로 검증할 수 없었다 — OCI 배포 후 실제 화면에서 재확인이 필요했다.</p>
+<hr>
+<h2 id="log_leveldebug가-콘솔에-적용되지-않는-버그">LOG_LEVEL=DEBUG가 콘솔에 적용되지 않는 버그<a hidden class="anchor" aria-hidden="true" href="#log_leveldebug가-콘솔에-적용되지-않는-버그">#</a></h2>
+<p>사용자 제보: &ldquo;crontab에 LOG_LEVEL=DEBUG가 실질적인 역할이 없다.&rdquo;</p>
+<p><code>systematic-debugging</code>으로 확인한 결과, <code>utils/logger.py::setup_logging()</code>의 콘솔 핸들러 레벨이 <code>max(effective_level, logging.INFO)</code>로 항상 INFO 이상에 고정돼 있어 <code>LOG_LEVEL=DEBUG</code>를 줘도 <code>cron.log</code>(콘솔 출력)에는 DEBUG 로그가 전혀 찍히지 않았다. <code>trader.log</code>는 <code>_TRADING_LOGGER_PREFIXES</code> 6개 모듈(매매/스크리닝)로만 필터링돼 있어서, <code>api/kis_api.py</code>·<code>runner.py</code> 등 나머지 대다수 모듈의 <code>debug()</code> 호출은 콘솔(floor로 차단)·trader.log(필터로 차단) 어디에도 남을 곳이 없었다.</p>
+<p><strong>수정</strong>: 콘솔 핸들러 레벨에서 INFO floor를 제거하고 <code>effective_level</code>을 그대로 적용했다. <code>trader.log</code> 필터는 유지(매매 결정 중심 그대로)했다 — 콘솔엔 필터가 없으므로 <code>LOG_LEVEL=DEBUG</code> 시 전체 모듈의 debug 로그가 <code>cron.log</code>로 노출되고, 기본(INFO)일 때는 기존과 동일하게 동작한다.</p>
+<p>TDD로 진행했다. <code>tests/test_logger.py</code>에 <code>TestSetupLoggingLevel</code>을 추가해 RED를 확인한 뒤 1줄 수정으로 GREEN 전환했다. <code>pytest tests/</code> 764개 전체 통과를 확인했다.</p>
+<hr>
+<h2 id="캐시가-배포-이후-한-번도-정상-작동하지-않던-버그">캐시가 배포 이후 한 번도 정상 작동하지 않던 버그<a hidden class="anchor" aria-hidden="true" href="#캐시가-배포-이후-한-번도-정상-작동하지-않던-버그">#</a></h2>
+<p>사용자 제보: &ldquo;06-25 18:00 next-pre-market에서 캐시 생성 확인했는데 06-26 09:00에 캐시 없음.&rdquo;</p>
+<p><code>logs/cron_next_pre.log</code>/<code>logs/cron.log</code> 06-22~06-26 5일치 전체를 대조한 결과, <strong>매일 09:00 빠짐없이 재현되는 구조적 버그</strong>였다.</p>
+<p>근본 원인은 <code>strategy_v2/cache_manager.py::load()</code>가 <code>date_str</code> 미지정 시 <code>now_kst()</code>(호출 시점 = 오늘) 날짜로 캐시 파일을 찾는데, 캐시는 전날 18:00 생성되어 <strong>생성일</strong> 기준 파일명(<code>cache_YYYYMMDD.json</code>)으로 저장된다는 데 있었다. <code>strategy_v2/trading/buy.py</code>가 09:00에 인자 없이 호출하면 그날 18:00에야 생성될 파일을 찾으므로 <strong>항상 None</strong>이었다 — 그룹 A(avg_volume)/C(sector_top40)/D(rsi)가 배포 이후 한 번도 캐시 기반으로 동작하지 못하고 그룹 B(fallback_relative_strength)만 작동하고 있었던 것이다. <code>expiry_hours: 72</code>(주말 갭 대비 설정)는 정상이라 만료 문제가 아니라 파일을 못 찾는 단계의 문제였다.</p>
+<p><strong>수정</strong>: 사용자 확인(2개 옵션 중 &ldquo;가장 최근 캐시 파일 자동 탐색&rdquo; 선택)에 따라 <code>load()</code>가 <code>date_str</code> 없을 때 cache_dir 내 <code>cache_*.json</code> 중 파일명 날짜 기준 가장 최근 파일을 자동 탐색하도록 변경했다. 만료 판단은 기존처럼 호출자의 <code>is_expired()</code>가 별도 수행한다(동작 분리 유지).</p>
+<p>TDD로 RED(신규 테스트가 &ldquo;오늘 날짜만 찾던&rdquo; 기존 동작에서 실패) 확인 후 GREEN 전환했다. <code>tests/test_cache_manager.py</code>에 회귀 테스트 3건을 추가했다(최근 파일 탐색, 빈 디렉터리 None, 깨진 최신 파일 → 오래된 정상 파일 폴백 — 마지막 항목은 코드 리뷰 권고로 추가). 코드 리뷰(general-purpose subagent)는 Critical 없음, Important 1건(깨진 파일 폴백 테스트 누락)을 반영 완료했고, Minor(날짜 정렬이 고정폭 파일명 가정에 의존한다는 점 주석화)도 반영했다.</p>
+<p>작업 시작 시 미커밋 상태로 남아있던 두 파일(<code>web/templates/backtest.html</code> 날짜 기본값 갱신, <code>docs/STRATEGY_V2_full_detail.md</code> 677줄 문서)도 사용자 확인 후 함께 커밋했다. <code>.gitignore</code>에 빠져 있던 런타임 파일 패턴(<code>token_cache_appkey_*</code>/<code>token_cache_extra_*</code>/<code>*.json.lock</code>/<code>*.bak.*</code>/<code>backtest_result_*.json</code>/<code>initial_capital.json</code>/<code>data/cache/</code>)도 추가해 다수의 토큰 캐시·lock·백업 파일이 untracked로 누적되던 문제를 해소했다.</p>
+<p><code>pytest tests/</code> 762개 전체 통과를 확인했다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>버그</th>
+					<th>원인</th>
+					<th>수정</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>저장 버튼 영구 잠김</td>
+					<td>try/catch 없는 fetch, 예외 시 플래그 미복구</td>
+					<td>try/catch/finally로 전체 감싸기</td>
+			</tr>
+			<tr>
+					<td>입력칸 영구 비활성(재발)</td>
+					<td>Alpine.js 빈 객체 최초 키 읽기 반응성 누락</td>
+					<td>사이드 객체 대신 계좌 객체 자체 속성(acc.saving)</td>
+			</tr>
+			<tr>
+					<td>LOG_LEVEL=DEBUG 무효</td>
+					<td>콘솔 핸들러가 INFO floor 강제</td>
+					<td>effective_level 그대로 적용</td>
+			</tr>
+			<tr>
+					<td>캐시 매일 09:00 미스</td>
+					<td>load()가 &ldquo;오늘&rdquo; 날짜로만 파일 탐색</td>
+					<td>가장 최근 캐시 파일 자동 탐색</td>
+			</tr>
+	</tbody>
+</table>
+<p>네 버그 모두 &ldquo;고쳤다고 생각했는데 증상이 남아있다&quot;는 패턴이 하나씩 있었다 — 저장 버튼은 1차 수정 후에도 재발했고, 캐시는 배포 이후 계속 조용히 실패하고 있었다. 브라우저 콘솔에서 실시간으로 반응형 상태를 직접 조작해본 게 정적 분석으로는 안 보이던 원인을 찾는 데 결정적이었다. 다음 글에서는 여전히 6월 29일, CLAUDE.md를 분리하고 개발 문서를 재구성한 뒤 docs-sync를 재점검하고 v0.6.3을 릴리즈하는 과정을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/sell-qty-before-local-holdings-and-cancel-order-3state/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

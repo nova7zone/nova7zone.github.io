@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈 | Evan&#39;s Dev Log</title>
+<meta name="keywords" content="버그수정, 릴리스, 설계">
+<meta name="description" content="보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/">
+  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈">
+  <meta property="og:description" content="보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-25T11:00:00+09:00">
+    <meta property="article:modified_time" content="2026-06-25T11:00:00+09:00">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="릴리스">
+    <meta property="article:tag" content="설계">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈">
+  <meta name="twitter:description" content="보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈",
+      "item": "https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈",
+  "name": "AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈",
+  "description": "보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.",
+  "keywords": [
+    "버그수정", "릴리스", "설계"
+  ],
+  "articleBody": "작성일: 2026년 6월 25일\n최종 수정: 2026년 6월 25일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 매도 체결인식 실패 버그를 고치고 v0.6.1을 릴리즈했다. 6월 25일은 설정 화면 구조를 정리하는 작업으로 시작해서, 실거래 손실 매도 사고를 조사하는 것으로 이어졌다.\n결론부터 말하면, 보유종목 한도와 매매 가격범위를 v1 매매설정 탭에서 메인 설정 탭으로 통합했는데 최종 리뷰에서 이 필터를 항상 무력화시키는 config_loader 화이트리스트 누락을 발견했다. 이어서 사용자가 보고한 실거래 손실 매도(금호건설, -0.96%)를 추적해 VWAP 목표가 로직의 비대칭 버그를 찾아 고쳤다. 두 작업 모두 PR #70으로 머지하고 v0.6.2를 릴리즈했다.\n보유종목 한도·가격범위 전역화 기존에는 매매 가격범위(1주당 최소/최대 가격) 필터가 v1 전략에만 있었고, 웹 설정 화면에서도 v1 매매설정 탭에만 입력칸이 있었다. brainstorming으로 통합 방향을 정했다 — v1 매매설정 탭의 기존 가격범위 입력을 없애고, 메인설정 탭으로 단일화하는 것.\n설계 후 subagent-driven-development로 3-Task 구현을 진행했다.\nv2 스크리닝에 1주당 가격범위 필터 추가 보유종목수 최대값/매매 가격범위 전역 API 4종 추가, 기존 v1 전용 가격 필드 제거 메인 설정 탭에 보유종목 한도/매매 가격범위 카드 추가, 매매 설정 탭 기존 v1 가격 입력 제거 Task별 리뷰는 모두 Approved였다.\n최종 리뷰에서 발견된 Critical: 화이트리스트 누락 전체 브랜치를 한 번에 보는 최종 리뷰에서 Critical 1건이 나왔다. utils/config_loader.py의 _load_screening_configs_v2()가 first_stage_groups.yaml의 키를 런타임 config로 전달할 때 쓰는 화이트리스트에 min_price/max_price가 빠져 있어서, 방금 만든 v2 가격범위 필터가 항상 비활성 상태(하드코딩 기본값만 사용)였다.\n3개 Task 모두 이 파일을 건드리지 않았기 때문에 개별 리뷰에서는 보이지 않던 cross-task 결함이었다. 화이트리스트에 두 키를 추가하고, 로더 함수를 직접 거치는 회귀 테스트를 추가해 수정했다. 재리뷰는 Approved였다.\n작업 중 부수적인 사고도 있었다 — 수정 커밋 1차 시도가 git add 범위를 잘못 잡아 무관한 파일 약 20개(KIS 토큰 캐시 등 민감 데이터, 별도 진행 중이던 backtest.html WIP, 플랜 문서)를 같이 커밋해버렸다. 즉시 발견해 git reset --soft + 선택적 재스테이징으로 정정하고, 재리뷰로 최종 커밋 범위가 의도한 2개 파일뿐임을 확인했다.\nVWAP 목표가 손실 매도 버그 사용자가 실거래 사고를 보고했다. 특정 종목을 매수한 직후 “목표가 도달\"로 판단돼 매도되면서 오히려 소폭 손실이 났다는 것이다. systematic-debugging으로 추적했다.\n원인은 cond_vwap.calculate()가 종목 자신의 20일 VWAP 대비 위치만 보는 지표라서, 매수가와 무관하게 발동할 수 있었던 것이었다. 같은 파일의 vkospi_exit/trailing_stop은 이미 profit_pct \u003e 0 가드가 있었는데, reversal/fear_driven 두 전략의 target_reached 분기에는 이 가드가 빠져 있었다 — 즉 다른 매도 조건에는 이미 적용된 안전장치가 이 조건에만 비대칭적으로 누락돼 있던 것이다.\nTDD로 수정했다. 손실 시 미발동 + 수익 시 정상발동(대조군) 테스트 4건을 먼저 추가해 Red를 확인한 뒤, _check_reversal_exit()에 registry_entry 파라미터를 추가하고 두 함수(reversal/fear_driven)의 target_reached 분기에 profit_pct \u003e 0 가드를 추가해 Green으로 전환했다.\n사용자 요청으로 docs/STRATEGY_V2_trading_flow.md에 18:00/07:00/09:00 단계별 실제 동작과, 백테스트가 이 시간흐름을 반영하지 않는다는 점도 함께 정리했다(매도 시각 표기 오류 10:00→09:00도 같이 정정했다).\npytest tests/ 753개 전체 통과를 확인했다.\nPR #70 머지 + v0.6.2 릴리즈 두 작업을 묶어 PR #70을 생성하고 CI(pytest) 통과를 확인한 뒤 --squash로 master에 머지(332d3d3)했다. git fetch origin master \u0026\u0026 git merge origin/master로 feature/build를 동기화(0040dfe, 충돌 없음 — 별개 WIP였던 backtest.html도 그대로 보존됐다)했다.\nrelease-notes skill 절차대로 v0.6.1 이후 머지된 PR을 조사(#69, #70 2건)했다. 직전 패턴(feat+fix 묶음을 patch로 처리)에 맞춰 v0.6.2(patch)를 사용자가 확인했다. build-docs/release-notes-draft-v0.6.2.md를 v0.6.1 draft 형식을 따라 작성하면서, #69의 보류 항목(reconcile 손실 미기록)도 “다음 단계\"에 함께 포함했다.\n여기서 반복 실수가 하나 있었다. v0.6.1 work-log에 “draft 파일을 그대로 --notes-file에 넘기면 본문 제목에 (draft)가 남는다\"는 주의사항을 이미 기록해뒀는데도, 똑같이 release-notes-draft-v0.6.2.md를 그대로 전달해 같은 실수를 반복했다. 발행 직후 gh release view로 자체 점검하다 발견해서, 첫 줄만 # v0.6.2로 치환한 임시 사본을 gh release edit --notes-file로 재전달해 정정했다. 다음부터는 release 생성 직후 항상 gh release view로 본문 첫 줄을 직접 확인하기로 했다.\n정리 항목 내용 보유한도/가격범위 v1 전용 → 메인 설정 탭 전역화 최종 리뷰 Critical config_loader 화이트리스트에 min_price/max_price 누락 VWAP 버그 reversal/fear_driven target_reached에 profit_pct\u003e0 가드 누락 재현 사고 특정 종목 소폭 손실 매도 PR #70 두 작업 묶어 squash-merge, v0.6.2 릴리즈 반복 실수 release 본문 “(draft)” 제목 재발 — gh release view로 즉시 확인 습관화 이미 기록해둔 주의사항을 스스로 다시 어기는 패턴이 눈에 띄는 하루였다. 다음 글에서는 여전히 6월 25일, 29시간 동안 40회나 취소 시도가 반복되던 좀비 주문 사고를 추적해 qty_before를 로컬 holdings 기반으로 바꾸고 cancel_order 응답을 3-state로 구분한 수정을 다룬다.\n",
+  "wordCount" : "2320",
+  "inLanguage": "ko",
+  "datePublished": "2026-06-25T11:00:00+09:00",
+  "dateModified": "2026-06-25T11:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Dev Log",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈
+    </h1>
+    <div class="post-description">
+      보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-06-25T11:00:00+09:00'>2026년 6월 25일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#%eb%b3%b4%ec%9c%a0%ec%a2%85%eb%aa%a9-%ed%95%9c%eb%8f%84%ea%b0%80%ea%b2%a9%eb%b2%94%ec%9c%84-%ec%a0%84%ec%97%ad%ed%99%94" aria-label="보유종목 한도·가격범위 전역화">보유종목 한도·가격범위 전역화</a><ul>
+                    
+            <li>
+                <a href="#%ec%b5%9c%ec%a2%85-%eb%a6%ac%eb%b7%b0%ec%97%90%ec%84%9c-%eb%b0%9c%ea%b2%ac%eb%90%9c-critical-%ed%99%94%ec%9d%b4%ed%8a%b8%eb%a6%ac%ec%8a%a4%ed%8a%b8-%eb%88%84%eb%9d%bd" aria-label="최종 리뷰에서 발견된 Critical: 화이트리스트 누락">최종 리뷰에서 발견된 Critical: 화이트리스트 누락</a></li></ul>
+            </li>
+            <li>
+                <a href="#vwap-%eb%aa%a9%ed%91%9c%ea%b0%80-%ec%86%90%ec%8b%a4-%eb%a7%a4%eb%8f%84-%eb%b2%84%ea%b7%b8" aria-label="VWAP 목표가 손실 매도 버그">VWAP 목표가 손실 매도 버그</a></li>
+            <li>
+                <a href="#pr-70-%eb%a8%b8%ec%a7%80--v062-%eb%a6%b4%eb%a6%ac%ec%a6%88" aria-label="PR #70 머지 &#43; v0.6.2 릴리즈">PR #70 머지 + v0.6.2 릴리즈</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 25일<br>
+<strong>최종 수정</strong>: 2026년 6월 25일<br>
+<strong>분야</strong>: AI Trading, Development<br>
+<strong>난이도</strong>: Intermediate<br>
+<strong>상태</strong>: Production Ready</p>
+<hr>
+<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p><a href="/posts/qty-before-order-bug-and-v061-release/">이전 글</a>에서 매도 체결인식 실패 버그를 고치고 v0.6.1을 릴리즈했다. 6월 25일은 설정 화면 구조를 정리하는 작업으로 시작해서, 실거래 손실 매도 사고를 조사하는 것으로 이어졌다.</p>
+<p>결론부터 말하면, 보유종목 한도와 매매 가격범위를 v1 매매설정 탭에서 메인 설정 탭으로 통합했는데 최종 리뷰에서 이 필터를 항상 무력화시키는 config_loader 화이트리스트 누락을 발견했다. 이어서 사용자가 보고한 실거래 손실 매도(금호건설, -0.96%)를 추적해 VWAP 목표가 로직의 비대칭 버그를 찾아 고쳤다. 두 작업 모두 PR #70으로 머지하고 v0.6.2를 릴리즈했다.</p>
+<hr>
+<h2 id="보유종목-한도가격범위-전역화">보유종목 한도·가격범위 전역화<a hidden class="anchor" aria-hidden="true" href="#보유종목-한도가격범위-전역화">#</a></h2>
+<p>기존에는 매매 가격범위(1주당 최소/최대 가격) 필터가 v1 전략에만 있었고, 웹 설정 화면에서도 v1 매매설정 탭에만 입력칸이 있었다. <code>brainstorming</code>으로 통합 방향을 정했다 — v1 매매설정 탭의 기존 가격범위 입력을 없애고, 메인설정 탭으로 단일화하는 것.</p>
+<p>설계 후 <code>subagent-driven-development</code>로 3-Task 구현을 진행했다.</p>
+<ol>
+<li>v2 스크리닝에 1주당 가격범위 필터 추가</li>
+<li>보유종목수 최대값/매매 가격범위 전역 API 4종 추가, 기존 v1 전용 가격 필드 제거</li>
+<li>메인 설정 탭에 보유종목 한도/매매 가격범위 카드 추가, 매매 설정 탭 기존 v1 가격 입력 제거</li>
+</ol>
+<p>Task별 리뷰는 모두 Approved였다.</p>
+<h3 id="최종-리뷰에서-발견된-critical-화이트리스트-누락">최종 리뷰에서 발견된 Critical: 화이트리스트 누락<a hidden class="anchor" aria-hidden="true" href="#최종-리뷰에서-발견된-critical-화이트리스트-누락">#</a></h3>
+<p>전체 브랜치를 한 번에 보는 최종 리뷰에서 Critical 1건이 나왔다. <code>utils/config_loader.py</code>의 <code>_load_screening_configs_v2()</code>가 <code>first_stage_groups.yaml</code>의 키를 런타임 config로 전달할 때 쓰는 화이트리스트에 <code>min_price</code>/<code>max_price</code>가 빠져 있어서, 방금 만든 v2 가격범위 필터가 <strong>항상 비활성 상태</strong>(하드코딩 기본값만 사용)였다.</p>
+<p>3개 Task 모두 이 파일을 건드리지 않았기 때문에 개별 리뷰에서는 보이지 않던 cross-task 결함이었다. 화이트리스트에 두 키를 추가하고, 로더 함수를 직접 거치는 회귀 테스트를 추가해 수정했다. 재리뷰는 Approved였다.</p>
+<p>작업 중 부수적인 사고도 있었다 — 수정 커밋 1차 시도가 <code>git add</code> 범위를 잘못 잡아 무관한 파일 약 20개(KIS 토큰 캐시 등 민감 데이터, 별도 진행 중이던 <code>backtest.html</code> WIP, 플랜 문서)를 같이 커밋해버렸다. 즉시 발견해 <code>git reset --soft</code> + 선택적 재스테이징으로 정정하고, 재리뷰로 최종 커밋 범위가 의도한 2개 파일뿐임을 확인했다.</p>
+<hr>
+<h2 id="vwap-목표가-손실-매도-버그">VWAP 목표가 손실 매도 버그<a hidden class="anchor" aria-hidden="true" href="#vwap-목표가-손실-매도-버그">#</a></h2>
+<p>사용자가 실거래 사고를 보고했다. 특정 종목을 매수한 직후 &ldquo;목표가 도달&quot;로 판단돼 매도되면서 오히려 소폭 손실이 났다는 것이다. <code>systematic-debugging</code>으로 추적했다.</p>
+<p>원인은 <code>cond_vwap.calculate()</code>가 종목 자신의 20일 VWAP 대비 위치만 보는 지표라서, 매수가와 무관하게 발동할 수 있었던 것이었다. 같은 파일의 <code>vkospi_exit</code>/<code>trailing_stop</code>은 이미 <code>profit_pct &gt; 0</code> 가드가 있었는데, reversal/fear_driven 두 전략의 <code>target_reached</code> 분기에는 이 가드가 빠져 있었다 — 즉 다른 매도 조건에는 이미 적용된 안전장치가 이 조건에만 비대칭적으로 누락돼 있던 것이다.</p>
+<p>TDD로 수정했다. 손실 시 미발동 + 수익 시 정상발동(대조군) 테스트 4건을 먼저 추가해 Red를 확인한 뒤, <code>_check_reversal_exit()</code>에 <code>registry_entry</code> 파라미터를 추가하고 두 함수(reversal/fear_driven)의 <code>target_reached</code> 분기에 <code>profit_pct &gt; 0</code> 가드를 추가해 Green으로 전환했다.</p>
+<p>사용자 요청으로 <code>docs/STRATEGY_V2_trading_flow.md</code>에 18:00/07:00/09:00 단계별 실제 동작과, 백테스트가 이 시간흐름을 반영하지 않는다는 점도 함께 정리했다(매도 시각 표기 오류 10:00→09:00도 같이 정정했다).</p>
+<p><code>pytest tests/</code> 753개 전체 통과를 확인했다.</p>
+<hr>
+<h2 id="pr-70-머지--v062-릴리즈">PR #70 머지 + v0.6.2 릴리즈<a hidden class="anchor" aria-hidden="true" href="#pr-70-머지--v062-릴리즈">#</a></h2>
+<p>두 작업을 묶어 PR #70을 생성하고 CI(pytest) 통과를 확인한 뒤 <code>--squash</code>로 <code>master</code>에 머지(<code>332d3d3</code>)했다. <code>git fetch origin master &amp;&amp; git merge origin/master</code>로 <code>feature/build</code>를 동기화(<code>0040dfe</code>, 충돌 없음 — 별개 WIP였던 <code>backtest.html</code>도 그대로 보존됐다)했다.</p>
+<p><code>release-notes</code> skill 절차대로 v0.6.1 이후 머지된 PR을 조사(#69, #70 2건)했다. 직전 패턴(feat+fix 묶음을 patch로 처리)에 맞춰 v0.6.2(patch)를 사용자가 확인했다. <code>build-docs/release-notes-draft-v0.6.2.md</code>를 v0.6.1 draft 형식을 따라 작성하면서, #69의 보류 항목(reconcile 손실 미기록)도 &ldquo;다음 단계&quot;에 함께 포함했다.</p>
+<p>여기서 반복 실수가 하나 있었다. v0.6.1 work-log에 &ldquo;draft 파일을 그대로 <code>--notes-file</code>에 넘기면 본문 제목에 (draft)가 남는다&quot;는 주의사항을 이미 기록해뒀는데도, 똑같이 <code>release-notes-draft-v0.6.2.md</code>를 그대로 전달해 같은 실수를 반복했다. 발행 직후 <code>gh release view</code>로 자체 점검하다 발견해서, 첫 줄만 <code># v0.6.2</code>로 치환한 임시 사본을 <code>gh release edit --notes-file</code>로 재전달해 정정했다. <strong>다음부터는 release 생성 직후 항상 <code>gh release view</code>로 본문 첫 줄을 직접 확인하기로 했다.</strong></p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>보유한도/가격범위</td>
+					<td>v1 전용 → 메인 설정 탭 전역화</td>
+			</tr>
+			<tr>
+					<td>최종 리뷰 Critical</td>
+					<td>config_loader 화이트리스트에 min_price/max_price 누락</td>
+			</tr>
+			<tr>
+					<td>VWAP 버그</td>
+					<td>reversal/fear_driven target_reached에 profit_pct&gt;0 가드 누락</td>
+			</tr>
+			<tr>
+					<td>재현 사고</td>
+					<td>특정 종목 소폭 손실 매도</td>
+			</tr>
+			<tr>
+					<td>PR #70</td>
+					<td>두 작업 묶어 squash-merge, v0.6.2 릴리즈</td>
+			</tr>
+			<tr>
+					<td>반복 실수</td>
+					<td>release 본문 &ldquo;(draft)&rdquo; 제목 재발 — gh release view로 즉시 확인 습관화</td>
+			</tr>
+	</tbody>
+</table>
+<p>이미 기록해둔 주의사항을 스스로 다시 어기는 패턴이 눈에 띄는 하루였다. 다음 글에서는 여전히 6월 25일, 29시간 동안 40회나 취소 시도가 반복되던 좀비 주문 사고를 추적해 qty_before를 로컬 holdings 기반으로 바꾸고 cancel_order 응답을 3-state로 구분한 수정을 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">릴리스</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/sell-qty-before-local-holdings-and-cancel-order-3state/">
+    <span class="title">« 이전 페이지</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/">
+    <span class="title">다음 페이지 »</span>
+    <span>AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
