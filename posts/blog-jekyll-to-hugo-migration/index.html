@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포, 설정">
+<meta name="description" content="자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트">
+  <meta property="og:description" content="자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-11-10T23:30:00+09:00">
+    <meta property="article:modified_time" content="2026-11-10T23:30:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="설정">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트">
+  <meta name="twitter:description" content="자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트",
+      "item": "https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트",
+  "name": "블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트",
+  "description": "자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.",
+  "keywords": [
+    "설계", "배포", "설정"
+  ],
+  "articleBody": "들어가며 이 블로그는 원래 Jekyll(Chirpy 테마)로 운영하던 글 50여 편짜리 사이트였다. 그것을 Hugo로 옮기고, 앞으로는 AI(Claude Code)로 개발하는 과정의 작업 로그에서 글을 만들어 올리기로 했다. 이 글은 이전 결정과 구조, 변환 작업을 정리한다. 서버 내부 구성과 계정 정보는 공개하지 않는다.\n1. 어디에 둘 것인가: 서버에 두지 않는다 처음에는 이미 돌고 있는 접근 제어 게이트웨이 서버에 블로그를 같이 올리는 방안을 검토했다. 결론은 비권장이었다.\n이유 설명 공격면 공개 사이트를 로그인 게이트웨이 서버에 두면 노출 면적이 늘어난다 주소 충돌 서버의 기본 주소는 로그인 화면이 쓰고 있다 평판 같은 도메인에서 브라우저 보안 경고 이력이 있다 쿠키 게이트웨이 쿠키가 도메인 전체 범위라 공개 사이트로도 전송된다 정적 파일만 서빙하는 안도 따져 봤지만 호스트 이름 이전과 쿠키·보안 정책 수정이 필요해서 변경 범위가 컸다. 그래서 GitHub Pages로 정했다. 서버는 건드리지 않고, 서버 평판과도 분리된다. 단 무료 플랜의 Pages는 공개 저장소에서만 동작한다. 이미 nova7zone.github.io라는 공개 저장소가 있었다.\nHugo인가 Jekyll 유지인가 방문자가 느끼는 속도와 디자인은 둘 다 정적 HTML이므로 차이가 거의 없다. 테마가 결정한다. Hugo의 장점은 로컬에서 쉽게 실행된다는 것이다. 단일 실행 파일이면 되고 Ruby 환경이 필요 없다. 그래서 Hugo(Extended 버전)로 이전하기로 했다.\n2. 두 개의 저장소 가장 중요한 설계 결정이다.\n위치 내용 공개 작업 저장소 (비공개) Hugo 설정과 테마, 글 원본(Markdown), 기존 자료, 이미지, 스킬, 검사 스크립트 비공개 public/ (공개 저장소 작업 사본) hugo로 만든 빌드 결과만 공개 public/은 공개 저장소의 별도 git 작업 사본이다. 비공개 저장소의 .gitignore에 public/을 넣어, 두 저장소가 서로의 파일을 추적하지 않는다. 작업 로그 같은 원본 자료는 이 저장소에 복사하거나 커밋하지 않는다. 원래 위치에서 읽기만 한다. 초안과 게시를 구분한다. 모든 새 글은 draft: true로 시작하고, 승인된 글만 draft: false로 바꾼다. 빌드는 -D 없이 실행해 초안이 결과물에 들어가지 않는다. 사용자 지시어를 정했다. **“게시해”**는 공개 저장소에 올린다(모든 점검 통과 후). **“푸시해”**는 비공개 저장소에만 올리고 공개되지 않는다. 헷갈릴 수 없게 용어를 못박았다. 기존 글의 주소는 유지하지 않기로 했다. 대신 이미지는 static/assets/img/\u003c슬러그\u003e/ 같은 경로에 그대로 복사해 글 안의 참조를 바꾸지 않았다.\n3. 이전 전에: 백업과 되돌릴 수 없는 일 공개 저장소의 과거 이력을 정리하기로 했기 때문에 순서가 중요했다.\n기존 사이트 작업 사본 전체를 비공개 저장소로 복사한다. 커밋되지 않은 파일(원본 Markdown 한 개)도 포함한다. jekyll-final 태그를 만든다. 파일 수와 마지막 커밋을 사용자에게 보여 드리고 백업이 완전함을 확인받는다. 사용자가 공개 저장소를 삭제하고 같은 이름으로 다시 만든다. 에이전트는 삭제하지 않는다. 삭제 직전에 빌드 결과를 미리 준비해 두었다가 바로 푸시한다. 삭제 시점부터 블로그가 내려가기 때문이다. 사소한 사고도 있었다. 기존 작업 사본 안에 중첩된 .git 폴더가 있어서 비공개 저장소에 올리면 서브모듈 비슷한 링크(gitlink)가 되어 버릴 상황이었다. 폴더 이름을 바꿔(.git_jekyll_history) 해결했다. 이력 정리의 한계도 사용자에게 알렸다. 이미 퍼진 복사본, 포크, 캐시는 지울 수 없다.\n되돌릴 수 없는 작업(저장소 삭제와 재생성, 강제 푸시, 이력 정리, 공개 범위 변경)은 에이전트가 하지 않는다. 값을 안내하고 사람이 직접 한다.\n4. 테마 선택 후보를 로컬 hugo server로 미리 보고 사용자가 골랐다. PaperMod로 정했다. 기존 Chirpy와 모양이 달라진다는 점을 먼저 알렸다. 외부 스크립트와 통계, 댓글은 넣지 않았다. 테마는 저장소에 포함(vendored)해서 빌드가 외부 의존 없이 재현되게 했다.\n한국어 사이트이고 baseURL = https://nova7zone.github.io/다. 카테고리는 프로젝트별(KIS 자동매매, Upbit 자동매매, OCI 인프라, AI 에이전트), 태그는 종류별(버그수정, 설계, 배포, 릴리스, 프롬프트, 설정, 리뷰, 연구)로 정했다.\n5. 글 51편을 스크립트로 변환 Chirpy의 front matter(categories, tags, img_path, toc, mermaid)와 콜아웃 문법을 Hugo 형식으로 바꿔야 했다. 글마다 손으로 고치지 않고 변환 스크립트와 테스트로 처리했다.\n규칙과 예외는 스크립트 안에 둔다. 글마다 따로 기록하지 않는다. 변환 후 샘플을 사용자에게 보여 주고, 로컬 서버로 기존 사이트와 나란히 비교한다(이미지, 링크, 다이어그램, 표). 스크립트는 멱등하게 만들었다. 여러 번 돌려도 같은 결과가 나온다. 작은 스크립트들을 모아 반복 작업을 자동화하고, 각 스크립트에 테스트를 붙이는 방식이 이후 보안 검사와 게시 점검으로 이어졌다.\n정리 결정 이유 서버가 아니라 GitHub Pages 공격면, 주소, 평판, 쿠키 문제 회피 Hugo 로컬 실행이 쉽다 비공개 원본 + 공개 빌드 결과 원본 자료가 공개되지 않게 용어 “게시해”/“푸시해” 공개와 비공개 푸시 혼동 방지 변환은 스크립트 51편을 일관되게, 멱등으로 배운 점: 이전 작업에서 가장 중요한 것은 새 도구가 아니라 되돌릴 수 없는 단계의 순서다. 백업의 완전성을 확인받고, 삭제는 사람이 하고, 빌드 결과를 미리 준비한다. 그리고 “공개한다\"는 한 단어에 여러 의미가 섞이지 않도록 용어부터 정한다. 다음 글에서는 게시 전에 돌리는 보안 점검과 게시 절차를 다룬다.\n",
+  "wordCount" : "2180",
+  "inLanguage": "ko",
+  "datePublished": "2026-11-10T23:30:00+09:00",
+  "dateModified": "2026-11-10T23:30:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트
+    </h1>
+    <div class="post-description">
+      자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-11-10T23:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%96%b4%eb%94%94%ec%97%90-%eb%91%98-%ea%b2%83%ec%9d%b8%ea%b0%80-%ec%84%9c%eb%b2%84%ec%97%90-%eb%91%90%ec%a7%80-%ec%95%8a%eb%8a%94%eb%8b%a4" aria-label="1. 어디에 둘 것인가: 서버에 두지 않는다">1. 어디에 둘 것인가: 서버에 두지 않는다</a><ul>
+                    
+            <li>
+                <a href="#hugo%ec%9d%b8%ea%b0%80-jekyll-%ec%9c%a0%ec%a7%80%ec%9d%b8%ea%b0%80" aria-label="Hugo인가 Jekyll 유지인가">Hugo인가 Jekyll 유지인가</a></li></ul>
+            </li>
+            <li>
+                <a href="#2-%eb%91%90-%ea%b0%9c%ec%9d%98-%ec%a0%80%ec%9e%a5%ec%86%8c" aria-label="2. 두 개의 저장소">2. 두 개의 저장소</a></li>
+            <li>
+                <a href="#3-%ec%9d%b4%ec%a0%84-%ec%a0%84%ec%97%90-%eb%b0%b1%ec%97%85%ea%b3%bc-%eb%90%98%eb%8f%8c%eb%a6%b4-%ec%88%98-%ec%97%86%eb%8a%94-%ec%9d%bc" aria-label="3. 이전 전에: 백업과 되돌릴 수 없는 일">3. 이전 전에: 백업과 되돌릴 수 없는 일</a></li>
+            <li>
+                <a href="#4-%ed%85%8c%eb%a7%88-%ec%84%a0%ed%83%9d" aria-label="4. 테마 선택">4. 테마 선택</a></li>
+            <li>
+                <a href="#5-%ea%b8%80-51%ed%8e%b8%ec%9d%84-%ec%8a%a4%ed%81%ac%eb%a6%bd%ed%8a%b8%eb%a1%9c-%eb%b3%80%ed%99%98" aria-label="5. 글 51편을 스크립트로 변환">5. 글 51편을 스크립트로 변환</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>이 블로그는 원래 Jekyll(Chirpy 테마)로 운영하던 글 50여 편짜리 사이트였다. 그것을 Hugo로 옮기고, 앞으로는 AI(Claude Code)로 개발하는 과정의 작업 로그에서 글을 만들어 올리기로 했다. 이 글은 이전 결정과 구조, 변환 작업을 정리한다. 서버 내부 구성과 계정 정보는 공개하지 않는다.</p>
+<hr>
+<h2 id="1-어디에-둘-것인가-서버에-두지-않는다">1. 어디에 둘 것인가: 서버에 두지 않는다<a hidden class="anchor" aria-hidden="true" href="#1-어디에-둘-것인가-서버에-두지-않는다">#</a></h2>
+<p>처음에는 이미 돌고 있는 접근 제어 게이트웨이 서버에 블로그를 같이 올리는 방안을 검토했다. 결론은 <strong>비권장</strong>이었다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>이유</th>
+					<th>설명</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>공격면</td>
+					<td>공개 사이트를 로그인 게이트웨이 서버에 두면 노출 면적이 늘어난다</td>
+			</tr>
+			<tr>
+					<td>주소 충돌</td>
+					<td>서버의 기본 주소는 로그인 화면이 쓰고 있다</td>
+			</tr>
+			<tr>
+					<td>평판</td>
+					<td>같은 도메인에서 브라우저 보안 경고 이력이 있다</td>
+			</tr>
+			<tr>
+					<td>쿠키</td>
+					<td>게이트웨이 쿠키가 도메인 전체 범위라 공개 사이트로도 전송된다</td>
+			</tr>
+	</tbody>
+</table>
+<p>정적 파일만 서빙하는 안도 따져 봤지만 호스트 이름 이전과 쿠키·보안 정책 수정이 필요해서 변경 범위가 컸다. 그래서 <strong>GitHub Pages</strong>로 정했다. 서버는 건드리지 않고, 서버 평판과도 분리된다. 단 무료 플랜의 Pages는 공개 저장소에서만 동작한다. 이미 <code>nova7zone.github.io</code>라는 공개 저장소가 있었다.</p>
+<h3 id="hugo인가-jekyll-유지인가">Hugo인가 Jekyll 유지인가<a hidden class="anchor" aria-hidden="true" href="#hugo인가-jekyll-유지인가">#</a></h3>
+<p>방문자가 느끼는 속도와 디자인은 둘 다 정적 HTML이므로 차이가 거의 없다. 테마가 결정한다. Hugo의 장점은 <strong>로컬에서 쉽게 실행</strong>된다는 것이다. 단일 실행 파일이면 되고 Ruby 환경이 필요 없다. 그래서 Hugo(Extended 버전)로 이전하기로 했다.</p>
+<hr>
+<h2 id="2-두-개의-저장소">2. 두 개의 저장소<a hidden class="anchor" aria-hidden="true" href="#2-두-개의-저장소">#</a></h2>
+<p>가장 중요한 설계 결정이다.</p>
+<table>
+	<thead>
+			<tr>
+					<th>위치</th>
+					<th>내용</th>
+					<th>공개</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>작업 저장소 (비공개)</td>
+					<td>Hugo 설정과 테마, 글 원본(Markdown), 기존 자료, 이미지, 스킬, 검사 스크립트</td>
+					<td>비공개</td>
+			</tr>
+			<tr>
+					<td><code>public/</code> (공개 저장소 작업 사본)</td>
+					<td><code>hugo</code>로 만든 <strong>빌드 결과만</strong></td>
+					<td>공개</td>
+			</tr>
+	</tbody>
+</table>
+<ul>
+<li><code>public/</code>은 공개 저장소의 별도 git 작업 사본이다. 비공개 저장소의 <code>.gitignore</code>에 <code>public/</code>을 넣어, 두 저장소가 서로의 파일을 추적하지 않는다.</li>
+<li>작업 로그 같은 원본 자료는 이 저장소에 복사하거나 커밋하지 않는다. 원래 위치에서 읽기만 한다.</li>
+<li>초안과 게시를 구분한다. 모든 새 글은 <code>draft: true</code>로 시작하고, 승인된 글만 <code>draft: false</code>로 바꾼다. 빌드는 <code>-D</code> 없이 실행해 초안이 결과물에 들어가지 않는다.</li>
+<li>사용자 지시어를 정했다. **&ldquo;게시해&rdquo;**는 공개 저장소에 올린다(모든 점검 통과 후). **&ldquo;푸시해&rdquo;**는 비공개 저장소에만 올리고 공개되지 않는다. 헷갈릴 수 없게 용어를 못박았다.</li>
+</ul>
+<p>기존 글의 주소는 유지하지 않기로 했다. 대신 이미지는 <code>static/assets/img/&lt;슬러그&gt;/</code> 같은 경로에 그대로 복사해 글 안의 참조를 바꾸지 않았다.</p>
+<hr>
+<h2 id="3-이전-전에-백업과-되돌릴-수-없는-일">3. 이전 전에: 백업과 되돌릴 수 없는 일<a hidden class="anchor" aria-hidden="true" href="#3-이전-전에-백업과-되돌릴-수-없는-일">#</a></h2>
+<p>공개 저장소의 과거 이력을 정리하기로 했기 때문에 순서가 중요했다.</p>
+<ol>
+<li>기존 사이트 작업 사본 <strong>전체</strong>를 비공개 저장소로 복사한다. 커밋되지 않은 파일(원본 Markdown 한 개)도 포함한다.</li>
+<li><code>jekyll-final</code> 태그를 만든다. 파일 수와 마지막 커밋을 사용자에게 보여 드리고 <strong>백업이 완전함을 확인</strong>받는다.</li>
+<li>사용자가 공개 저장소를 삭제하고 같은 이름으로 다시 만든다. 에이전트는 삭제하지 않는다.</li>
+<li>삭제 직전에 빌드 결과를 미리 준비해 두었다가 바로 푸시한다. 삭제 시점부터 블로그가 내려가기 때문이다.</li>
+</ol>
+<p>사소한 사고도 있었다. 기존 작업 사본 안에 중첩된 <code>.git</code> 폴더가 있어서 비공개 저장소에 올리면 서브모듈 비슷한 링크(gitlink)가 되어 버릴 상황이었다. 폴더 이름을 바꿔(<code>.git_jekyll_history</code>) 해결했다. 이력 정리의 한계도 사용자에게 알렸다. 이미 퍼진 복사본, 포크, 캐시는 지울 수 없다.</p>
+<p>되돌릴 수 없는 작업(저장소 삭제와 재생성, 강제 푸시, 이력 정리, 공개 범위 변경)은 에이전트가 하지 않는다. 값을 안내하고 사람이 직접 한다.</p>
+<hr>
+<h2 id="4-테마-선택">4. 테마 선택<a hidden class="anchor" aria-hidden="true" href="#4-테마-선택">#</a></h2>
+<p>후보를 로컬 <code>hugo server</code>로 미리 보고 사용자가 골랐다. <strong>PaperMod</strong>로 정했다. 기존 Chirpy와 모양이 달라진다는 점을 먼저 알렸다. 외부 스크립트와 통계, 댓글은 넣지 않았다. 테마는 저장소에 포함(vendored)해서 빌드가 외부 의존 없이 재현되게 했다.</p>
+<p>한국어 사이트이고 <code>baseURL = https://nova7zone.github.io/</code>다. 카테고리는 프로젝트별(KIS 자동매매, Upbit 자동매매, OCI 인프라, AI 에이전트), 태그는 종류별(버그수정, 설계, 배포, 릴리스, 프롬프트, 설정, 리뷰, 연구)로 정했다.</p>
+<hr>
+<h2 id="5-글-51편을-스크립트로-변환">5. 글 51편을 스크립트로 변환<a hidden class="anchor" aria-hidden="true" href="#5-글-51편을-스크립트로-변환">#</a></h2>
+<p>Chirpy의 front matter(<code>categories</code>, <code>tags</code>, <code>img_path</code>, <code>toc</code>, <code>mermaid</code>)와 콜아웃 문법을 Hugo 형식으로 바꿔야 했다. 글마다 손으로 고치지 않고 <strong>변환 스크립트</strong>와 테스트로 처리했다.</p>
+<ul>
+<li>규칙과 예외는 스크립트 안에 둔다. 글마다 따로 기록하지 않는다.</li>
+<li>변환 후 샘플을 사용자에게 보여 주고, 로컬 서버로 기존 사이트와 나란히 비교한다(이미지, 링크, 다이어그램, 표).</li>
+<li>스크립트는 <strong>멱등</strong>하게 만들었다. 여러 번 돌려도 같은 결과가 나온다.</li>
+</ul>
+<p>작은 스크립트들을 모아 반복 작업을 자동화하고, 각 스크립트에 테스트를 붙이는 방식이 이후 보안 검사와 게시 점검으로 이어졌다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>결정</th>
+					<th>이유</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>서버가 아니라 GitHub Pages</td>
+					<td>공격면, 주소, 평판, 쿠키 문제 회피</td>
+			</tr>
+			<tr>
+					<td>Hugo</td>
+					<td>로컬 실행이 쉽다</td>
+			</tr>
+			<tr>
+					<td>비공개 원본 + 공개 빌드 결과</td>
+					<td>원본 자료가 공개되지 않게</td>
+			</tr>
+			<tr>
+					<td>용어 &ldquo;게시해&rdquo;/&ldquo;푸시해&rdquo;</td>
+					<td>공개와 비공개 푸시 혼동 방지</td>
+			</tr>
+			<tr>
+					<td>변환은 스크립트</td>
+					<td>51편을 일관되게, 멱등으로</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 이전 작업에서 가장 중요한 것은 새 도구가 아니라 <strong>되돌릴 수 없는 단계의 순서</strong>다. 백업의 완전성을 확인받고, 삭제는 사람이 하고, 빌드 결과를 미리 준비한다. 그리고 &ldquo;공개한다&quot;는 한 단어에 여러 의미가 섞이지 않도록 용어부터 정한다. 다음 글에서는 게시 전에 돌리는 보안 점검과 게시 절차를 다룬다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/blog-publish-pipeline-and-security-scanner/">
+    <span class="title">« 이전 페이지</span>
+    <span>공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/oci-gateway-usage-monitor/">
+    <span class="title">다음 페이지 »</span>
+    <span>무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

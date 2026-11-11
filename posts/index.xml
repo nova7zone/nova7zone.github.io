@@ -6,8 +6,29 @@
     <description>Recent content in Posts on Evan&#39;s Blog</description>
     <generator>Hugo</generator>
     <language>ko-KR</language>
-    <lastBuildDate>Tue, 10 Nov 2026 19:30:00 +0900</lastBuildDate>
+    <lastBuildDate>Wed, 11 Nov 2026 16:00:00 +0900</lastBuildDate>
     <atom:link href="https://nova7zone.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유</title>
+      <link>https://nova7zone.github.io/posts/blog-publish-pipeline-and-security-scanner/</link>
+      <pubDate>Wed, 11 Nov 2026 16:00:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/blog-publish-pipeline-and-security-scanner/</guid>
+      <description>개발 과정을 공개하는 블로그는 비밀값과 식별자가 글에 섞일 위험이 늘 있다. 원본 Markdown과 빌드된 HTML을 모두 훑는 스캐너, 값을 출력하지 않는 규칙, 허용 목록, 이미지 검토, 게시 점검 순서를 정리한다. 줄바꿈 변환이 무결성 해시를 깨 모바일에서 스타일이 막혔던 사고와 검색 엔진 차단도 함께 다룬다.</description>
+    </item>
+    <item>
+      <title>블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트</title>
+      <link>https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/</link>
+      <pubDate>Tue, 10 Nov 2026 23:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/</guid>
+      <description>자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.</description>
+    </item>
+    <item>
+      <title>무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기</title>
+      <link>https://nova7zone.github.io/posts/oci-gateway-usage-monitor/</link>
+      <pubDate>Tue, 10 Nov 2026 22:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/oci-gateway-usage-monitor/</guid>
+      <description>무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.</description>
+    </item>
     <item>
       <title>자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략</title>
       <link>https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/</link>

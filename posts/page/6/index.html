@@ -190,6 +190,45 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
+    </h2>
+  </header>
+  <div class="entry-content"><p>그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-01T10:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content"><p>전략명에 들어간 언더스코어 때문에 텔레그램 알림이 400 오류로 반복 실패하던 버그와, 이틀 전 고쳤던 reversal/fear_driven 손실 매도 버그가 다른 경로로 재발한 사고를 정리하고, PR #77을 머지해 v0.6.4를 릴리즈한 과정을 다룬다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-30T12:00:00+09:00'>2026년 6월 30일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈" href="https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content"><p>매 세션 전체 로드되는 CLAUDE.md 520줄을 181줄로 줄이며 개발 문서를 docs/development 폴더로 재구성하고, PR #63~#74 구간 docs 재점검·v0.6.3 릴리즈, 그리고 스크리닝 로그가 v2 전환 이후 한 번도 기록되지 않았던 원인을 조사한 하루를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-29T16:00:00+09:00'>2026년 6월 29일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈" href="https://nova7zone.github.io/posts/claude-md-split-and-docs-sync-v063/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 코드 개발 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그
     </h2>
   </header>
@@ -277,45 +316,6 @@
 
 <span title='2026-06-23T12:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환
-    </h2>
-  </header>
-  <div class="entry-content"><p>같은 종목 매수 주문이 15분마다 반복 시도되는 로그를 발견했다. 추적해보니 실제로는 매번 체결되고 있었는데 KIS 모의투자 체결조회 API 한계로 봇이 이를 인지하지 못해 수량이 통제 밖에 쌓여 있었다. 체결판단을 holdings-diff 방식으로 전환하고 같은 날 발견한 extra_05 계좌 버그까지 잡은 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-22T20:00:00+09:00'>2026년 6월 22일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환" href="https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기
-    </h2>
-  </header>
-  <div class="entry-content"><p>웹에서 백테스트를 실행하고 결과를 확인하는 기능을 9개 Task로 구현했다. 재검토 중 발견한 preset 경로탈출 취약점을 막고, 백테스트 데이터 다운로드의 무한 페이지네이션과 모의투자 30거래일 하드캡을 두 번에 걸쳐 추적해 진짜 원인(빈 시작일 파라미터)을 찾아낸 6월 21일 마지막 작업을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-21T18:00:00+09:00'>2026년 6월 21일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기" href="https://nova7zone.github.io/posts/web-backtest-implementation-and-bugfixes/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈
-    </h2>
-  </header>
-  <div class="entry-content"><p>웹에서 백테스트를 실행하는 기능을 위해 한국투자증권 공식 백테스팅 엔진을 조사하고, 모의투자 매도 실패 2건을 코드 분석으로 추적해 운영 안정성 공백 두 가지를 기록했다. v0.5.2 릴리즈 직후 holdings.json과 실제 KIS 잔고의 불일치를 발견해 정정한 6월 21일 중반 작업을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-21T14:00:00+09:00'>2026년 6월 21일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈" href="https://nova7zone.github.io/posts/web-backtest-investigation-and-v052-release/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

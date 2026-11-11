@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 배포, 버그수정, 리뷰">
+<meta name="description" content="무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/oci-gateway-usage-monitor/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/oci-gateway-usage-monitor/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/oci-gateway-usage-monitor/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기">
+  <meta property="og:description" content="무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-11-10T22:30:00+09:00">
+    <meta property="article:modified_time" content="2026-11-10T22:30:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="리뷰">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기">
+  <meta name="twitter:description" content="무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기",
+      "item": "https://nova7zone.github.io/posts/oci-gateway-usage-monitor/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기",
+  "name": "무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기",
+  "description": "무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.",
+  "keywords": [
+    "설계", "배포", "버그수정", "리뷰"
+  ],
+  "articleBody": "들어가며 무료 클라우드 인스턴스에는 눈에 잘 띄지 않는 위험이 있다. 사용량이 일정 기준보다 오래 낮으면 서비스가 회수될 수 있다. 자동매매 서버 두 대를 이 방식으로 운영하다 보니, “지금 우리 서버가 회수 기준에서 얼마나 떨어져 있는가\"를 한눈에 보는 화면이 필요해졌다. 접근 제어 게이트웨이를 운영하는 저장소에 자원 현황(/usage) 기능을 만든 하루의 기록이다. 서버 식별자와 내부 구성은 공개하지 않는다.\n1. 무엇을 모으나 항목 출처 CPU, 네트워크 클라우드 모니터링 API (읽기 전용) 저장공간 서버 안에서 직접 사용률 계산 회수 기준 대비 상태 위 값들을 기준과 비교 구성요소는 이렇다.\n통계 모듈: 수집한 샘플에서 백분위 같은 지표를 계산한다. 모니터링 읽기 모듈: 클라우드 모니터링 SDK로 지표를 읽는다. 쓰기 권한은 없다. 수집기: 정해진 주기로 돌며 결과를 파일에 남긴다. systemd 서비스와 타이머로 등록했다. 화면과 메뉴: 포털에 새 메뉴를 추가했다. “회수 기준 대비 사용량을 올려야 함” 안내와 저장공간 패널을 넣었다. 수집기는 일회성(oneshot) 서비스와 타이머 조합이라, 배포 스크립트가 .timer와 oneshot 서비스를 다르게 다루도록 고쳐야 했다. 모니터링 SDK 의존성도 추가했다.\n권한은 사람이 줬다. 클라우드 콘솔에서 동적 그룹과 읽기 전용 정책을 만드는 일은 에이전트가 하지 않고 사용자가 직접 했다. 에이전트는 읽기만 했다. 접근 정책을 바꾸는 일은 항상 사람의 몫이다.\n2. 누적 카운터를 그대로 보여 주면 틀린다 화면에 네트워크 값이 말이 안 되게 크게 나왔다. 원인은 단순했다. 네트워크 지표(NetworksBytesIn/Out)는 누적 카운터였다. 값 자체가 사용량이 아니라 “지금까지 쌓인 총량\"이라서, 구간 사이의 증가분을 계산해야 한다. 증가분으로 바꿔 고쳤다.\n지표의 종류(순간값, 누적값, 비율)를 먼저 확인하지 않으면 그래프는 그럴듯한데 의미가 없다.\n3. 다른 서버의 저장공간은 누가 읽나 두 번째 서버의 저장공간은 게이트웨이에서 직접 읽을 수 없었다. 그 서버를 운영하는 다른 프로젝트 세션이 저장공간을 알려 주는 읽기 전용 엔드포인트를 구현해 배포했고(사용자 지시), 수집기가 그것을 읽도록 했다. 다른 프로젝트의 코드를 이쪽에서 고치지 않고, 요청만 하고 인터페이스로 연결한다.\n4. 코드 리뷰로 잡은 7건 기능을 마친 뒤 코드 리뷰를 받았고 7건을 반영했다.\n수집 시각 표시: 화면의 값이 언제 것인지 보이게 했다. 저장공간 사용률을 df 방식으로 계산해 파일시스템 표시와 맞췄다. 수집기가 읽는 주소의 리다이렉트를 차단했다. 응답이 다른 곳으로 보내도 따라가지 않는다. --check 모드가 전용 설정 파일을 적용하지 않던 것을 고쳤다. 저장공간을 못 읽은 경우 오류 배너를 보여 준다. 이전 결과 파일이 손상되어 있어도 수집기가 죽지 않게 방어했다. 서버 식별 값이 비어 있을 때 명확한 오류를 내게 했다. 테스트는 235건이 통과했고 1건이 건너뛰어졌다.\n5. 배포 사고: “미리 pull한” 서버가 옛 설정으로 돈다 배포 후 이상한 점이 있었다. 웹 서버(Caddy)가 옛 설정으로 계속 돌고 있었다. 원인은 배포 스크립트가 “저장소가 바뀌었는가\"로 재시작 여부를 판단하는데, 누군가 서버에서 미리 git pull을 해 두어서 스크립트가 변경을 감지하지 못한 것이다. 설정 변경이 없다고 판단해 재시작을 건너뛰었다. 서비스를 직접 재시작해서 해결했다.\n여기서 운영 규칙이 생겼다. 서버에서 git pull을 따로 하지 않고 배포 스크립트만 실행한다. 변경 감지가 스크립트 안에 있기 때문이다.\n6. 확인한 것과 못 한 것 확인한 것:\n통합 점검 12개 항목 모두 통과(마지막 배포 기준) 수집기 점검에서 두 서버 모두 통과, 수집 결과 둘 다 “정상” 사용자가 휴대폰 브라우저에서 화면이 표시됨을 확인 확인하지 못한 것:\n작은 화면 레이아웃 전체. 일부만 확인했다. 미완료로 남긴 작업(구성요소 권한 분리 같은 개선)은 이 글에서 다루지 않는다.\n7. 작업 종료 절차도 스킬로 이 저장소 전용으로 작업 종료 로그를 쓰는 스킬과 문서 최신화 스킬을 만들었다. 종료 시 문서 최신화 → 로그 순서로 한다. 문서 최신화 결과는 링크 깨짐 없음, 테스트 수 일치였다. 그동안 작업 종료 절차를 건너뛰는 실수가 있었는데, 절차를 스킬로 고정한 것이다.\n정리 항목 내용 목적 무료 서버가 회수 기준에 가까워지는지 한눈에 확인 구조 수집기(타이머) → 결과 파일 → 화면, 읽기 전용 권한 버그 누적 카운터를 증가분으로 계산 리뷰 7건 반영 (리다이렉트 차단, 손상 파일 방어 등) 사고 서버에서 미리 pull하면 배포 변경 감지가 실패 배운 점: 모니터링 지표는 이름이 비슷해도 의미가 다르다. 누적값과 순간값을 구분하지 않으면 화면이 거짓말을 한다. 그리고 배포 스크립트가 “변경 감지\"를 책임지는 구조라면, 사람이 그 스크립트를 우회하는 순간 감지가 무너진다. 규칙을 문서로만 두지 않고 “배포는 스크립트로만\"이라고 못박아 두었다.\n",
+  "wordCount" : "1933",
+  "inLanguage": "ko",
+  "datePublished": "2026-11-10T22:30:00+09:00",
+  "dateModified": "2026-11-10T22:30:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/oci-gateway-usage-monitor/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기
+    </h1>
+    <div class="post-description">
+      무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-11-10T22:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%eb%ac%b4%ec%97%87%ec%9d%84-%eb%aa%a8%ec%9c%bc%eb%82%98" aria-label="1. 무엇을 모으나">1. 무엇을 모으나</a></li>
+            <li>
+                <a href="#2-%eb%88%84%ec%a0%81-%ec%b9%b4%ec%9a%b4%ed%84%b0%eb%a5%bc-%ea%b7%b8%eb%8c%80%eb%a1%9c-%eb%b3%b4%ec%97%ac-%ec%a3%bc%eb%a9%b4-%ed%8b%80%eb%a6%b0%eb%8b%a4" aria-label="2. 누적 카운터를 그대로 보여 주면 틀린다">2. 누적 카운터를 그대로 보여 주면 틀린다</a></li>
+            <li>
+                <a href="#3-%eb%8b%a4%eb%a5%b8-%ec%84%9c%eb%b2%84%ec%9d%98-%ec%a0%80%ec%9e%a5%ea%b3%b5%ea%b0%84%ec%9d%80-%eb%88%84%ea%b0%80-%ec%9d%bd%eb%82%98" aria-label="3. 다른 서버의 저장공간은 누가 읽나">3. 다른 서버의 저장공간은 누가 읽나</a></li>
+            <li>
+                <a href="#4-%ec%bd%94%eb%93%9c-%eb%a6%ac%eb%b7%b0%eb%a1%9c-%ec%9e%a1%ec%9d%80-7%ea%b1%b4" aria-label="4. 코드 리뷰로 잡은 7건">4. 코드 리뷰로 잡은 7건</a></li>
+            <li>
+                <a href="#5-%eb%b0%b0%ed%8f%ac-%ec%82%ac%ea%b3%a0-%eb%af%b8%eb%a6%ac-pull%ed%95%9c-%ec%84%9c%eb%b2%84%ea%b0%80-%ec%98%9b-%ec%84%a4%ec%a0%95%ec%9c%bc%eb%a1%9c-%eb%8f%88%eb%8b%a4" aria-label="5. 배포 사고: &ldquo;미리 pull한&rdquo; 서버가 옛 설정으로 돈다">5. 배포 사고: &ldquo;미리 pull한&rdquo; 서버가 옛 설정으로 돈다</a></li>
+            <li>
+                <a href="#6-%ed%99%95%ec%9d%b8%ed%95%9c-%ea%b2%83%ea%b3%bc-%eb%aa%bb-%ed%95%9c-%ea%b2%83" aria-label="6. 확인한 것과 못 한 것">6. 확인한 것과 못 한 것</a></li>
+            <li>
+                <a href="#7-%ec%9e%91%ec%97%85-%ec%a2%85%eb%a3%8c-%ec%a0%88%ec%b0%a8%eb%8f%84-%ec%8a%a4%ed%82%ac%eb%a1%9c" aria-label="7. 작업 종료 절차도 스킬로">7. 작업 종료 절차도 스킬로</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>무료 클라우드 인스턴스에는 눈에 잘 띄지 않는 위험이 있다. <strong>사용량이 일정 기준보다 오래 낮으면 서비스가 회수될 수 있다.</strong> 자동매매 서버 두 대를 이 방식으로 운영하다 보니, &ldquo;지금 우리 서버가 회수 기준에서 얼마나 떨어져 있는가&quot;를 한눈에 보는 화면이 필요해졌다. 접근 제어 게이트웨이를 운영하는 저장소에 <strong>자원 현황(<code>/usage</code>) 기능</strong>을 만든 하루의 기록이다. 서버 식별자와 내부 구성은 공개하지 않는다.</p>
+<hr>
+<h2 id="1-무엇을-모으나">1. 무엇을 모으나<a hidden class="anchor" aria-hidden="true" href="#1-무엇을-모으나">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>출처</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>CPU, 네트워크</td>
+					<td>클라우드 모니터링 API (읽기 전용)</td>
+			</tr>
+			<tr>
+					<td>저장공간</td>
+					<td>서버 안에서 직접 사용률 계산</td>
+			</tr>
+			<tr>
+					<td>회수 기준 대비 상태</td>
+					<td>위 값들을 기준과 비교</td>
+			</tr>
+	</tbody>
+</table>
+<p>구성요소는 이렇다.</p>
+<ul>
+<li><strong>통계 모듈</strong>: 수집한 샘플에서 백분위 같은 지표를 계산한다.</li>
+<li><strong>모니터링 읽기 모듈</strong>: 클라우드 모니터링 SDK로 지표를 읽는다. 쓰기 권한은 없다.</li>
+<li><strong>수집기</strong>: 정해진 주기로 돌며 결과를 파일에 남긴다. systemd 서비스와 타이머로 등록했다.</li>
+<li><strong>화면과 메뉴</strong>: 포털에 새 메뉴를 추가했다. &ldquo;회수 기준 대비 <strong>사용량을 올려야 함</strong>&rdquo; 안내와 저장공간 패널을 넣었다.</li>
+</ul>
+<p>수집기는 일회성(oneshot) 서비스와 타이머 조합이라, 배포 스크립트가 <code>.timer</code>와 oneshot 서비스를 다르게 다루도록 고쳐야 했다. 모니터링 SDK 의존성도 추가했다.</p>
+<p>권한은 사람이 줬다. 클라우드 콘솔에서 동적 그룹과 읽기 전용 정책을 만드는 일은 에이전트가 하지 않고 사용자가 직접 했다. 에이전트는 읽기만 했다. 접근 정책을 바꾸는 일은 항상 사람의 몫이다.</p>
+<hr>
+<h2 id="2-누적-카운터를-그대로-보여-주면-틀린다">2. 누적 카운터를 그대로 보여 주면 틀린다<a hidden class="anchor" aria-hidden="true" href="#2-누적-카운터를-그대로-보여-주면-틀린다">#</a></h2>
+<p>화면에 네트워크 값이 말이 안 되게 크게 나왔다. 원인은 단순했다. 네트워크 지표(<code>NetworksBytesIn/Out</code>)는 <strong>누적 카운터</strong>였다. 값 자체가 사용량이 아니라 &ldquo;지금까지 쌓인 총량&quot;이라서, 구간 사이의 <strong>증가분</strong>을 계산해야 한다. 증가분으로 바꿔 고쳤다.</p>
+<p>지표의 종류(순간값, 누적값, 비율)를 먼저 확인하지 않으면 그래프는 그럴듯한데 의미가 없다.</p>
+<hr>
+<h2 id="3-다른-서버의-저장공간은-누가-읽나">3. 다른 서버의 저장공간은 누가 읽나<a hidden class="anchor" aria-hidden="true" href="#3-다른-서버의-저장공간은-누가-읽나">#</a></h2>
+<p>두 번째 서버의 저장공간은 게이트웨이에서 직접 읽을 수 없었다. 그 서버를 운영하는 <strong>다른 프로젝트 세션</strong>이 저장공간을 알려 주는 읽기 전용 엔드포인트를 구현해 배포했고(사용자 지시), 수집기가 그것을 읽도록 했다. 다른 프로젝트의 코드를 이쪽에서 고치지 않고, 요청만 하고 인터페이스로 연결한다.</p>
+<hr>
+<h2 id="4-코드-리뷰로-잡은-7건">4. 코드 리뷰로 잡은 7건<a hidden class="anchor" aria-hidden="true" href="#4-코드-리뷰로-잡은-7건">#</a></h2>
+<p>기능을 마친 뒤 코드 리뷰를 받았고 7건을 반영했다.</p>
+<ol>
+<li>수집 시각 표시: 화면의 값이 언제 것인지 보이게 했다.</li>
+<li>저장공간 사용률을 <code>df</code> 방식으로 계산해 파일시스템 표시와 맞췄다.</li>
+<li>수집기가 읽는 주소의 <strong>리다이렉트를 차단</strong>했다. 응답이 다른 곳으로 보내도 따라가지 않는다.</li>
+<li><code>--check</code> 모드가 전용 설정 파일을 적용하지 않던 것을 고쳤다.</li>
+<li>저장공간을 못 읽은 경우 오류 배너를 보여 준다.</li>
+<li>이전 결과 파일이 손상되어 있어도 수집기가 죽지 않게 방어했다.</li>
+<li>서버 식별 값이 비어 있을 때 명확한 오류를 내게 했다.</li>
+</ol>
+<p>테스트는 235건이 통과했고 1건이 건너뛰어졌다.</p>
+<hr>
+<h2 id="5-배포-사고-미리-pull한-서버가-옛-설정으로-돈다">5. 배포 사고: &ldquo;미리 pull한&rdquo; 서버가 옛 설정으로 돈다<a hidden class="anchor" aria-hidden="true" href="#5-배포-사고-미리-pull한-서버가-옛-설정으로-돈다">#</a></h2>
+<p>배포 후 이상한 점이 있었다. 웹 서버(Caddy)가 <strong>옛 설정으로 계속 돌고 있었다.</strong> 원인은 배포 스크립트가 &ldquo;저장소가 바뀌었는가&quot;로 재시작 여부를 판단하는데, 누군가 서버에서 <strong>미리 <code>git pull</code>을 해 두어서</strong> 스크립트가 변경을 감지하지 못한 것이다. 설정 변경이 없다고 판단해 재시작을 건너뛰었다. 서비스를 직접 재시작해서 해결했다.</p>
+<p>여기서 운영 규칙이 생겼다. <strong>서버에서 <code>git pull</code>을 따로 하지 않고 배포 스크립트만 실행한다.</strong> 변경 감지가 스크립트 안에 있기 때문이다.</p>
+<hr>
+<h2 id="6-확인한-것과-못-한-것">6. 확인한 것과 못 한 것<a hidden class="anchor" aria-hidden="true" href="#6-확인한-것과-못-한-것">#</a></h2>
+<p>확인한 것:</p>
+<ul>
+<li>통합 점검 12개 항목 모두 통과(마지막 배포 기준)</li>
+<li>수집기 점검에서 두 서버 모두 통과, 수집 결과 둘 다 &ldquo;정상&rdquo;</li>
+<li>사용자가 휴대폰 브라우저에서 화면이 표시됨을 확인</li>
+</ul>
+<p>확인하지 못한 것:</p>
+<ul>
+<li>작은 화면 레이아웃 전체. 일부만 확인했다.</li>
+</ul>
+<p>미완료로 남긴 작업(구성요소 권한 분리 같은 개선)은 이 글에서 다루지 않는다.</p>
+<hr>
+<h2 id="7-작업-종료-절차도-스킬로">7. 작업 종료 절차도 스킬로<a hidden class="anchor" aria-hidden="true" href="#7-작업-종료-절차도-스킬로">#</a></h2>
+<p>이 저장소 전용으로 작업 종료 로그를 쓰는 스킬과 문서 최신화 스킬을 만들었다. 종료 시 <strong>문서 최신화 → 로그</strong> 순서로 한다. 문서 최신화 결과는 링크 깨짐 없음, 테스트 수 일치였다. 그동안 작업 종료 절차를 건너뛰는 실수가 있었는데, 절차를 스킬로 고정한 것이다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>항목</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>목적</td>
+					<td>무료 서버가 회수 기준에 가까워지는지 한눈에 확인</td>
+			</tr>
+			<tr>
+					<td>구조</td>
+					<td>수집기(타이머) → 결과 파일 → 화면, 읽기 전용 권한</td>
+			</tr>
+			<tr>
+					<td>버그</td>
+					<td>누적 카운터를 증가분으로 계산</td>
+			</tr>
+			<tr>
+					<td>리뷰</td>
+					<td>7건 반영 (리다이렉트 차단, 손상 파일 방어 등)</td>
+			</tr>
+			<tr>
+					<td>사고</td>
+					<td>서버에서 미리 pull하면 배포 변경 감지가 실패</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 모니터링 지표는 이름이 비슷해도 의미가 다르다. 누적값과 순간값을 구분하지 않으면 화면이 거짓말을 한다. 그리고 배포 스크립트가 &ldquo;변경 감지&quot;를 책임지는 구조라면, 사람이 그 스크립트를 우회하는 순간 감지가 무너진다. 규칙을 문서로만 두지 않고 &ldquo;배포는 스크립트로만&quot;이라고 못박아 두었다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/">
+    <span class="title">« 이전 페이지</span>
+    <span>블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) nav.classList.remove("menu-open");
+    });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

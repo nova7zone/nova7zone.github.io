@@ -178,6 +178,45 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (6) — 15시간 동안 조용히 멈춘 크론과 전략별 자금 배분
+    </h2>
+  </header>
+  <div class="entry-content"><p>거래가 안 된 이유를 로그로 추적했더니 &#39;종목이 없어서&#39;가 아니라 크론 래퍼가 파이썬이 뜨기도 전에 죽고 있었다. 앱 로그와 알림이 닿지 못하는 사각지대를 독립 감시 프로세스로 메운 과정과, 두 전략에 자금을 나누는 배분 구조를 새로 만든 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-14T23:00:00+09:00'>2026년 7월 14일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (6) — 15시간 동안 조용히 멈춘 크론과 전략별 자금 배분" href="https://nova7zone.github.io/posts/upbit-silent-cron-halt-and-fund-allocation/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (5) — 실거래 개시 전 운영 공백을 메우고, 개시 후 첫 로그를 점검하다
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트 기준을 통과하지 못한 채 소액 실거래를 시작하기까지 이틀. 전략 코드가 아니라 운영 공백(손실 한도, 실체결가, 로깅, 락, 알림, cron 환경)을 감사해 메우고, 개시 직후 서버 로그에서 배포 스크립트의 오탐과 실제 버그를 가려낸 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-13T23:00:00+09:00'>2026년 7월 13일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (5) — 실거래 개시 전 운영 공백을 메우고, 개시 후 첫 로그를 점검하다" href="https://nova7zone.github.io/posts/upbit-live-readiness-gaps-and-post-launch-check/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-11T23:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진" href="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다
     </h2>
   </header>
@@ -265,45 +304,6 @@
 
 <span title='2026-07-07T22:30:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (3) — superpowers 플러그인을 통째로 도입하지 않은 이유" href="https://nova7zone.github.io/posts/superpowers-review-and-subagent-setup/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (48) — KRX 401 오류는 코드가 아니라 서비스 신청 문제였다
-    </h2>
-  </header>
-  <div class="entry-content"><p>서버 로그의 KRX VKOSPI 401 오류를 추적했더니 코드 결함이 아니라 API 이용신청 누락이었다. 같은 날 &#39;매수량이 너무 적다&#39;는 제보는 버그가 아니라 방어 로직의 정상 동작이었고, 그 조사 중 시장 위치 판정에 미완성 봉이 섞이는 진짜 버그를 하나 찾았다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-07-07T21:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (48) — KRX 401 오류는 코드가 아니라 서비스 신청 문제였다" href="https://nova7zone.github.io/posts/krx-401-and-market-filter-incomplete-candle/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나
-    </h2>
-  </header>
-  <div class="entry-content"><p>잘 돌아가던 자동매매 봇을 왜 처음부터 다시 설계했는가. 전략이 서로를 침범하던 구조 문제를 core/strategies 분리로 풀고, &#34;무엇을 만들까&#34;보다 &#34;무엇을 지킬까&#34;를 먼저 계약으로 고정했다. 파이프라인 인터페이스, same-code 백테스트 검증, 거버넌스, 그리고 그 계약을 사람이 아니라 도구가 지키게 만든 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-07-07T14:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (2) — 코드를 짜기 전에: 새 자동매매 봇을 어떻게 설계했나" href="https://nova7zone.github.io/posts/kis-v2-architecture-design-before-code/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축
-    </h2>
-  </header>
-  <div class="entry-content"><p>기존 저장소의 전략-인프라 결합 문제를 정리하기 위해 core/strategies를 분리한 새 저장소 kis-auto-trading을 시작했다. 코드를 짜기 전에 dev container 없이도 VS Code &#43; Claude Code로 바로 작업할 수 있는 로컬 환경을 먼저 갖췄는데, 그 과정에서 cmd.exe 배치 파싱 버그, uv 관리 Python이 py 런처에 안 잡히는 문제, 한글 주석이 pip를 깨뜨리는 인코딩 버그까지 연달아 만났다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-07-07T10:00:00+09:00'>2026년 7월 7일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (1) — 새 저장소 kis-auto-trading 착수, 로컬 개발 환경 구축" href="https://nova7zone.github.io/posts/kis-v2-reconstruction-kickoff-and-local-env/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

@@ -180,6 +180,45 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유
+    </h2>
+  </header>
+  <div class="entry-content"><p>개발 과정을 공개하는 블로그는 비밀값과 식별자가 글에 섞일 위험이 늘 있다. 원본 Markdown과 빌드된 HTML을 모두 훑는 스캐너, 값을 출력하지 않는 규칙, 허용 목록, 이미지 검토, 게시 점검 순서를 정리한다. 줄바꿈 변환이 무결성 해시를 깨 모바일에서 스타일이 막혔던 사고와 검색 엔진 차단도 함께 다룬다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-11T16:00:00+09:00'>2026년 11월 11일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유" href="https://nova7zone.github.io/posts/blog-publish-pipeline-and-security-scanner/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트
+    </h2>
+  </header>
+  <div class="entry-content"><p>자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-10T23:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트" href="https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기
+    </h2>
+  </header>
+  <div class="entry-content"><p>무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-10T22:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기" href="https://nova7zone.github.io/posts/oci-gateway-usage-monitor/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법
     </h2>
   </header>
@@ -267,45 +306,6 @@
 
 <span title='2026-09-23T22:00:00+09:00'>2026년 9월 23일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (7) — 인프라 검증용 캐너리의 첫 실주문이 드러낸 버그 연쇄" href="https://nova7zone.github.io/posts/upbit-v2-canary-first-live-orders-bug-chain/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다
-    </h2>
-  </header>
-  <div class="entry-content"><p>봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-08-19T18:00:00+09:00'>2026년 8월 19일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다" href="https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다
-    </h2>
-  </header>
-  <div class="entry-content"><p>크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &#39;생존 편향은 해결할 수 없다&#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-08-04T23:00:00+09:00'>2026년 8월 4일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다" href="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기
-    </h2>
-  </header>
-  <div class="entry-content"><p>15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-07-27T23:00:00+09:00'>2026년 7월 27일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기" href="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

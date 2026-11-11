@@ -190,6 +190,45 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트
+    </h2>
+  </header>
+  <div class="entry-content"><p>에이전트가 따르는 스킬과 지침 문서가 코드·설정·다른 문서와 어긋나기 시작했다. 스킬을 실물과 대조하는 정합성 리뷰로 지적 약 25건을 찾고, 정의가 네 곳에서 다른 판정 기준을 정본 하나로 맞췄다. 점검에 쓰는 AI 사용량을 줄이려고 읽기 전용 점검 스크립트를 만든 과정과, 외부 AI의 개선 제안서를 실물과 대조해 대부분 불채택한 판단을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-18T23:40:00+09:00'>2026년 10월 18일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (12) — 점검 스킬도 낡는다: 정합성 리뷰와 읽기 전용 정기 점검 스크립트" href="https://nova7zone.github.io/posts/upbit-v2-skills-consistency-and-periodic-check/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다
+    </h2>
+  </header>
+  <div class="entry-content"><p>업비트 V2의 구조를 가져와 KIS 증권 자동매매를 데몬 방식으로 새로 시작한 첫 이틀. 공식 샘플의 한도값이 지속 사용에는 맞지 않음을 실측으로 확인하고, 하루 1회 토큰 제약을 코드로 강제했다. 로컬에서는 통과했지만 서버의 깨끗한 환경에서만 드러난 결함, 당일 일봉이 장 마감 후에도 변한다는 발견, 6시간 백필까지 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-17T14:10:00+09:00'>2026년 10월 17일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (1) — 하루 만에 API 계층과 2,532종목 일봉 DB, 최소 데몬을 세우다" href="https://nova7zone.github.io/posts/kis-v2-foundation-api-backfill-daemon/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다
+    </h2>
+  </header>
+  <div class="entry-content"><p>정식 전략 승급을 앞두고 코어 전체를 12개 문서로 코드 리뷰해 지적 약 120건을 얻었다. 중요도와 연관성으로 Phase 0~3으로 나누어 모두 RED→GREEN으로 풀고, 정책 결정이 필요한 항목은 사용자에게 의미를 다시 설명해 결정받았다. 같은 날 배포 검증을 격리 작업 트리로 옮긴 일, 서비스 로그가 디스크를 먹던 원인과 정리를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-10-07T22:30:00+09:00'>2026년 10월 7일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (11) — 코드 리뷰 지적 120건을 우선순위로 풀고, 하루에 네 번 배포하다" href="https://nova7zone.github.io/posts/upbit-v2-code-review-120-findings-and-deploy/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다
     </h2>
   </header>
@@ -277,45 +316,6 @@
 
 <span title='2026-08-27T14:00:00+09:00'>2026년 8월 27일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (4) — 연구 9~25회차: 기각의 공장에서 배운 것들" href="https://nova7zone.github.io/posts/upbit-v2-research-rounds-9-to-25/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다
-    </h2>
-  </header>
-  <div class="entry-content"><p>봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-08-19T18:00:00+09:00'>2026년 8월 19일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다" href="https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다
-    </h2>
-  </header>
-  <div class="entry-content"><p>전략 연구를 에이전트 4종 파이프라인으로 자동화한 첫 2주. 엔진 계약의 공백을 먼저 발견해 고쳤고, 8개 후보가 모두 조기 기각되었으며, 봉인 규칙이 &#39;돌파&#39; 클래스까지 실질적으로 막는 구조를 확인했다. 무료 데이터 소스가 끝내 막힌 이야기와 엔진의 숨은 결함 13건 점검도 함께 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-08-12T23:40:00+09:00'>2026년 8월 12일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다" href="https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다
-    </h2>
-  </header>
-  <div class="entry-content"><p>크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &#39;생존 편향은 해결할 수 없다&#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-08-04T23:00:00+09:00'>2026년 8월 4일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다" href="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

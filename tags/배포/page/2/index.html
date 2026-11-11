@@ -180,6 +180,45 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다
+    </h2>
+  </header>
+  <div class="entry-content"><p>봉 데이터만으로는 새 후보가 나오지 않는다는 결론에서, 체결 흐름(order flow)을 1분 단위로 상시 기록하는 인프라를 데몬에 얹었다. 설계 가정이 틀렸음을 구현 계획 단계에서 SDK 소스로 발견한 일, 최종 리뷰가 잡은 디스크 고갈 위험, 백업 보관 정책의 구조적 결함과 서버 실측 검증까지 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-08-19T18:00:00+09:00'>2026년 8월 19일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (3) — 막힌 연구를 뚫으려고 체결 흐름을 상시 기록하는 인프라를 만들다" href="https://nova7zone.github.io/posts/upbit-v2-order-flow-recording-infra/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다
+    </h2>
+  </header>
+  <div class="entry-content"><p>크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &#39;생존 편향은 해결할 수 없다&#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-08-04T23:00:00+09:00'>2026년 8월 4일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다" href="https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기
+    </h2>
+  </header>
+  <div class="entry-content"><p>15분 주기 가드가 청산 반응을 늦춘다는 판단에서 크론을 상시 데몬으로 바꿨다. 배포 직후 같은 증상의 경고가 세 번 연달아 다른 원인으로 나타났다: 청산 틱마다 시장 상황을 재계산한 것, 로그 라벨이 틀려 진짜 원인을 가린 것, 포지션마다 시세를 개별 호출한 것. 로그 라벨 하나가 진단을 얼마나 흐렸는지 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-27T23:00:00+09:00'>2026년 7월 27일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (12) — 크론을 상시 데몬으로 바꾸고, 하루에 핫픽스를 세 번 한 이야기" href="https://nova7zone.github.io/posts/upbit-cron-to-daemon-and-three-hotfixes/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (11) — 전략의 &#39;기억&#39;을 코어에 두고, 크론을 다섯 줄로 줄이다
     </h2>
   </header>
@@ -268,36 +307,12 @@
 <span title='2026-06-23T12:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"></a>
 </article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설
-    </h2>
-  </header>
-  <div class="entry-content"><p>IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-21T10:00:00+09:00'>2026년 6월 21일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설" href="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
-    </h2>
-  </header>
-  <div class="entry-content"><p>웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-04T10:00:00+09:00'>2026년 6월 4일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입" href="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/"></a>
-</article>
 <footer class="page-footer">
   <nav class="pagination">
     <a class="prev" href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">
       «&nbsp;이전 페이지&nbsp;
+    </a>
+    <a class="next" href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/page/3/">다음 페이지&nbsp;&nbsp;»
     </a>
   </nav>
 </footer>

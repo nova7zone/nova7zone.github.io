@@ -190,6 +190,45 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집
+    </h2>
+  </header>
+  <div class="entry-content"><p>체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-10T16:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집" href="https://nova7zone.github.io/posts/trades-page-revamp/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정
+    </h2>
+  </header>
+  <div class="entry-content"><p>매수 후보가 모두 잔고 부족으로 스킵되던 잔고 0원 버그와 KOSDAQ 거래량순위 조회 오류를 수정해 매수 주문이 실제로 들어가게 만들었다. 이어서 호가단위 오류로 거부된 주문을 KRX 호가단위 보정 유틸로 해결하고, CLAUDE.md 작업 절차를 다시 정비한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-10T10:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정" href="https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편
+    </h2>
+  </header>
+  <div class="entry-content"><p>로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-09T20:00:00+09:00'>2026년 6월 9일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편" href="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 코드 개발 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정
     </h2>
   </header>
@@ -277,45 +316,6 @@
 
 <span title='2026-05-31T11:48:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화" href="https://nova7zone.github.io/posts/ai-trading-claude-code-setup/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (3) — Gemini 검토 결과, KIS API 확정, V4 프롬프트 완성
-    </h2>
-  </header>
-  <div class="entry-content"><p>Gemini가 발견한 키움증권/KIS 혼재 오류, 토큰 한도 문제, 비동기 미체결 처리 방식을 반영해 최종 V4 프롬프트를 완성한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-05-31T10:47:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (3) — Gemini 검토 결과, KIS API 확정, V4 프롬프트 완성" href="https://nova7zone.github.io/posts/ai-trading-kis-api/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성
-    </h2>
-  </header>
-  <div class="entry-content"><p>Claude로 시작해서 토큰이 부족하면 ChatGPT와 Gemini로 넘기는 다중 AI 협업 방식으로 자동매매 프롬프트를 완성한 과정. Claude Pro 가입 후 V3 프롬프트 실행까지 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-05-31T01:24:00+09:00'>2026년 5월 31일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (1)(2) — Claude·ChatGPT·Gemini 협업으로 프롬프트 완성" href="https://nova7zone.github.io/posts/ai-trading-prompt-strategy/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속
-    </h2>
-  </header>
-  <div class="entry-content"><p>Oracle Cloud 인스턴스 생성 후 필수 초기 설정 — 고정 IP 할당, PuTTY SSH 접속, 가상메모리 4GB 추가, FileZilla SFTP 연결까지 순서대로 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-05-29T09:43:00+09:00'>2026년 5월 29일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속" href="https://nova7zone.github.io/posts/oracle-cloud-server-setup/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

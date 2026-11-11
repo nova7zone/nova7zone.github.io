@@ -180,6 +180,45 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트용 로직을 따로 만들지 않고, 운영 스케줄러가 쓰는 실행 경로에 가짜 증권사(SimBroker)만 끼워 넣어 과거 데이터를 재생하는 엔진을 만든 과정. import 규칙 검사기가 조건부 import까지 잡아낸 일, 미래 데이터 누수를 막는 캔들 합성 방식을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-11T23:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (4) — 라이브 코드를 그대로 재생하는 백테스트 엔진" href="https://nova7zone.github.io/posts/upbit-simbroker-backtest-engine/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다
+    </h2>
+  </header>
+  <div class="entry-content"><p>코드를 한 줄도 이식하지 않은 채 기존 저장소의 사고 이력·리뷰·릴리스 노트를 전수 대조했더니, 사고로 확정된 집행 규칙이 새 설계 문서에 하나도 없었다. 분석 데이터 축적, 안전장치, 집행 계약, 릴리스 태깅 규칙을 문서에 명문화한 과정.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-11T20:00:00+09:00'>2026년 7월 11일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · KIS (4) — 기존 봇의 운영 사고를 새 설계의 &#39;계약&#39;으로 옮기다" href="https://nova7zone.github.io/posts/legacy-lessons-into-new-design-contracts/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기
+    </h2>
+  </header>
+  <div class="entry-content"><p>지난 편에서 확정한 05:00 KST 기준봉 위에, 이번엔 실제로 Upbit와 통신하는 코드를 만들 차례였다. JWT 서명, 그룹마다 다른 rate limit, 무체결 구간의 캔들 결측까지 — 전부 테스트를 먼저 쓰고 실패를 확인한 뒤에 구현했다. 그 과정에서 &#34;시간에 의존하는 코드를 어떻게 테스트하나&#34;라는 흔한 질문에 부딪혔고, 답을 찾았다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-10T19:30:00+09:00'>2026년 7월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 Bot 전환 및 개발 · Upbit (2) — TDD로 인증·rate limiter·캔들 계층 만들기" href="https://nova7zone.github.io/posts/upbit-core-api-data-tdd-rate-limiter/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 코드 개발 (50) — 코드 리뷰 지시서 8개 항목을 세 단계로 끝내고 v0.7.2를 릴리스하다
     </h2>
   </header>
@@ -267,45 +306,6 @@
 
 <span title='2026-07-04T10:00:00+09:00'>2026년 7월 4일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders" href="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환
-    </h2>
-  </header>
-  <div class="entry-content"><p>v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-07-02T10:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
-    </h2>
-  </header>
-  <div class="entry-content"><p>v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-07-01T16:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그" href="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
-    </h2>
-  </header>
-  <div class="entry-content"><p>그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-07-01T10:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

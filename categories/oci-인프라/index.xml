@@ -6,8 +6,15 @@
     <description>Recent content in OCI 인프라 on Evan&#39;s Blog</description>
     <generator>Hugo</generator>
     <language>ko-KR</language>
-    <lastBuildDate>Tue, 16 Jun 2026 18:00:00 +0900</lastBuildDate>
+    <lastBuildDate>Tue, 10 Nov 2026 22:30:00 +0900</lastBuildDate>
     <atom:link href="https://nova7zone.github.io/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기</title>
+      <link>https://nova7zone.github.io/posts/oci-gateway-usage-monitor/</link>
+      <pubDate>Tue, 10 Nov 2026 22:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/oci-gateway-usage-monitor/</guid>
+      <description>무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.</description>
+    </item>
     <item>
       <title>Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅</title>
       <link>https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/</link>
