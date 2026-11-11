@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone | Evan&#39;s Blog</title>
 <meta name="keywords" content="설정">
 <meta name="description" content="Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/oracle-server-initial-setup/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone">
+  <meta property="og:title" content="자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone">
   <meta property="og:description" content="Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -100,9 +100,16 @@
     <meta property="article:published_time" content="2026-06-02T11:00:00+09:00">
     <meta property="article:modified_time" content="2026-06-02T11:00:00+09:00">
     <meta property="article:tag" content="설정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone">
+  <meta name="twitter:title" content="자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone">
   <meta name="twitter:description" content="Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.">
 
 
@@ -120,7 +127,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone",
+      "name": "자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone",
       "item": "https://nova7zone.github.io/posts/oracle-server-initial-setup/"
     }
   ]
@@ -130,8 +137,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone",
+  "headline": "자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone",
+  "name": "자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone",
   "description": "Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.",
   "keywords": [
     "설정"
@@ -195,6 +202,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -229,7 +241,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone
+      자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone
     </h1>
     <div class="post-description">
       Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.
@@ -422,11 +434,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/superpowers-and-webserver-access/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공</span>
+    <span>자동매매 코드 개발 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/ai-trading-program-v1-complete/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경</span>
+    <span>자동매매 코드 개발 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경</span>
   </a>
 </nav>
 

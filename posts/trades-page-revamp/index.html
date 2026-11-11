@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집 | Evan&#39;s Blog</title>
 <meta name="keywords" content="설정, 설계">
 <meta name="description" content="체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/trades-page-revamp/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집">
+  <meta property="og:title" content="자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집">
   <meta property="og:description" content="체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -101,9 +101,16 @@
     <meta property="article:modified_time" content="2026-06-10T16:00:00+09:00">
     <meta property="article:tag" content="설정">
     <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집">
+  <meta name="twitter:title" content="자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집">
   <meta name="twitter:description" content="체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.">
 
 
@@ -121,7 +128,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
+      "name": "자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
       "item": "https://nova7zone.github.io/posts/trades-page-revamp/"
     }
   ]
@@ -131,8 +138,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
+  "headline": "자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
+  "name": "자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집",
   "description": "체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.",
   "keywords": [
     "설정", "설계"
@@ -196,6 +203,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -230,7 +242,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집
+      자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집
     </h1>
     <div class="post-description">
       체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.
@@ -463,11 +475,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/strategy-version-restructure/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (14) — strategy_v1/v2 분리 구조 설계와 3단계 이동</span>
+    <span>자동매매 코드 개발 (14) — strategy_v1/v2 분리 구조 설계와 3단계 이동</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정</span>
+    <span>자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정</span>
   </a>
 </nav>
 

@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화 | Evan&#39;s Blog</title>
 <meta name="keywords" content="배포">
 <meta name="description" content="v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화">
+  <meta property="og:title" content="자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화">
   <meta property="og:description" content="v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -100,9 +100,16 @@
     <meta property="article:published_time" content="2026-06-23T12:00:00+09:00">
     <meta property="article:modified_time" content="2026-06-23T12:00:00+09:00">
     <meta property="article:tag" content="배포">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화">
+  <meta name="twitter:title" content="자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화">
   <meta name="twitter:description" content="v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.">
 
 
@@ -120,7 +127,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
+      "name": "자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
       "item": "https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"
     }
   ]
@@ -130,8 +137,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
+  "headline": "자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
+  "name": "자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화",
   "description": "v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.",
   "keywords": [
     "배포"
@@ -195,6 +202,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -229,7 +241,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
+      자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
     </h1>
     <div class="post-description">
       v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.
@@ -382,11 +394,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈</span>
+    <span>자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환</span>
+    <span>자동매매 코드 개발 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환</span>
   </a>
 </nav>
 

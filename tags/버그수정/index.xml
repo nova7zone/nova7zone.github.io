@@ -9,119 +9,119 @@
     <lastBuildDate>Fri, 03 Jul 2026 10:00:00 +0900</lastBuildDate>
     <atom:link href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증</title>
+      <title>자동매매 코드 개발 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증</title>
       <link>https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/</link>
       <pubDate>Fri, 03 Jul 2026 10:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/</guid>
       <description>KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그</title>
+      <title>자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그</title>
       <link>https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/</link>
       <pubDate>Wed, 01 Jul 2026 16:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/</guid>
       <description>v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그</title>
+      <title>자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그</title>
       <link>https://nova7zone.github.io/posts/strategy-v3-implementation-complete/</link>
       <pubDate>Wed, 01 Jul 2026 10:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/strategy-v3-implementation-complete/</guid>
       <description>그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈</title>
+      <title>자동매매 코드 개발 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈</title>
       <link>https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/</link>
       <pubDate>Tue, 30 Jun 2026 12:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/telegram-markdown-bug-and-v064-release/</guid>
       <description>전략명에 들어간 언더스코어 때문에 텔레그램 알림이 400 오류로 반복 실패하던 버그와, 이틀 전 고쳤던 reversal/fear_driven 손실 매도 버그가 다른 경로로 재발한 사고를 정리하고, PR #77을 머지해 v0.6.4를 릴리즈한 과정을 다룬다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그</title>
+      <title>자동매매 코드 개발 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그</title>
       <link>https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/</link>
       <pubDate>Mon, 29 Jun 2026 10:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/alpinejs-reactivity-bugs-and-cache-date-bug/</guid>
       <description>브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈</title>
+      <title>자동매매 코드 개발 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈</title>
       <link>https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/</link>
       <pubDate>Thu, 25 Jun 2026 11:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/</guid>
       <description>보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈</title>
+      <title>자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈</title>
       <link>https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/</link>
       <pubDate>Wed, 24 Jun 2026 18:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/</guid>
       <description>일간 리포트의 &amp;#34;매수 1건 | 매도 0건&amp;#34;과 &amp;#34;보유 종목 없음&amp;#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환</title>
+      <title>자동매매 코드 개발 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환</title>
       <link>https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/</link>
       <pubDate>Mon, 22 Jun 2026 20:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/order-fill-holdings-diff-bug/</guid>
       <description>같은 종목 매수 주문이 15분마다 반복 시도되는 로그를 발견했다. 추적해보니 실제로는 매번 체결되고 있었는데 KIS 모의투자 체결조회 API 한계로 봇이 이를 인지하지 못해 수량이 통제 밖에 쌓여 있었다. 체결판단을 holdings-diff 방식으로 전환하고 같은 날 발견한 extra_05 계좌 버그까지 잡은 과정을 기록한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기</title>
+      <title>자동매매 코드 개발 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기</title>
       <link>https://nova7zone.github.io/posts/web-backtest-implementation-and-bugfixes/</link>
       <pubDate>Sun, 21 Jun 2026 18:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/web-backtest-implementation-and-bugfixes/</guid>
       <description>웹에서 백테스트를 실행하고 결과를 확인하는 기능을 9개 Task로 구현했다. 재검토 중 발견한 preset 경로탈출 취약점을 막고, 백테스트 데이터 다운로드의 무한 페이지네이션과 모의투자 30거래일 하드캡을 두 번에 걸쳐 추적해 진짜 원인(빈 시작일 파라미터)을 찾아낸 6월 21일 마지막 작업을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설</title>
+      <title>자동매매 코드 개발 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설</title>
       <link>https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/</link>
       <pubDate>Sun, 21 Jun 2026 10:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/</guid>
       <description>IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈</title>
+      <title>자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈</title>
       <link>https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/</link>
       <pubDate>Sat, 20 Jun 2026 21:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/</guid>
       <description>API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계</title>
+      <title>자동매매 코드 개발 (25) — IRP 퇴직연금 평가금액 보정 3단계</title>
       <link>https://nova7zone.github.io/posts/irp-pension-valuation-fix/</link>
       <pubDate>Sat, 20 Jun 2026 12:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/irp-pension-valuation-fix/</guid>
       <description>IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지</title>
+      <title>자동매매 코드 개발 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지</title>
       <link>https://nova7zone.github.io/posts/volume-rank-pagination-saga/</link>
       <pubDate>Thu, 18 Jun 2026 11:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/volume-rank-pagination-saga/</guid>
       <description>거래량순위 조회가 1페이지(30건)만 받고 멈추는 문제를 페이지네이션 구현, 응답 헤더 대소문자 버그 수정까지 두 번 고친 끝에 결국 KIS API 자체의 시장당 30건 하드 리밋이라는 결론에 도달해 universe 목표치를 60으로 재조정한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건</title>
+      <title>자동매매 코드 개발 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건</title>
       <link>https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/</link>
       <pubDate>Mon, 15 Jun 2026 20:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/</guid>
       <description>v1/v2 전략의 매수·매도 흐름을 Mermaid 플로우차트로 보여주는 전략확인 페이지를 신설했다. 이어서 OCI 실행 중 발견한 모의투자 API 500 오류와, 비교연산자 때문에 다이어그램이 깨지던 렌더링 버그 두 건을 같은 날 바로 수정한 과정을 기록한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정</title>
+      <title>자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정</title>
       <link>https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/</link>
       <pubDate>Sun, 14 Jun 2026 21:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/</guid>
       <description>매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정</title>
+      <title>자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정</title>
       <link>https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/</link>
       <pubDate>Wed, 10 Jun 2026 10:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/</guid>
       <description>매수 후보가 모두 잔고 부족으로 스킵되던 잔고 0원 버그와 KOSDAQ 거래량순위 조회 오류를 수정해 매수 주문이 실제로 들어가게 만들었다. 이어서 호가단위 오류로 거부된 주문을 KRX 호가단위 보정 유틸로 해결하고, CLAUDE.md 작업 절차를 다시 정비한 과정을 기록한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정</title>
+      <title>자동매매 코드 개발 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정</title>
       <link>https://nova7zone.github.io/posts/kospi-index-bugfix/</link>
       <pubDate>Mon, 08 Jun 2026 19:30:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/kospi-index-bugfix/</guid>

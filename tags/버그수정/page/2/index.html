@@ -4,7 +4,7 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="noindex, nofollow">
 <title>버그수정 | Evan&#39;s Blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
@@ -138,6 +138,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -175,7 +180,7 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈
     </h2>
   </header>
   <div class="entry-content"><p>API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.</p>
@@ -183,12 +188,12 @@
   <footer class="entry-footer">
 
 <span title='2026-06-20T21:00:00+09:00'>2026년 6월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈" href="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/"></a>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈" href="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (25) — IRP 퇴직연금 평가금액 보정 3단계
     </h2>
   </header>
   <div class="entry-content"><p>IRP 계좌는 일반 잔고조회로는 예수금과 디폴트옵션 평가금액을 알 수 없어 화면에 실제보다 낮게 표시되고 있었다. KIS 퇴직연금 전용 API를 연동하고, 그 과정에서 만난 output2 인덱싱 버그와 만료 토큰 500 응답을 거쳐 결국 디폴트옵션 자산은 KIS API 자체가 제공하지 않는다는 결론에 도달해 수동 입력 기능으로 마무리한 과정을 정리한다.</p>
@@ -196,12 +201,12 @@
   <footer class="entry-footer">
 
 <span title='2026-06-20T12:00:00+09:00'>2026년 6월 20일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계" href="https://nova7zone.github.io/posts/irp-pension-valuation-fix/"></a>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (25) — IRP 퇴직연금 평가금액 보정 3단계" href="https://nova7zone.github.io/posts/irp-pension-valuation-fix/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지
     </h2>
   </header>
   <div class="entry-content"><p>거래량순위 조회가 1페이지(30건)만 받고 멈추는 문제를 페이지네이션 구현, 응답 헤더 대소문자 버그 수정까지 두 번 고친 끝에 결국 KIS API 자체의 시장당 30건 하드 리밋이라는 결론에 도달해 universe 목표치를 60으로 재조정한 과정을 정리한다.</p>
@@ -209,12 +214,12 @@
   <footer class="entry-footer">
 
 <span title='2026-06-18T11:00:00+09:00'>2026년 6월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지" href="https://nova7zone.github.io/posts/volume-rank-pagination-saga/"></a>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지" href="https://nova7zone.github.io/posts/volume-rank-pagination-saga/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건
     </h2>
   </header>
   <div class="entry-content"><p>v1/v2 전략의 매수·매도 흐름을 Mermaid 플로우차트로 보여주는 전략확인 페이지를 신설했다. 이어서 OCI 실행 중 발견한 모의투자 API 500 오류와, 비교연산자 때문에 다이어그램이 깨지던 렌더링 버그 두 건을 같은 날 바로 수정한 과정을 기록한다.</p>
@@ -222,12 +227,12 @@
   <footer class="entry-footer">
 
 <span title='2026-06-15T20:00:00+09:00'>2026년 6월 15일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건" href="https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/"></a>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (19) — 전략확인 페이지 신설, Mermaid 렌더링 버그 2건" href="https://nova7zone.github.io/posts/strategy-flow-page-and-mermaid-bugfixes/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정
     </h2>
   </header>
   <div class="entry-content"><p>매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.</p>
@@ -235,12 +240,12 @@
   <footer class="entry-footer">
 
 <span title='2026-06-14T21:00:00+09:00'>2026년 6월 14일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정" href="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/"></a>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정" href="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정
     </h2>
   </header>
   <div class="entry-content"><p>매수 후보가 모두 잔고 부족으로 스킵되던 잔고 0원 버그와 KOSDAQ 거래량순위 조회 오류를 수정해 매수 주문이 실제로 들어가게 만들었다. 이어서 호가단위 오류로 거부된 주문을 KRX 호가단위 보정 유틸로 해결하고, CLAUDE.md 작업 절차를 다시 정비한 과정을 기록한다.</p>
@@ -248,12 +253,12 @@
   <footer class="entry-footer">
 
 <span title='2026-06-10T10:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정" href="https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/"></a>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정" href="https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/"></a>
 </article>
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정
     </h2>
   </header>
   <div class="entry-content"><p>OCI 서버 상태 점검 후 며칠 만에 paper 모드로 자동매매를 돌렸는데 매매가 한 건도 발생하지 않았다. 로그를 추적해 KOSPI 지수 일봉 조회가 개별종목용 엔드포인트를 잘못 사용하고 있던 구조적 버그를 찾아 수정한 과정을 기록한다.</p>
@@ -261,7 +266,7 @@
   <footer class="entry-footer">
 
 <span title='2026-06-08T19:30:00+09:00'>2026년 6월 8일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to AI를 이용한 자동매매 프로그램 작성 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정" href="https://nova7zone.github.io/posts/kospi-index-bugfix/"></a>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정" href="https://nova7zone.github.io/posts/kospi-index-bugfix/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

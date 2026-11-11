@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입 | Evan&#39;s Blog</title>
 <meta name="keywords" content="배포, 설정">
 <meta name="description" content="웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입">
+  <meta property="og:title" content="자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입">
   <meta property="og:description" content="웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -101,9 +101,16 @@
     <meta property="article:modified_time" content="2026-06-04T10:00:00+09:00">
     <meta property="article:tag" content="배포">
     <meta property="article:tag" content="설정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입">
+  <meta name="twitter:title" content="자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입">
   <meta name="twitter:description" content="웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.">
 
 
@@ -121,7 +128,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입",
+      "name": "자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입",
       "item": "https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/"
     }
   ]
@@ -131,8 +138,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입",
+  "headline": "자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입",
+  "name": "자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입",
   "description": "웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.",
   "keywords": [
     "배포", "설정"
@@ -196,6 +203,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -230,7 +242,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
+      자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
     </h1>
     <div class="post-description">
       웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.
@@ -437,11 +449,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기</span>
+    <span>자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/superpowers-and-webserver-access/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공</span>
+    <span>자동매매 코드 개발 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공</span>
   </a>
 </nav>
 

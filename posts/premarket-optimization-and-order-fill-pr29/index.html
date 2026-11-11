@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29) | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29) | Evan&#39;s Blog</title>
 <meta name="keywords" content="설계">
 <meta name="description" content="pre-market 실행 시 모의투자 API 제약을 우회하고 KOSPI 지수 일봉을 영구 캐시로 전환해 API 호출을 줄였다. 이어서 주문 체결 검증 로직에 CANCELLED 처리와 2단계 fallback 조회를 추가해 더 정확하게 판단하도록 개선한 PR #29 작업을 정리한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/premarket-optimization-and-order-fill-pr29/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)">
+  <meta property="og:title" content="자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)">
   <meta property="og:description" content="pre-market 실행 시 모의투자 API 제약을 우회하고 KOSPI 지수 일봉을 영구 캐시로 전환해 API 호출을 줄였다. 이어서 주문 체결 검증 로직에 CANCELLED 처리와 2단계 fallback 조회를 추가해 더 정확하게 판단하도록 개선한 PR #29 작업을 정리한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -100,9 +100,16 @@
     <meta property="article:published_time" content="2026-06-16T18:00:00+09:00">
     <meta property="article:modified_time" content="2026-06-16T18:00:00+09:00">
     <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)">
+  <meta name="twitter:title" content="자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)">
   <meta name="twitter:description" content="pre-market 실행 시 모의투자 API 제약을 우회하고 KOSPI 지수 일봉을 영구 캐시로 전환해 API 호출을 줄였다. 이어서 주문 체결 검증 로직에 CANCELLED 처리와 2단계 fallback 조회를 추가해 더 정확하게 판단하도록 개선한 PR #29 작업을 정리한다.">
 
 
@@ -120,7 +127,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)",
+      "name": "자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)",
       "item": "https://nova7zone.github.io/posts/premarket-optimization-and-order-fill-pr29/"
     }
   ]
@@ -130,8 +137,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)",
+  "headline": "자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)",
+  "name": "자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)",
   "description": "pre-market 실행 시 모의투자 API 제약을 우회하고 KOSPI 지수 일봉을 영구 캐시로 전환해 API 호출을 줄였다. 이어서 주문 체결 검증 로직에 CANCELLED 처리와 2단계 fallback 조회를 추가해 더 정확하게 판단하도록 개선한 PR #29 작업을 정리한다.",
   "keywords": [
     "설계"
@@ -195,6 +202,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -229,7 +241,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)
+      자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)
     </h1>
     <div class="post-description">
       pre-market 실행 시 모의투자 API 제약을 우회하고 KOSPI 지수 일봉을 영구 캐시로 전환해 API 호출을 줄였다. 이어서 주문 체결 검증 로직에 CANCELLED 처리와 2단계 fallback 조회를 추가해 더 정확하게 판단하도록 개선한 PR #29 작업을 정리한다.
@@ -345,13 +357,13 @@
       <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
     </ul>
 <nav class="paginav">
-  <a class="prev" href="https://nova7zone.github.io/posts/hermes-agent-openrouter-telegram-setup/">
+  <a class="prev" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/">
     <span class="title">« 이전 페이지</span>
-    <span>빈 ARM 서버에 24시간 AI 비서 심기 — Hermes &#43; OpenRouter &#43; Telegram 구축기</span>
-  </a>
-  <a class="next" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/">
-    <span class="title">다음 페이지 »</span>
     <span>Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/">
+    <span class="title">다음 페이지 »</span>
+    <span>Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록</span>
   </a>
 </nav>
 

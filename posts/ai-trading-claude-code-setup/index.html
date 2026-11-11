@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화 | Evan&#39;s Blog</title>
 <meta name="keywords" content="설정">
 <meta name="description" content="Claude Code의 클라우드 저장소 연동은 실패했지만, 로컬 프로젝트와 Git 동기화 배치 파일 4종을 조합해 여러 PC에서 이어서 작업할 수 있는 개발 환경을 구축한 과정을 기록한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/ai-trading-claude-code-setup/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화">
+  <meta property="og:title" content="자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화">
   <meta property="og:description" content="Claude Code의 클라우드 저장소 연동은 실패했지만, 로컬 프로젝트와 Git 동기화 배치 파일 4종을 조합해 여러 PC에서 이어서 작업할 수 있는 개발 환경을 구축한 과정을 기록한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -100,9 +100,16 @@
     <meta property="article:published_time" content="2026-05-31T11:48:00+09:00">
     <meta property="article:modified_time" content="2026-05-31T11:48:00+09:00">
     <meta property="article:tag" content="설정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화">
+  <meta name="twitter:title" content="자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화">
   <meta name="twitter:description" content="Claude Code의 클라우드 저장소 연동은 실패했지만, 로컬 프로젝트와 Git 동기화 배치 파일 4종을 조합해 여러 PC에서 이어서 작업할 수 있는 개발 환경을 구축한 과정을 기록한다.">
 
 
@@ -120,7 +127,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화",
+      "name": "자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화",
       "item": "https://nova7zone.github.io/posts/ai-trading-claude-code-setup/"
     }
   ]
@@ -130,8 +137,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화",
+  "headline": "자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화",
+  "name": "자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화",
   "description": "Claude Code의 클라우드 저장소 연동은 실패했지만, 로컬 프로젝트와 Git 동기화 배치 파일 4종을 조합해 여러 PC에서 이어서 작업할 수 있는 개발 환경을 구축한 과정을 기록한다.",
   "keywords": [
     "설정"
@@ -195,6 +202,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -229,7 +241,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화
+      자동매매 코드 개발 (4) — Claude Code 환경 구축과 멀티 PC 동기화 자동화
     </h1>
     <div class="post-description">
       Claude Code의 클라우드 저장소 연동은 실패했지만, 로컬 프로젝트와 Git 동기화 배치 파일 4종을 조합해 여러 PC에서 이어서 작업할 수 있는 개발 환경을 구축한 과정을 기록한다.
@@ -628,11 +640,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/ai-trading-program-v1-complete/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경</span>
+    <span>자동매매 코드 개발 (5) — Claude Code로 프로그램 완성, Upbit 버전 추가와 멀티 PC 작업 환경</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/ai-trading-kis-api/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (3) — Gemini 검토 결과, KIS API 확정, V4 프롬프트 완성</span>
+    <span>자동매매 코드 개발 (3) — Gemini 검토 결과, KIS API 확정, V4 프롬프트 완성</span>
   </a>
 </nav>
 

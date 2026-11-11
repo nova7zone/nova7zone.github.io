@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기 | Evan&#39;s Blog</title>
 <meta name="keywords" content="설정">
 <meta name="description" content="일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기">
+  <meta property="og:title" content="자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기">
   <meta property="og:description" content="일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -100,9 +100,16 @@
     <meta property="article:published_time" content="2026-06-05T11:00:00+09:00">
     <meta property="article:modified_time" content="2026-06-05T11:00:00+09:00">
     <meta property="article:tag" content="설정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기">
+  <meta name="twitter:title" content="자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기">
   <meta name="twitter:description" content="일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.">
 
 
@@ -120,7 +127,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
+      "name": "자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
       "item": "https://nova7zone.github.io/posts/report-gdrive-sync-and-config-toggle/"
     }
   ]
@@ -130,8 +137,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
+  "headline": "자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
+  "name": "자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기",
   "description": "일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.",
   "keywords": [
     "설정"
@@ -195,6 +202,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -229,7 +241,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기
+      자동매매 코드 개발 (9) — 리포트 MD 저장, Google Drive 동기화, 웹 설정 편집기
     </h1>
     <div class="post-description">
       일간·월간 리포트를 MD 파일로 저장하고 Google Drive와 동기화하는 기능, 웹에서 설정 YAML을 직접 수정하는 편집기를 추가했다. 이어서 토큰 캐시 이중 락 데드락, 스크리닝 로그 DB 기록, 초기자금 자동 추적 기능까지 정리한 과정을 기록한다.
@@ -437,11 +449,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/kospi-index-bugfix/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정</span>
+    <span>자동매매 코드 개발 (10) — 매매가 안 되는 버그, KOSPI 지수 조회 오류 추적과 수정</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입</span>
+    <span>자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입</span>
   </a>
 </nav>
 

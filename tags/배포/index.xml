@@ -9,21 +9,21 @@
     <lastBuildDate>Tue, 23 Jun 2026 12:00:00 +0900</lastBuildDate>
     <atom:link href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화</title>
+      <title>자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화</title>
       <link>https://nova7zone.github.io/posts/broker-sync-and-oci-automation/</link>
       <pubDate>Tue, 23 Jun 2026 12:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/broker-sync-and-oci-automation/</guid>
       <description>v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설</title>
+      <title>자동매매 코드 개발 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설</title>
       <link>https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/</link>
       <pubDate>Sun, 21 Jun 2026 10:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/</guid>
       <description>IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.</description>
     </item>
     <item>
-      <title>AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입</title>
+      <title>자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입</title>
       <link>https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/</link>
       <pubDate>Thu, 04 Jun 2026 10:00:00 +0900</pubDate>
       <guid>https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/</guid>

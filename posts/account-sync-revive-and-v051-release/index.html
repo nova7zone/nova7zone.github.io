@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈 | Evan&#39;s Blog</title>
 <meta name="keywords" content="버그수정, 릴리스">
 <meta name="description" content="API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈">
+  <meta property="og:title" content="자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈">
   <meta property="og:description" content="API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -101,9 +101,16 @@
     <meta property="article:modified_time" content="2026-06-20T21:00:00+09:00">
     <meta property="article:tag" content="버그수정">
     <meta property="article:tag" content="릴리스">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈">
+  <meta name="twitter:title" content="자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈">
   <meta name="twitter:description" content="API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.">
 
 
@@ -121,7 +128,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈",
+      "name": "자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈",
       "item": "https://nova7zone.github.io/posts/account-sync-revive-and-v051-release/"
     }
   ]
@@ -131,8 +138,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈",
+  "headline": "자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈",
+  "name": "자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈",
   "description": "API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.",
   "keywords": [
     "버그수정", "릴리스"
@@ -196,6 +203,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -230,7 +242,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈
+      자동매매 코드 개발 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈
     </h1>
     <div class="post-description">
       API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.
@@ -365,11 +377,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/oci-infra-fixes-and-db-browser/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설</span>
+    <span>자동매매 코드 개발 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/irp-pension-valuation-fix/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (25) — IRP 퇴직연금 평가금액 보정 3단계</span>
+    <span>자동매매 코드 개발 (25) — IRP 퇴직연금 평가금액 보정 3단계</span>
   </a>
 </nav>
 

@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그 | Evan&#39;s Blog</title>
 <meta name="keywords" content="버그수정, 설계">
 <meta name="description" content="v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그">
+  <meta property="og:title" content="자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그">
   <meta property="og:description" content="v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -101,9 +101,15 @@
     <meta property="article:modified_time" content="2026-07-01T16:00:00+09:00">
     <meta property="article:tag" content="버그수정">
     <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그">
+  <meta name="twitter:title" content="자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그">
   <meta name="twitter:description" content="v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.">
 
 
@@ -121,7 +127,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그",
+      "name": "자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그",
       "item": "https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/"
     }
   ]
@@ -131,8 +137,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그",
+  "headline": "자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그",
+  "name": "자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그",
   "description": "v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.",
   "keywords": [
     "버그수정", "설계"
@@ -196,6 +202,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -230,7 +241,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
+      자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
     </h1>
     <div class="post-description">
       v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.
@@ -348,11 +359,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환</span>
+    <span>자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/strategy-v3-implementation-complete/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그</span>
+    <span>자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그</span>
   </a>
 </nav>
 

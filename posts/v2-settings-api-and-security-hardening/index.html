@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정 | Evan&#39;s Blog</title>
 <meta name="keywords" content="버그수정, 설정">
 <meta name="description" content="매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정">
+  <meta property="og:title" content="자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정">
   <meta property="og:description" content="매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -101,9 +101,16 @@
     <meta property="article:modified_time" content="2026-06-14T21:00:00+09:00">
     <meta property="article:tag" content="버그수정">
     <meta property="article:tag" content="설정">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정">
+  <meta name="twitter:title" content="자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정">
   <meta name="twitter:description" content="매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.">
 
 
@@ -121,7 +128,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정",
+      "name": "자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정",
       "item": "https://nova7zone.github.io/posts/v2-settings-api-and-security-hardening/"
     }
   ]
@@ -131,8 +138,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API\/카드, 전체 보안 점검과 수정",
+  "headline": "자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정",
+  "name": "자동매매 코드 개발 (17) — 매매설정 v2 API\/카드, 전체 보안 점검과 수정",
   "description": "매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.",
   "keywords": [
     "버그수정", "설정"
@@ -196,6 +203,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -230,7 +242,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정
+      자동매매 코드 개발 (17) — 매매설정 v2 API/카드, 전체 보안 점검과 수정
     </h1>
     <div class="post-description">
       매매설정 API와 화면에 strategy_v2 전용 시장필터·1차/2차 스크리닝 카드를 추가했다. 이어서 실행 경로와 웹 대시보드 보안을 전체 점검해 세션 쿠키·로그인 brute-force·파일 권한·심볼릭 링크 등 Medium 이상 항목을 수정하고, 남은 Critical 항목은 다음 세션 진행 방식을 기록한 과정을 정리한다.
@@ -425,11 +437,11 @@
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/extra-account-capital-and-release-notes-skill/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (18) — 추가 계좌 투자원금 입력 기능, 릴리즈 노트 작성 skill</span>
+    <span>자동매매 코드 개발 (18) — 추가 계좌 투자원금 입력 기능, 릴리즈 노트 작성 skill</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/strategy-v2-development/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile</span>
+    <span>자동매매 코드 개발 (16) — strategy_v2 개발, position_registry와 다중 계좌 reconcile</span>
   </a>
 </nav>
 

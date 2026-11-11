@@ -4,8 +4,8 @@
 <head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈 | Evan&#39;s Blog</title>
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈 | Evan&#39;s Blog</title>
 <meta name="keywords" content="버그수정, 릴리스">
 <meta name="description" content="일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.">
 <meta name="author" content="Evan">
@@ -92,7 +92,7 @@
 </script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/">
   <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈">
+  <meta property="og:title" content="자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈">
   <meta property="og:description" content="일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="article">
@@ -101,9 +101,16 @@
     <meta property="article:modified_time" content="2026-06-24T18:00:00+09:00">
     <meta property="article:tag" content="버그수정">
     <meta property="article:tag" content="릴리스">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/docs-update-and-v070-release/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈">
+  <meta name="twitter:title" content="자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈">
   <meta name="twitter:description" content="일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.">
 
 
@@ -121,7 +128,7 @@
     {
       "@type": "ListItem",
       "position":  2 ,
-      "name": "AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈",
+      "name": "자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈",
       "item": "https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/"
     }
   ]
@@ -131,8 +138,8 @@
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈",
-  "name": "AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈",
+  "headline": "자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈",
+  "name": "자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈",
   "description": "일간 리포트의 \"매수 1건 | 매도 0건\"과 \"보유 종목 없음\"이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.",
   "keywords": [
     "버그수정", "릴리스"
@@ -196,6 +203,11 @@
                 </a>
             </li>
             <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
                 <a href="https://nova7zone.github.io/categories/" title="카테고리">
                     <span>카테고리</span>
                 </a>
@@ -230,7 +242,7 @@
     </svg>
 </nav>
     <h1 class="post-title entry-hint-parent">
-      AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈
+      자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈
     </h1>
     <div class="post-description">
       일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.
@@ -348,11 +360,11 @@ holdings-diff 체결판단이 영원히 0으로 고정돼 체결을 인식 못�
 <nav class="paginav">
   <a class="prev" href="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/">
     <span class="title">« 이전 페이지</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈</span>
+    <span>자동매매 코드 개발 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈</span>
   </a>
   <a class="next" href="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/">
     <span class="title">다음 페이지 »</span>
-    <span>AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도</span>
+    <span>자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도</span>
   </a>
 </nav>
 
