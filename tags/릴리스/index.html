@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>릴리스 | Evan&#39;s Dev Log</title>
+<title>릴리스 | Evan&#39;s Blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.d5637fd203e7828a4b21becf06f6425a3606871feb7992696713468478a3bb1d.css" integrity="sha256-1WN/0gPngopLIb7PBvZCWjYGhx/reZJpZxNGhHijux0=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -69,7 +69,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dev Log">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
@@ -77,8 +77,22 @@
     });
   }
 </script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
 <meta property="og:url" content="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">
-  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
   <meta property="og:title" content="릴리스">
   <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
   <meta property="og:locale" content="ko_KR">
@@ -93,7 +107,7 @@
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -164,14 +178,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 5일
-최종 수정: 2026년 7월 5일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 market_context_log와 candidate_outcome을 완료했다. 오늘은 Phase 2의 마지막 테이블을 연결하고, docs 전체를 다시 한번 점검한 뒤 릴리즈까지 마무리하는 날이다.
-...</p>
+  <div class="entry-content"><p>holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -184,14 +191,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 2일
-최종 수정: 2026년 7월 2일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 매시간 재선정을 구현하고 메인 전략을 v3로 전환했다. 새 전략 엔진이 실거래에 들어가기 전, 문서를 정리하고 정식 버전을 릴리즈하는 마무리 작업이 이어졌다.
-...</p>
+  <div class="entry-content"><p>strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -204,14 +204,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 30일
-최종 수정: 2026년 6월 30일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 CLAUDE.md를 분리하고 v0.6.3을 릴리즈했다. 6월 30일은 텔레그램 알림이 실패하는 문제와, 6월 25일 고쳤던 손실 매도 버그가 다른 경로로 재발한 사고를 함께 처리했다.
-...</p>
+  <div class="entry-content"><p>전략명에 들어간 언더스코어 때문에 텔레그램 알림이 400 오류로 반복 실패하던 버그와, 이틀 전 고쳤던 reversal/fear_driven 손실 매도 버그가 다른 경로로 재발한 사고를 정리하고, PR #77을 머지해 v0.6.4를 릴리즈한 과정을 다룬다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -224,14 +217,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 29일
-최종 수정: 2026년 6월 29일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 Alpine.js 반응성 버그와 캐시 날짜 버그를 고쳤다. 6월 29일 후반은 문서 구조 자체를 손보는 작업으로 이어졌다.
-...</p>
+  <div class="entry-content"><p>매 세션 전체 로드되는 CLAUDE.md 520줄을 181줄로 줄이며 개발 문서를 docs/development 폴더로 재구성하고, PR #63~#74 구간 docs 재점검·v0.6.3 릴리즈, 그리고 스크리닝 로그가 v2 전환 이후 한 번도 기록되지 않았던 원인을 조사한 하루를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -244,14 +230,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 25일
-최종 수정: 2026년 6월 25일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 매도 체결인식 실패 버그를 고치고 v0.6.1을 릴리즈했다. 6월 25일은 설정 화면 구조를 정리하는 작업으로 시작해서, 실거래 손실 매도 사고를 조사하는 것으로 이어졌다.
-...</p>
+  <div class="entry-content"><p>보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -264,14 +243,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 24일
-최종 수정: 2026년 6월 24일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 종목당 매수금액 동적화와 현금 하한선 강제매도 기능을 구현했다. 이 브랜치를 PR #68로 머지하기 전, 일간 리포트에서 이상한 값을 발견해 먼저 조사부터 했다.
-...</p>
+  <div class="entry-content"><p>일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -284,14 +256,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 23일
-최종 수정: 2026년 6월 23일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 본계좌 실시간 잔고 동기화로 수량 phantom position을 정정하고, docs-sync skill을 새로 만들었다. 6월 23일 후반은 그 skill을 실제로 돌려 docs/ 폴더 19개 문서 전체를 재작성하는 “문서 전체 점검 &#43; docs-sync &#43; 릴리즈” 5단계 작업으로 마무리했다.
-...</p>
+  <div class="entry-content"><p>직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -304,14 +269,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 21일
-최종 수정: 2026년 6월 21일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 6일간 dead 상태였던 웹 서비스를 복구하고 DB 조회 페이지를 만들었다. 같은 날 이어서, 다음 기능(웹 백테스트)을 위한 사전조사와 모의투자 매도 실패 분석, 그리고 릴리즈와 잔고 점검까지 진행했다.
-...</p>
+  <div class="entry-content"><p>웹에서 백테스트를 실행하는 기능을 위해 한국투자증권 공식 백테스팅 엔진을 조사하고, 모의투자 매도 실패 2건을 코드 분석으로 추적해 운영 안정성 공백 두 가지를 기록했다. v0.5.2 릴리즈 직후 holdings.json과 실제 KIS 잔고의 불일치를 발견해 정정한 6월 21일 중반 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -324,14 +282,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (26) — 추가계좌 오삭제 방지, REVIVE 로직, v0.5.1 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 20일
-최종 수정: 2026년 6월 20일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 IRP 계좌 평가금액을 3단계에 걸쳐 보정했다. 같은 날 이어서, 그 IRP 매뉴얼 입력 기능을 실거래로 검증하던 중 보유종목이 통째로 사라지는 현상을 발견했고, 추적 끝에 두 가지 버그를 더 잡았다.
-...</p>
+  <div class="entry-content"><p>API 호출 실패와 진짜 빈 보유종목을 구분하지 못해 정상 보유종목이 통째로 삭제되던 버그를 고치고, 한 번 sold로 잘못 기록된 종목이 영구히 되살아나지 못하던 REVIVE 버그까지 잡았다. 문서 전체 최신화와 v0.5.1 릴리즈로 6월 20일 작업을 마무리한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -344,14 +295,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (18) — 추가 계좌 투자원금 입력 기능, 릴리즈 노트 작성 skill
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 15일
-최종 수정: 2026년 6월 15일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 매매설정 v2 API와 보안 점검을 마쳤다. 6월 15일은 매매 로직보다는 운영 편의 기능 두 가지에 집중했다.
-...</p>
+  <div class="entry-content"><p>조회 전용 추가 계좌(KIS_EXTRA_01~10)에 투자원금을 입력·저장하는 기능을 추가해 향후 수익률 계산의 기준값을 마련했다. 이어서 릴리즈마다 반복하던 릴리즈 노트 작성 절차를 별도 skill로 표준화한 6월 15일 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -361,7 +305,7 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
 
     
     

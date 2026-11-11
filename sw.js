@@ -1,6 +1,6 @@
 // 최소 서비스 워커: 설치 가능 조건 충족 + 방문한 페이지 오프라인 열람.
 // 페이지(HTML)는 네트워크 우선(최신 글 반영), 정적 자산은 캐시 우선.
-const CACHE = "devlog-v1";
+const CACHE = "evans-blog-v2";
 const PRECACHE = ["/", "/manifest.webmanifest", "/icon-192.png"];
 
 self.addEventListener("install", (e) => {

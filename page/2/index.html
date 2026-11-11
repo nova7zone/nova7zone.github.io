@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Evan&#39;s Dev Log</title>
+<title>Evan&#39;s Blog</title>
 
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.d5637fd203e7828a4b21becf06f6425a3606871feb7992696713468478a3bb1d.css" integrity="sha256-1WN/0gPngopLIb7PBvZCWjYGhx/reZJpZxNGhHijux0=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -69,7 +69,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dev Log">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
@@ -77,22 +77,36 @@
     });
   }
 </script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
 <meta property="og:url" content="https://nova7zone.github.io/">
-  <meta property="og:site_name" content="Evan&#39;s Dev Log">
-  <meta property="og:title" content="Evan&#39;s Dev Log">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="Evan&#39;s Blog">
   <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="website">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Evan&#39;s Dev Log">
+  <meta name="twitter:title" content="Evan&#39;s Blog">
   <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Evan's Dev Log",
+  "name": "Evan's Blog",
   "url": "https://nova7zone.github.io/",
   "description": "AI(Claude Code)를 이용한 프로그램 개발 과정 기록",
   "logo": "https://nova7zone.github.io/favicon.ico",
@@ -107,7 +121,7 @@
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -162,14 +176,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (37) — Alpine.js 반응성 버그, 캐시 날짜 불일치 버그
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 29일
-최종 수정: 2026년 6월 29일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 29시간 좀비 주문 사고를 해결했다. 6월 29일은 프론트엔드 버그 두 건과 로깅·캐시 관련 버그 두 건, 총 네 건을 하루에 몰아 처리한 날이다.
-...</p>
+  <div class="entry-content"><p>브라우저 콘솔에서 사용자와 함께 실시간으로 추적한 Alpine.js 반응형 객체의 엣지케이스 버그 2건, LOG_LEVEL=DEBUG가 콘솔에 적용되지 않던 버그, 그리고 캐시가 배포 이후 한 번도 정상 작동하지 않았던 날짜 불일치 버그를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -182,14 +189,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (36) — 매도 qty_before 로컬 전환, 29시간 좀비주문 사고
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 25일
-최종 수정: 2026년 6월 25일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 VWAP 목표가 손실 매도 버그를 고쳤다. 같은 날 사용자가 OCI에서 복사해온 로그를 분석하다가 더 오래 방치돼 있던 문제를 하나 더 발견했다.
-...</p>
+  <div class="entry-content"><p>매도 주문 하나가 29시간 동안 40회나 취소 시도만 반복하던 좀비 주문 사고를 추적해, qty_before 캡처를 API 재조회 대신 로컬 holdings 기반으로 바꾸고 cancel_order 응답을 3-state로 구분해 재시도해도 해소되지 않는 케이스를 걸러낸 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -202,14 +202,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 25일
-최종 수정: 2026년 6월 25일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 매도 체결인식 실패 버그를 고치고 v0.6.1을 릴리즈했다. 6월 25일은 설정 화면 구조를 정리하는 작업으로 시작해서, 실거래 손실 매도 사고를 조사하는 것으로 이어졌다.
-...</p>
+  <div class="entry-content"><p>보유종목 한도와 매매 가격범위를 메인 설정 탭으로 전역화하면서 최종 리뷰가 잡아낸 config_loader 화이트리스트 누락 버그, 그리고 실거래 손실 매도 사고(금호건설)로 발견한 VWAP 목표가 버그를 수정하고 PR #70을 머지해 v0.6.2를 릴리즈한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -222,14 +215,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 24일
-최종 수정: 2026년 6월 24일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 종목당 매수금액 동적화와 현금 하한선 강제매도 기능을 구현했다. 이 브랜치를 PR #68로 머지하기 전, 일간 리포트에서 이상한 값을 발견해 먼저 조사부터 했다.
-...</p>
+  <div class="entry-content"><p>일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -242,14 +228,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 24일
-최종 수정: 2026년 6월 24일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: In Progress
-들어가며 이전 글에서 docs/ 폴더 19개 문서를 전부 재작성하고 v0.6.0을 릴리즈하며 6월 23일까지의 시리즈를 마무리했다. 6월 24일부터는 다시 기능 개발로 돌아왔다.
-...</p>
+  <div class="entry-content"><p>종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -262,14 +241,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 23일
-최종 수정: 2026년 6월 23일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 본계좌 실시간 잔고 동기화로 수량 phantom position을 정정하고, docs-sync skill을 새로 만들었다. 6월 23일 후반은 그 skill을 실제로 돌려 docs/ 폴더 19개 문서 전체를 재작성하는 “문서 전체 점검 &#43; docs-sync &#43; 릴리즈” 5단계 작업으로 마무리했다.
-...</p>
+  <div class="entry-content"><p>직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -282,14 +254,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 23일
-최종 수정: 2026년 6월 23일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 매수 무한반복 사고를 발견하고 체결판단을 holdings-diff 방식으로 전환했다. 하지만 그 수정은 이미 쌓여있던 특정 종목을 자동으로 회복시켜주진 않는다. 6월 23일은 그 phantom position을 실제로 정정하는 작업으로 마무리되는데, 그 전에 v2 백테스트 기능 확장과 OCI 운영 자동화도 진행했다.
-...</p>
+  <div class="entry-content"><p>v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -302,14 +267,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (30) — 매수 무한반복 사고, 체결판단 holdings-diff 전환
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 22일
-최종 수정: 2026년 6월 22일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 웹 백테스트 기능을 완성하고 30거래일 하드캡의 진짜 원인을 찾았다. 6월 22일은 가벼운 절차 수정과 기능 추가로 시작했지만, 후반에 logs/trader.log를 들여다보다가 그 무엇보다 심각한 사고를 발견했다.
-...</p>
+  <div class="entry-content"><p>같은 종목 매수 주문이 15분마다 반복 시도되는 로그를 발견했다. 추적해보니 실제로는 매번 체결되고 있었는데 KIS 모의투자 체결조회 API 한계로 봇이 이를 인지하지 못해 수량이 통제 밖에 쌓여 있었다. 체결판단을 holdings-diff 방식으로 전환하고 같은 날 발견한 extra_05 계좌 버그까지 잡은 과정을 기록한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -322,14 +280,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (29) — 웹 백테스트 구현(PR #52), 경로탈출 수정, 30일 하드캡 추적기
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 21일
-최종 수정: 2026년 6월 21일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 웹 백테스트 사전조사를 마치고 v0.5.2를 릴리즈했다. 같은 날 마지막으로, 그 사전조사를 바탕으로 웹 백테스트 실행&#43;결과확인 기능을 실제로 구현했고, 곧이어 보안 취약점 한 건과 데이터 다운로드 버그 두 건을 연달아 추적했다.
-...</p>
+  <div class="entry-content"><p>웹에서 백테스트를 실행하고 결과를 확인하는 기능을 9개 Task로 구현했다. 재검토 중 발견한 preset 경로탈출 취약점을 막고, 백테스트 데이터 다운로드의 무한 페이지네이션과 모의투자 30거래일 하드캡을 두 번에 걸쳐 추적해 진짜 원인(빈 시작일 파라미터)을 찾아낸 6월 21일 마지막 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -342,14 +293,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (28) — 웹 백테스트 사전조사, 모의투자 매도 실패 분석, v0.5.2 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 21일
-최종 수정: 2026년 6월 21일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 6일간 dead 상태였던 웹 서비스를 복구하고 DB 조회 페이지를 만들었다. 같은 날 이어서, 다음 기능(웹 백테스트)을 위한 사전조사와 모의투자 매도 실패 분석, 그리고 릴리즈와 잔고 점검까지 진행했다.
-...</p>
+  <div class="entry-content"><p>웹에서 백테스트를 실행하는 기능을 위해 한국투자증권 공식 백테스팅 엔진을 조사하고, 모의투자 매도 실패 2건을 코드 분석으로 추적해 운영 안정성 공백 두 가지를 기록했다. v0.5.2 릴리즈 직후 holdings.json과 실제 KIS 잔고의 불일치를 발견해 정정한 6월 21일 중반 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -368,7 +312,7 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
 
     
     

@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>배포 | Evan&#39;s Dev Log</title>
+<title>배포 | Evan&#39;s Blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.d5637fd203e7828a4b21becf06f6425a3606871feb7992696713468478a3bb1d.css" integrity="sha256-1WN/0gPngopLIb7PBvZCWjYGhx/reZJpZxNGhHijux0=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -69,7 +69,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dev Log">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
@@ -77,8 +77,22 @@
     });
   }
 </script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
 <meta property="og:url" content="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">
-  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
   <meta property="og:title" content="배포">
   <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
   <meta property="og:locale" content="ko_KR">
@@ -93,7 +107,7 @@
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -164,14 +178,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 23일
-최종 수정: 2026년 6월 23일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 매수 무한반복 사고를 발견하고 체결판단을 holdings-diff 방식으로 전환했다. 하지만 그 수정은 이미 쌓여있던 특정 종목을 자동으로 회복시켜주진 않는다. 6월 23일은 그 phantom position을 실제로 정정하는 작업으로 마무리되는데, 그 전에 v2 백테스트 기능 확장과 OCI 운영 자동화도 진행했다.
-...</p>
+  <div class="entry-content"><p>v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -184,14 +191,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (27) — OCI 운영 인프라 결함 2건, DB 조회 페이지 신설
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 21일
-최종 수정: 2026년 6월 21일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 추가계좌 오삭제 버그와 REVIVE 로직을 고치고 v0.5.1을 릴리즈했다. 6월 21일은 단순한 화면 표시 버그를 추적하다가 6일간 방치돼 있던 서비스 인프라 결함 두 건을 발견하는 것으로 시작됐다.
-...</p>
+  <div class="entry-content"><p>IRP 디폴트옵션 표시 버그를 추적하다가 6일째 dead 상태였던 웹 서비스와 외부 접속이 막혀있던 호스트 바인딩 설정, 두 가지 운영 인프라 결함을 발견해 수정했다. DB 조회 전용 페이지 신설과 README 전략 설명 정리까지 6월 21일 전반 작업을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -204,14 +204,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 4일
-최종 수정: 2026년 6월 4일
-분야: Infrastructure, DevOps
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 웹서버를 외부에서 접속 가능한 상태까지 만들었다. 이번 글에서는 그 웹서버를 상시 실행 상태로 등록하고, 자동매매 본체를 crontab에 올려 실제로 동작시키는 과정을 정리한다.
-...</p>
+  <div class="entry-content"><p>웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -221,7 +214,7 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
 
     
     

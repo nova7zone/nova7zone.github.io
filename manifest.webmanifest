@@ -1,13 +1,13 @@
 {
-  "name": "Evan's Dev Log",
-  "short_name": "Dev Log",
+  "name": "Evan's Blog",
+  "short_name": "Evan's Blog",
   "description": "AI(Claude Code)를 이용한 프로그램 개발 과정 기록",
   "lang": "ko",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#f3e6d5",
-  "theme_color": "#f3e6d5",
+  "background_color": "#f7f8f9",
+  "theme_color": "#f7f8f9",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },

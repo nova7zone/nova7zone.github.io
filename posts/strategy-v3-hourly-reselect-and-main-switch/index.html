@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환 | Evan&#39;s Dev Log</title>
+<title>AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환 | Evan&#39;s Blog</title>
 <meta name="keywords" content="설계">
 <meta name="description" content="v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.d5637fd203e7828a4b21becf06f6425a3606871feb7992696713468478a3bb1d.css" integrity="sha256-1WN/0gPngopLIb7PBvZCWjYGhx/reZJpZxNGhHijux0=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -68,7 +68,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dev Log">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
@@ -76,8 +76,22 @@
     });
   }
 </script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/">
-  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환">
   <meta property="og:description" content="v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.">
   <meta property="og:locale" content="ko_KR">
@@ -137,7 +151,7 @@
   },
   "publisher": {
     "@type": "Organization",
-    "name": "Evan's Dev Log",
+    "name": "Evan's Blog",
     "logo": {
       "@type": "ImageObject",
       "url": "https://nova7zone.github.io/favicon.ico"
@@ -150,7 +164,7 @@
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -334,7 +348,7 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
 
     
     

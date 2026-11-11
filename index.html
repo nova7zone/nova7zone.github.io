@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Evan&#39;s Dev Log</title>
+<title>Evan&#39;s Blog</title>
 
 <meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.d5637fd203e7828a4b21becf06f6425a3606871feb7992696713468478a3bb1d.css" integrity="sha256-1WN/0gPngopLIb7PBvZCWjYGhx/reZJpZxNGhHijux0=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -69,7 +69,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dev Log">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
@@ -77,22 +77,36 @@
     });
   }
 </script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
 <meta property="og:url" content="https://nova7zone.github.io/">
-  <meta property="og:site_name" content="Evan&#39;s Dev Log">
-  <meta property="og:title" content="Evan&#39;s Dev Log">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="Evan&#39;s Blog">
   <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
   <meta property="og:locale" content="ko_KR">
   <meta property="og:type" content="website">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Evan&#39;s Dev Log">
+  <meta name="twitter:title" content="Evan&#39;s Blog">
   <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "Evan's Dev Log",
+  "name": "Evan's Blog",
   "url": "https://nova7zone.github.io/",
   "description": "AI(Claude Code)를 이용한 프로그램 개발 과정 기록",
   "logo": "https://nova7zone.github.io/favicon.ico",
@@ -107,7 +121,7 @@
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -162,14 +176,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (47) — Phase 2 완료, docs 전체 점검, v0.7.1 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 5일
-최종 수정: 2026년 7월 5일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 market_context_log와 candidate_outcome을 완료했다. 오늘은 Phase 2의 마지막 테이블을 연결하고, docs 전체를 다시 한번 점검한 뒤 릴리즈까지 마무리하는 날이다.
-...</p>
+  <div class="entry-content"><p>holdings_snapshot을 journal_writer에 연결해 Phase 2 데이터 수집 계층 전체(5개 테이블)를 완료하고, docs/ 21개 문서와 CLAUDE.md·README.md를 코드와 다시 대조해 stale 항목 여러 건을 정정한 뒤 v0.7.1을 릴리즈하며 6월 24일부터 이어온 작업을 마무리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -182,14 +189,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (46) — Phase 2 데이터 수집 2부: market_context_log, candidate_outcome
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 5일
-최종 수정: 2026년 7월 5일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 sell_evaluation_log와 orders 테이블을 신설했다. Phase 2 데이터 수집 계층의 나머지 두 테이블은 각각 “그때 시장이 어떤 상태였는가&#34;와 “사지 않은 종목은 어떻게 됐는가&#34;를 남기는 작업이다.
-...</p>
+  <div class="entry-content"><p>매수 사이클마다 시장 상황 전체를 스냅샷으로 남기는 market_context_log와, 매수되지 않은 후보까지 포함한 스크리닝 전체 결과의 사후 수익률을 추적하는 candidate_outcome 테이블을 신설했다. SQLite UNIQUE 제약의 NULL 처리 방식이 만든 재실행 중복 버그도 함께 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -202,14 +202,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (45) — Phase 2 데이터 수집 1부: sell_evaluation_log, orders
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 4일
-최종 수정: 2026년 7월 4일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 VKOSPI 오조회 버그와 리스크 버그 5건을 고쳤다. 7월 3일 작업 지시서의 Phase 2는 “데이터 수집 계층&#34;이라 불리는 신규 테이블 4종을 만드는 작업이다 — 지금까지는 매매 결과만 남기고 있었는데, 왜 그렇게 판단했는지의 과정을 데이터베이스에 남기기 시작하는 단계다.
-...</p>
+  <div class="entry-content"><p>매도 판단 과정 전체를 남기는 sell_evaluation_log 테이블과, 주문 생애주기를 append-only 이벤트로 기록하는 orders 테이블을 신설했다. brainstorming부터 설계·계획·subagent 구현까지 전체 절차로 진행한 Phase 2 데이터 수집 계층의 첫 두 테이블을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -222,14 +215,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 3일
-최종 수정: 2026년 7월 3일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 v0.7.0을 릴리즈하며 v3를 메인 전략으로 전환했다. 7월 3일은 v3가 실제로 돌아가기 시작한 지 이틀째 되는 날로, 운영 로그 검증과 외부에서 준비된 작업 지시서 기반의 긴급 수정이 함께 진행됐다.
-...</p>
+  <div class="entry-content"><p>KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -242,14 +228,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (43) — docs 전면 최신화, v0.7.0 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 2일
-최종 수정: 2026년 7월 2일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 매시간 재선정을 구현하고 메인 전략을 v3로 전환했다. 새 전략 엔진이 실거래에 들어가기 전, 문서를 정리하고 정식 버전을 릴리즈하는 마무리 작업이 이어졌다.
-...</p>
+  <div class="entry-content"><p>strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -262,14 +241,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 2일
-최종 수정: 2026년 7월 2일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 config_loader 이중 중첩 버그를 잡아 strategy_sell.yaml 설정값이 실제로 반영되게 만들었다. 7월 2일은 v3의 마지막 핵심 기능인 매시간 재선정을 구현하고, 외부 리뷰 문서의 후속 보강을 마친 뒤, 드디어 메인 전략을 v3로 전환하는 날이다.
-...</p>
+  <div class="entry-content"><p>v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -282,14 +254,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 1일
-최종 수정: 2026년 7월 1일
-분야: AI Trading, Development
-난이도: Advanced
-상태: Production Ready
-들어가며 이전 글에서 strategy_v3 구현을 마무리하며 매수 전면 중단 Critical 버그를 발견·수정했다. 이어서 실제 운영을 위해 v3를 웹 대시보드에 통합하는 작업으로 넘어갔는데, 여기서 훨씬 더 근본적인 문제 하나를 발견하게 된다.
-...</p>
+  <div class="entry-content"><p>v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -302,14 +267,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 7월 1일
-최종 수정: 2026년 7월 1일
-분야: AI Trading, Development
-난이도: Advanced
-상태: In Progress
-들어가며 이전 글에서 텔레그램 알림 버그와 손실 매도 버그를 고치고 v0.6.4를 릴리즈했다. 7월 1일부터는 그동안 v1/v2와는 별개로 준비해오던 세 번째 전략 엔진, strategy_v3의 마무리 작업으로 넘어간다.
-...</p>
+  <div class="entry-content"><p>그룹 정규화 스크리닝 방식의 새 전략 엔진 strategy_v3의 남은 Task 9~12를 완료하고, 최종 whole-branch 리뷰에서 실거래 시 모든 후보 종목이 0점 처리돼 매수가 전혀 발생하지 않았을 Critical 버그를 발견·수정한 과정을 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -322,14 +280,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (39) — 텔레그램 마크다운 파싱 버그, v0.6.4 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 30일
-최종 수정: 2026년 6월 30일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 CLAUDE.md를 분리하고 v0.6.3을 릴리즈했다. 6월 30일은 텔레그램 알림이 실패하는 문제와, 6월 25일 고쳤던 손실 매도 버그가 다른 경로로 재발한 사고를 함께 처리했다.
-...</p>
+  <div class="entry-content"><p>전략명에 들어간 언더스코어 때문에 텔레그램 알림이 400 오류로 반복 실패하던 버그와, 이틀 전 고쳤던 reversal/fear_driven 손실 매도 버그가 다른 경로로 재발한 사고를 정리하고, PR #77을 머지해 v0.6.4를 릴리즈한 과정을 다룬다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -342,14 +293,7 @@
     <h2 class="entry-hint-parent">AI를 이용한 자동매매 프로그램 작성 (38) — CLAUDE.md 분리, 문서 재구성, v0.6.3 릴리즈
     </h2>
   </header>
-  <div class="entry-content">
-    <p>작성일: 2026년 6월 29일
-최종 수정: 2026년 6월 29일
-분야: AI Trading, Development
-난이도: Intermediate
-상태: Production Ready
-들어가며 이전 글에서 Alpine.js 반응성 버그와 캐시 날짜 버그를 고쳤다. 6월 29일 후반은 문서 구조 자체를 손보는 작업으로 이어졌다.
-...</p>
+  <div class="entry-content"><p>매 세션 전체 로드되는 CLAUDE.md 520줄을 181줄로 줄이며 개발 문서를 docs/development 폴더로 재구성하고, PR #63~#74 구간 docs 재점검·v0.6.3 릴리즈, 그리고 스크리닝 로그가 v2 전환 이후 한 번도 기록되지 않았던 원인을 조사한 하루를 정리한다.</p>
   </div>
   <footer class="entry-footer">
 
@@ -365,7 +309,7 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
 
     
     

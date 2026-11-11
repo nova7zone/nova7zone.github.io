@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>AI를 이용한 자동매매 프로그램 작성 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시 | Evan&#39;s Dev Log</title>
+<title>AI를 이용한 자동매매 프로그램 작성 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시 | Evan&#39;s Blog</title>
 <meta name="keywords" content="설계">
 <meta name="description" content="매수 후보가 9회 연속 0건이던 원인을 추적해 캐시 만료시간 설정과 ATR 필터의 hard block 설계를 함께 수정했다. 이어서 계좌별 원금·평가금액·수익률을 한눈에 보여주는 표시 기능과 수동 입출금 기능을 추가한 6월 19일 작업을 정리한다.">
 <meta name="author" content="Evan">
 <link rel="canonical" href="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.2fd9135862a3da866393a267370bb97cd812193a02eb63558b88b00f30ec3648.css" integrity="sha256-L9kTWGKj2oZjk6JnNwu5fNgSGToC62NVi4iwDzDsNkg=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.d5637fd203e7828a4b21becf06f6425a3606871feb7992696713468478a3bb1d.css" integrity="sha256-1WN/0gPngopLIb7PBvZCWjYGhx/reZJpZxNGhHijux0=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://nova7zone.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
@@ -68,7 +68,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dev Log">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
@@ -76,8 +76,22 @@
     });
   }
 </script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
 <meta property="og:url" content="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/">
-  <meta property="og:site_name" content="Evan&#39;s Dev Log">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
   <meta property="og:title" content="AI를 이용한 자동매매 프로그램 작성 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시">
   <meta property="og:description" content="매수 후보가 9회 연속 0건이던 원인을 추적해 캐시 만료시간 설정과 ATR 필터의 hard block 설계를 함께 수정했다. 이어서 계좌별 원금·평가금액·수익률을 한눈에 보여주는 표시 기능과 수동 입출금 기능을 추가한 6월 19일 작업을 정리한다.">
   <meta property="og:locale" content="ko_KR">
@@ -137,7 +151,7 @@
   },
   "publisher": {
     "@type": "Organization",
-    "name": "Evan's Dev Log",
+    "name": "Evan's Blog",
     "logo": {
       "@type": "ImageObject",
       "url": "https://nova7zone.github.io/favicon.ico"
@@ -150,7 +164,7 @@
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Dev Log (Alt + H)">Evan&#39;s Dev Log</a>
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -336,7 +350,7 @@
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Dev Log</a></span> · 
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
 
     
     
