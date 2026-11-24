@@ -180,6 +180,58 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시
+    </h2>
+  </header>
+  <div class="entry-content"><p>매수 후보가 9회 연속 0건이던 원인을 추적해 캐시 만료시간 설정과 ATR 필터의 hard block 설계를 함께 수정했다. 이어서 계좌별 원금·평가금액·수익률을 한눈에 보여주는 표시 기능과 수동 입출금 기능을 추가한 6월 19일 작업을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-19T19:00:00+09:00'>2026년 6월 19일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (24) — ATR 필터 hard block 제거, 계좌별 원금/평가금액/수익률 표시" href="https://nova7zone.github.io/posts/atr-filter-and-account-valuation/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환
+    </h2>
+  </header>
+  <div class="entry-content"><p>항상 None만 반환하던 외국인·기관 수급 지표를 KIS 종목별 투자자매매동향 API로 실제 구현했다. strategy_v2의 매수 흐름을 슬롯제에서 09시 통합 선정 &#43; 장중 풀링 매수로 바꾸고, 그 과정에서 발견한 TIME LIMIT 오류와 docs stale 정보까지 정리한 6월 18일 후반 작업을 기록한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-18T22:00:00+09:00'>2026년 6월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (23) — foreign_cumulative 실구현, v2 풀링 매수 전환" href="https://nova7zone.github.io/posts/foreign-cumulative-and-pooled-buy-flow/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지
+    </h2>
+  </header>
+  <div class="entry-content"><p>거래량순위 조회가 1페이지(30건)만 받고 멈추는 문제를 페이지네이션 구현, 응답 헤더 대소문자 버그 수정까지 두 번 고친 끝에 결국 KIS API 자체의 시장당 30건 하드 리밋이라는 결론에 도달해 universe 목표치를 60으로 재조정한 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-18T11:00:00+09:00'>2026년 6월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (22) — 거래량순위 페이지네이션 추적기, universe 60 확정까지" href="https://nova7zone.github.io/posts/volume-rank-pagination-saga/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (21) — 매매설정 v2 카드 확장(3·4단계), next-pre-market 분리
+    </h2>
+  </header>
+  <div class="entry-content"><p>거래량순위 API가 장 개시 전엔 빈 응답을 준다는 걸 발견해 pre-market 캐시 빌드를 18:00 next-pre-market으로 분리했다. 이어서 매매설정 탭에 v2 전용 카드 4종과 캐시 매니저·계좌 관리 페이지를 추가한 6월 17일 작업을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-06-17T21:00:00+09:00'>2026년 6월 17일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (21) — 매매설정 v2 카드 확장(3·4단계), next-pre-market 분리" href="https://nova7zone.github.io/posts/v2-settings-cards-and-next-premarket-split/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 코드 개발 (20) — pre-market API 최적화, 주문 체결 검증 개선 (PR #29)
     </h2>
   </header>
@@ -254,58 +306,6 @@
 
 <span title='2026-06-12T18:00:00+09:00'>2026년 6월 12일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (15) — 문서 정리, work-start/end skill화, 전략 버전 선택 UI" href="https://nova7zone.github.io/posts/docs-cleanup-and-strategy-version-ui/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (14) — strategy_v1/v2 분리 구조 설계와 3단계 이동
-    </h2>
-  </header>
-  <div class="entry-content"><p>새 매매 전략(v2)을 추가할 자리를 만들기 위해 코드 전체를 strategy_v1/strategy_v2 구조로 재설계했다. 공유 indicators 패키지 분리부터 설정·스크리닝·매매 코드 이동까지 3단계로 나눠 subagent-driven-development로 진행한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-11T18:00:00+09:00'>2026년 6월 11일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (14) — strategy_v1/v2 분리 구조 설계와 3단계 이동" href="https://nova7zone.github.io/posts/strategy-version-restructure/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집
-    </h2>
-  </header>
-  <div class="entry-content"><p>체결 이력 페이지의 렌더링 깨짐을 고치고, 매수 점수·매도 사유·보유상태·매수가·조건별 점수 툴팁을 차례로 추가했다. buy_context로 컬럼명을 정리하고, 매매설정 페이지에서 2차 스크리닝 조건 파라미터를 전체 편집할 수 있게 만든 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-10T16:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (13) — 체결 이력 페이지 전면 개편, 매매설정 파라미터 전체 편집" href="https://nova7zone.github.io/posts/trades-page-revamp/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정
-    </h2>
-  </header>
-  <div class="entry-content"><p>매수 후보가 모두 잔고 부족으로 스킵되던 잔고 0원 버그와 KOSDAQ 거래량순위 조회 오류를 수정해 매수 주문이 실제로 들어가게 만들었다. 이어서 호가단위 오류로 거부된 주문을 KRX 호가단위 보정 유틸로 해결하고, CLAUDE.md 작업 절차를 다시 정비한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-10T10:00:00+09:00'>2026년 6월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (12) — 잔고 0원, KOSDAQ 거래량순위, 호가단위 오류 수정" href="https://nova7zone.github.io/posts/balance-kosdaq-tick-size-bugfix/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편
-    </h2>
-  </header>
-  <div class="entry-content"><p>로그 포맷 버그·매도 sector 누락·dead code 등 잔여 버그를 정리하고, 시장필터 차단 임계값을 설정 가능하게 만들었다. 기존보다 진입 기준을 완화한 wide 2차 스크리닝 전략을 추가하고, 매매설정 페이지를 탭으로 나눠 전략·파라미터를 직접 편집할 수 있게 개편한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-09T20:00:00+09:00'>2026년 6월 9일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (11) — wide 전략 도입과 매매설정 페이지 개편" href="https://nova7zone.github.io/posts/wide-strategy-and-settings-tabs/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

@@ -190,6 +190,110 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">서버 관리를 앱 저장소에서 떼어 내고, Python 버전을 패치 단위로 고정하기
+    </h2>
+  </header>
+  <div class="entry-content"><p>앱 저장소 세 개에 흩어져 있던 서버 수준 작업(회수 방지 부하, 저널 정책, 디스크·메모리 점검)을 서버 관리 전용 저장소로 모은 과정, Python을 3.12.15로 패치 고정하며 만난 venv 링크 함정, 배포 스크립트에서 단계를 지울 때의 함정, 그리고 불필요해진 옛 서비스를 지운 일을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-24T14:02:00+09:00'>2026년 11월 24일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 서버 관리를 앱 저장소에서 떼어 내고, Python 버전을 패치 단위로 고정하기" href="https://nova7zone.github.io/posts/server-management-split-and-python-pin/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다
+    </h2>
+  </header>
+  <div class="entry-content"><p>11월 19~23일: 공개 전략 3종의 엔진 대조, 거래량 진입 탐색 실패, 시장 신호 4시간 요약 영구 보관, 국면 보유 전략이 처음 후보가 되고 캐너리로 라이브 전진 검증을 시작한 과정, 알트 확장·숏·빠른 국면 보유 후속 연구를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-23T12:42:00+09:00'>2026년 11월 23일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다" href="https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다
+    </h2>
+  </header>
+  <div class="entry-content"><p>11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-21T18:30:00+09:00'>2026년 11월 21일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다" href="https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록
+    </h2>
+  </header>
+  <div class="entry-content"><p>무료 클라우드 서버는 유휴 상태가 길면 회수될 수 있다. 서버 두 대의 사용량 지표를 검증하는 도구와 점검 스킬을 만들던 중, 한 서버의 CPU 지표가 기준 아래로 내려간 원인을 잘못 추정했다가 다른 세션의 측정으로 바로잡고 부하 값을 올린 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-20T20:30:00+09:00'>2026년 11월 20일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록" href="https://nova7zone.github.io/posts/free-tier-cpu-reclaim-misdiagnosis/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다
+    </h2>
+  </header>
+  <div class="entry-content"><p>백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-18T12:00:00+09:00'>2026년 11월 18일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다" href="https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다
+    </h2>
+  </header>
+  <div class="entry-content"><p>11월 15~18일: 종목 거부 처리 개선, 데이터 윈도우를 마지막으로 열어 본 SEALED 판정, 첫 정식 전략 편입, 단가 하한, 그리고 일봉 롱·깊은 손절 청산·BULL 조건 탐색이 모두 닫힌 과정과 거기서 얻은 교훈을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-18T11:09:00+09:00'>2026년 11월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다" href="https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다
+    </h2>
+  </header>
+  <div class="entry-content"><p>펀딩비·미결제약정·김치 프리미엄·호가 자료를 쌓으면서 그 자료로 바로 매매하는 캐너리 3종을 만들고, 코드 리뷰 10건과 이상치 처리, 백업 스크립트가 운영 틱을 지연시킨 사고, 라이브 구간 로컬 재현 진단까지 11월 11~14일의 작업을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-14T19:20:00+09:00'>2026년 11월 14일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다" href="https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다
+    </h2>
+  </header>
+  <div class="entry-content"><p>연구 66~68회차와 &#39;역방향 홀드아웃&#39; 규칙 도입, 이를 월간 리밸런싱 전략에 적용해 검증이 실패한 과정. 실패 원인을 추적하다가 같은 날 재매수를 막는 엔진 스위치가 월간 전략의 설계 결함 후보임을 찾아, 재선정된 보유 종목을 팔지 않고 이어가는 규칙을 구현한 일을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-11-13T23:55:00+09:00'>2026년 11월 13일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다" href="https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유
     </h2>
   </header>
@@ -212,110 +316,6 @@
 
 <span title='2026-11-10T23:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트" href="https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기
-    </h2>
-  </header>
-  <div class="entry-content"><p>무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-10T22:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기" href="https://nova7zone.github.io/posts/oci-gateway-usage-monitor/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략
-    </h2>
-  </header>
-  <div class="entry-content"><p>신규 후보 38개가 전부 기준가 불일치로 거절되어 하루 종일 진입이 없었다. 원인은 새벽에 받은 직전 거래일 종가가 잠정값이라는 것이었고, 갱신 시각을 옮겨 해결했다. 같은 주에 전체 코드 리뷰로 약 90건을 정리하고, 지수 종가 공급을 코어에 추가했으며, 수급 기반 전략이 처음으로 1단계를 조건부로 통과해 모의 관측으로 이식된 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-10T19:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략" href="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트
-    </h2>
-  </header>
-  <div class="entry-content"><p>새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-10T19:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트" href="https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법
-    </h2>
-  </header>
-  <div class="entry-content"><p>에이전트는 실전 주문을 낼 수 없고 이 프로젝트도 실전은 조회 전용이다. 사용자가 실전 주문 점검을 요청하자 거절하고 대안을 제시해, 절차 문서를 거쳐 가짜 브로커로 시험한 점검 스크립트를 만들고 실행은 사용자가 서버에서 했다. 같은 기간의 시세 조회 실전 전환, 일정이 겹치는 작업의 시각 분배, 파서가 거부한 형식 오류 한 줄, 레이트리밋 경고의 원인 세션 식별을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-03T23:50:00+09:00'>2026년 11월 3일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법" href="https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (4) — 한 번에 조건 하나씩: 사전등록 프로그램과 대조군 20시드로 연구하기
-    </h2>
-  </header>
-  <div class="entry-content"><p>국내 주식 전략 연구 회차 27번가량을 사흘 동안 돌린 기록. 후보를 하나씩 평가하는 대신 가장 단순한 기준선에서 조건을 하나씩 더하는 &#39;프로그램&#39; 방식으로 바꾸고, 같은 규칙의 무작위 대조군 20시드와 비교해 채택 여부를 정했다. 도구 버그, 구조 결함 조기 발견, 국면 사이징을 전략별 설정으로 옮긴 설계와 처음 조건부로 살아남은 후보까지 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-10-29T23:00:00+09:00'>2026년 10월 29일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (4) — 한 번에 조건 하나씩: 사전등록 프로그램과 대조군 20시드로 연구하기" href="https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (3) — 일봉 이력 확장, 모의투자 대시보드, 그리고 병렬 에이전트 7개로 한 전체 코드 리뷰
-    </h2>
-  </header>
-  <div class="entry-content"><p>주말마다 일봉 이력을 늘리는 데몬 작업, 새로고침 기준으로 전략별 성과를 보는 모의투자 화면과 자동 갱신, 홈 화면 설치용 PWA를 만들었다. 저장소 전체를 읽기 전용 에이전트 7개로 병렬 리뷰해 High 15건을 TDD로 고친 과정과, 사용자 질문 한 줄로 연구 설계의 학습/검증 비율을 결과를 보기 전에 폐기하고 다시 사전등록한 일을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-10-26T22:30:00+09:00'>2026년 10월 26일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (3) — 일봉 이력 확장, 모의투자 대시보드, 그리고 병렬 에이전트 7개로 한 전체 코드 리뷰" href="https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (13) — 거래소 장애 때 틱이 20분 멈춘 이유, 그리고 &#39;임계값을 결과에 맞추지 않는다&#39;
-    </h2>
-  </header>
-  <div class="entry-content"><p>정기 점검 스크립트가 낸 발견 다섯 개를 순서대로 처리한 기록. 거래소 장애 때 틱 하나가 20분 가까이 멈춘 원인을 장애 로그로 확정해 막고, IOC 부분 체결이 종결 상태로 남던 문제를 고쳤다. 사이징 입력값을 체결 시점에 기록해 재현 가능하게 하고, 점검 임계값을 라이브 결과에 맞춰 고치지 않는다는 원칙도 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-10-22T13:00:00+09:00'>2026년 10월 22일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (13) — 거래소 장애 때 틱이 20분 멈춘 이유, 그리고 &#39;임계값을 결과에 맞추지 않는다&#39;" href="https://nova7zone.github.io/posts/upbit-v2-outage-tick-protection-and-sizing-record/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지
-    </h2>
-  </header>
-  <div class="entry-content"><p>데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-10-21T21:00:00+09:00'>2026년 10월 21일</span>&nbsp;·&nbsp;<span>9 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지" href="https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

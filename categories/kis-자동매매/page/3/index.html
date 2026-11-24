@@ -180,6 +180,58 @@
 
 <article class="post-entry tag-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증
+    </h2>
+  </header>
+  <div class="entry-content"><p>KIS API가 애초에 제공하지 않는 V-KOSPI200 지수를 잘못된 코드로 조회해 fear_filter가 상시 오판하던 긴급 버그와 리스크 버그 5건을 수정하고, v0.7.0 배포 후 v3 운영 로그에서 실거래를 무력화시키던 Critical 버그 3건을 발견·수정한 하루를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-03T10:00:00+09:00'>2026년 7월 3일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (44) — VKOSPI 오조회 긴급수정, 리스크 버그 5건, v3 운영검증" href="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (43) — docs 전면 최신화, v0.7.0 릴리즈
+    </h2>
+  </header>
+  <div class="entry-content"><p>strategy_v3 신규 문서를 작성하고 기존 docs 12개를 v3 반영해 갱신한 뒤 v0.7.0을 릴리즈했다. 이어서 v3 로그가 trader.log에 전혀 기록되지 않던 필터 누락과, 서버 타임존 경계에서 CI가 흔들리던 date rot 테스트 버그도 함께 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-02T17:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (43) — docs 전면 최신화, v0.7.0 릴리즈" href="https://nova7zone.github.io/posts/docs-update-and-v070-release/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환
+    </h2>
+  </header>
+  <div class="entry-content"><p>v3에 09시 1회 선정 대신 매시간 재선정 기능을 추가하고, 지난 세션 외부 리뷰 문서의 배선 가드·관찰성 로그·거래량 정규화 보강까지 마친 뒤, 메인 전략을 v1에서 v3/aggressive로 전환한 하루를 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-02T10:00:00+09:00'>2026년 7월 2일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (42) — strategy_v3 매시간 재선정, 메인 전략 v3 전환" href="https://nova7zone.github.io/posts/strategy-v3-hourly-reselect-and-main-switch/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그
+    </h2>
+  </header>
+  <div class="entry-content"><p>v3가 웹 대시보드에서 전략 버전 선택조차 안 되던 문제를 프리셋 신설로 해결하고, 조사 과정에서 발견한 strategy_sell.yaml 이중 중첩 버그로 hold_days 등 설정값이 실제로는 전혀 반영되지 않고 있었던 사실을 확인해 수정한 과정을 정리한다.</p>
+  </div>
+  <footer class="entry-footer">
+
+<span title='2026-07-01T16:00:00+09:00'>2026년 7월 1일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
+  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (41) — strategy_v3 웹 대시보드 통합, config_loader 이중중첩 버그" href="https://nova7zone.github.io/posts/strategy-v3-web-dashboard-and-config-loader-bug/"></a>
+</article>
+
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">자동매매 코드 개발 (40) — strategy_v3 구현 완료, 매수 전면 중단 Critical 버그
     </h2>
   </header>
@@ -254,58 +306,6 @@
 
 <span title='2026-06-25T11:00:00+09:00'>2026년 6월 25일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
   <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (35) — 보유한도·가격범위 전역화, VWAP 손실매도 버그, v0.6.2 릴리즈" href="https://nova7zone.github.io/posts/holdings-limit-globalization-and-vwap-bug-v062/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈
-    </h2>
-  </header>
-  <div class="entry-content"><p>일간 리포트의 &#34;매수 1건 | 매도 0건&#34;과 &#34;보유 종목 없음&#34;이라는 모순된 값을 추적하다 발견한 qty_before 캡처 순서 버그를 수정하고, PR #68을 머지해 v0.6.1을 릴리즈한 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-24T18:00:00+09:00'>2026년 6월 24일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (34) — 매도 체결인식 실패 버그 수정, v0.6.1 릴리즈" href="https://nova7zone.github.io/posts/qty-before-order-bug-and-v061-release/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도
-    </h2>
-  </header>
-  <div class="entry-content"><p>종목당 매수금액을 프리셋 고정 금액에서 총자산 비율 기반 동적 계산으로 바꾸고, 현금 보유량이 하한선 밑으로 내려가면 수익률 최저 종목을 자동으로 팔아 현금을 확보하는 기능을 추가했다. v1/v2/백테스트 세 곳에 동일한 로직을 반영하는 과정과, 최종 리뷰에서 발견된 cross-task 버그를 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-24T10:00:00+09:00'>2026년 6월 24일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도" href="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈
-    </h2>
-  </header>
-  <div class="entry-content"><p>직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-23T23:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화
-    </h2>
-  </header>
-  <div class="entry-content"><p>v2 백테스트에 시장국면 기반 동적 전략전환 시뮬레이션을 추가하고, OCI 서버 업데이트를 자동화하는 스크립트를 만들었다. 전날 사고로 쌓여있던 수량 phantom position을 본계좌 실시간 잔고 동기화 기능으로 직접 정정한 6월 23일 전반 작업을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-23T12:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>8 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="연구, 버그수정, 설계">
+<meta name="description" content="11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다">
+  <meta property="og:description" content="11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-11-21T18:30:00+09:00">
+    <meta property="article:modified_time" content="2026-11-21T18:30:00+09:00">
+    <meta property="article:tag" content="연구">
+    <meta property="article:tag" content="버그수정">
+    <meta property="article:tag" content="설계">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다">
+  <meta name="twitter:description" content="11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다",
+      "item": "https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다",
+  "name": "자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다",
+  "description": "11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.",
+  "keywords": [
+    "연구", "버그수정", "설계"
+  ],
+  "articleBody": "들어가며 모의 계좌를 자료 수집 장비로 쓰기 시작하면 가장 먼저 필요한 것은 그 자료가 실제로 쌓이고 있는지다. 20~21일에는 일지 수집 오류를 고치고, 쌓인 거래 기록을 처음 분석했다. 수치와 종목은 공개하지 않는다.\n1. 모의 일지 수집 실패: 페이지 한도 (D-206) 서버 로그에서 모의 매매일지 수집이 KisPaginationError로 실패하고 있었다. 모의 서버는 체결내역을 페이지당 15건, 최대 10페이지(150건)까지만 준다. 일지는 최근 7일의 겹치는 구간을 한 번에 요청하고 있었고 하루에만 150건 가까운 날이 있었다. 한 번 실패하면 마지막 저장일이 갱신되지 않아 같은 구간을 계속 실패했다.\n수정은 날짜별로 나눠 호출하는 것이다. 하루가 실패하면 그 구간의 기존 저장분은 교체하지 않는다. 처음에는 주말을 건너뛰게 했는데 테스트 자료가 주말 날짜라 실패했다. 달력 의존을 없애고 매일 호출하게 했다. 테스트 두 개를 추가했다(하루씩 호출, 실패 시 기존 창 유지). 이후 서버에서 일지 동기화가 정상이고 마지막 거래일이 전진하는 것을 확인했다.\n2. 모의 거래 기록을 읽다 서버의 모의 DB를 읽기 전용으로 조회해 약 한 달 치(시장은 약세장)를 분석했다. 숫자 자체는 공개하지 않고 구조만 적는다.\n캐너리(관측용) 전략은 승률이 손익분기 승률보다 크게 낮았다. 평균 익절 폭이 평균 손절 폭의 두 배 정도라 손익분기 승률은 약 3분의 1인데, 실제는 그에 한참 못 미쳤다. 손절의 절반 가까이가 진입 당일에 나왔고, 진입의 대부분이 장 시작 직후 한 시간대에 몰렸다. 정식 후보 전략은 표본이 너무 적었다. 흑자를 낸 것은 지정가 눌림 전략 하나뿐이었다. 손절 체결가와 계획가의 차이(슬리피지)는 아직 점검하지 못했다. 다음 과제로 남겼다. 여기서 사용자가 “장 초반 진입과 손절 처리\"를 가설로 골랐고, 범위를 다시 물었더니 갭 거름(전일 종가에서 많이 뜬 종목은 사지 않는다)을 선택했다.\n3. 71회차: 갭 거름은 기각 사다리형 전략에 진입 허용 상한 세 단계를 붙여 학습 구간에서 20개 시드로 비교했다. 코드 변경 없이 설정 변형만 썼다. 기준(문턱)은 기준 전략 재측정값에 일정 폭을 더한 것이었는데 세 변형 모두 문턱에 한참 못 미쳤고 기준 전략보다도 낮았다. 검증 구간은 열지 않았다. 백테스트가 일봉이라 장 초반 장중 가설은 원리적으로 검증할 수 없다는 한계도 보고서에 적었다. 분봉 수집은 core 개정이라 사용자 결정으로 남겼다.\n4. 70회차: 인버스를 국면 대리로 검토 사용자가 “약세·횡보에서 이익이 나는 전략\"을 물었다. 인버스 ETF를 쓸 수 있는지 확인했더니 시세 DB에는 인버스 ETF 마스터 목록은 있지만 일봉이 0건이었다. 엔진으로 백테스트할 수 없어서, 지수의 -1배를 대리로 놓고 이론적 한계만 봤다.\n세 변형 모두 비용 뒤 손실이었고, 무작위 대조 분위도 높지 않았다. 검증 구간은 열지 않았다. 원인은 국면 라벨의 후행성이다. 급반등 시점에 라벨이 늦어 손실이 컸다. 인버스 ETF 수집 개정을 요청할 근거는 없다고 결론했다. 재도전은 후행이 적은 입력(변동성지수, 낙폭 속도, 시장 폭)으로 다른 가족에서 한다. 5. 서버 검증이 느린 이유는 메모리가 아니었다 배포 때 서버의 테스트 실행이 평소 약 29분인데 어떤 날은 53분이 걸렸다. 5초 간격으로 약 6분 측정해 보니 CPU 시간 중 약 57%가 steal(가상화 하이퍼바이저가 가져간 시간)이었고 스왑도 거의 쓰지 않았다. 서버가 느린 이유는 메모리 부족이 아니라 공유 CPU의 점유 손실이다. 유휴 회수 방지용 부하가 얼마나 기여하는지는 분리하지 못해 사용자 결정으로 남겼다.\n이 측정이 이후 서버 쪽 작업의 방향에 영향을 주었다(서버 두 대 구성 변경을 다룬 글 참고).\n정리 영역 내용 수정 일지 수집을 일 단위로 분할, 실패 시 기존 보존 분석 손익분기 승률 대비 낮은 승률, 진입 당일 손절 집중 연구 인버스 대리(70회차), 갭 거름(71회차) 모두 1단계 기각 진단 서버가 느린 원인은 CPU steal 배운 점: 자료를 쌓기 시작하면 가장 먼저 수집 파이프라인이 실제로 끊기지 않는지 확인한다. 그리고 가설이 장중 현상일 때 일봉 백테스트는 답할 수 없다는 한계를 먼저 적어 두면, 기각된 가설이 “틀렸다\"가 아니라 “이 도구로는 모른다\"로 남는다.\n",
+  "wordCount" : "1615",
+  "inLanguage": "ko",
+  "datePublished": "2026-11-21T18:30:00+09:00",
+  "dateModified": "2026-11-21T18:30:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다
+    </h1>
+    <div class="post-description">
+      11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-11-21T18:30:00+09:00'>2026년 11월 21일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%eb%aa%a8%ec%9d%98-%ec%9d%bc%ec%a7%80-%ec%88%98%ec%a7%91-%ec%8b%a4%ed%8c%a8-%ed%8e%98%ec%9d%b4%ec%a7%80-%ed%95%9c%eb%8f%84-d-206" aria-label="1. 모의 일지 수집 실패: 페이지 한도 (D-206)">1. 모의 일지 수집 실패: 페이지 한도 (D-206)</a></li>
+            <li>
+                <a href="#2-%eb%aa%a8%ec%9d%98-%ea%b1%b0%eb%9e%98-%ea%b8%b0%eb%a1%9d%ec%9d%84-%ec%9d%bd%eb%8b%a4" aria-label="2. 모의 거래 기록을 읽다">2. 모의 거래 기록을 읽다</a></li>
+            <li>
+                <a href="#3-71%ed%9a%8c%ec%b0%a8-%ea%b0%ad-%ea%b1%b0%eb%a6%84%ec%9d%80-%ea%b8%b0%ea%b0%81" aria-label="3. 71회차: 갭 거름은 기각">3. 71회차: 갭 거름은 기각</a></li>
+            <li>
+                <a href="#4-70%ed%9a%8c%ec%b0%a8-%ec%9d%b8%eb%b2%84%ec%8a%a4%eb%a5%bc-%ea%b5%ad%eb%a9%b4-%eb%8c%80%eb%a6%ac%eb%a1%9c-%ea%b2%80%ed%86%a0" aria-label="4. 70회차: 인버스를 국면 대리로 검토">4. 70회차: 인버스를 국면 대리로 검토</a></li>
+            <li>
+                <a href="#5-%ec%84%9c%eb%b2%84-%ea%b2%80%ec%a6%9d%ec%9d%b4-%eb%8a%90%eb%a6%b0-%ec%9d%b4%ec%9c%a0%eb%8a%94-%eb%a9%94%eb%aa%a8%eb%a6%ac%ea%b0%80-%ec%95%84%eb%8b%88%ec%97%88%eb%8b%a4" aria-label="5. 서버 검증이 느린 이유는 메모리가 아니었다">5. 서버 검증이 느린 이유는 메모리가 아니었다</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>모의 계좌를 자료 수집 장비로 쓰기 시작하면 가장 먼저 필요한 것은 <strong>그 자료가 실제로 쌓이고 있는지</strong>다. 20~21일에는 일지 수집 오류를 고치고, 쌓인 거래 기록을 처음 분석했다. 수치와 종목은 공개하지 않는다.</p>
+<hr>
+<h2 id="1-모의-일지-수집-실패-페이지-한도-d-206">1. 모의 일지 수집 실패: 페이지 한도 (D-206)<a hidden class="anchor" aria-hidden="true" href="#1-모의-일지-수집-실패-페이지-한도-d-206">#</a></h2>
+<p>서버 로그에서 모의 매매일지 수집이 <code>KisPaginationError</code>로 실패하고 있었다. 모의 서버는 체결내역을 <strong>페이지당 15건, 최대 10페이지</strong>(150건)까지만 준다. 일지는 최근 7일의 겹치는 구간을 한 번에 요청하고 있었고 하루에만 150건 가까운 날이 있었다. 한 번 실패하면 마지막 저장일이 갱신되지 않아 <strong>같은 구간을 계속 실패</strong>했다.</p>
+<p>수정은 날짜별로 나눠 호출하는 것이다. 하루가 실패하면 그 구간의 기존 저장분은 교체하지 않는다. 처음에는 주말을 건너뛰게 했는데 테스트 자료가 주말 날짜라 실패했다. 달력 의존을 없애고 매일 호출하게 했다. 테스트 두 개를 추가했다(하루씩 호출, 실패 시 기존 창 유지). 이후 서버에서 일지 동기화가 정상이고 마지막 거래일이 전진하는 것을 확인했다.</p>
+<hr>
+<h2 id="2-모의-거래-기록을-읽다">2. 모의 거래 기록을 읽다<a hidden class="anchor" aria-hidden="true" href="#2-모의-거래-기록을-읽다">#</a></h2>
+<p>서버의 모의 DB를 읽기 전용으로 조회해 약 한 달 치(시장은 약세장)를 분석했다. 숫자 자체는 공개하지 않고 구조만 적는다.</p>
+<ul>
+<li>캐너리(관측용) 전략은 <strong>승률이 손익분기 승률보다 크게 낮았다.</strong> 평균 익절 폭이 평균 손절 폭의 두 배 정도라 손익분기 승률은 약 3분의 1인데, 실제는 그에 한참 못 미쳤다.</li>
+<li>손절의 절반 가까이가 <strong>진입 당일</strong>에 나왔고, 진입의 대부분이 장 시작 직후 한 시간대에 몰렸다.</li>
+<li>정식 후보 전략은 표본이 너무 적었다.</li>
+<li>흑자를 낸 것은 지정가 눌림 전략 하나뿐이었다.</li>
+<li>손절 체결가와 계획가의 차이(슬리피지)는 아직 점검하지 못했다. 다음 과제로 남겼다.</li>
+</ul>
+<p>여기서 사용자가 &ldquo;장 초반 진입과 손절 처리&quot;를 가설로 골랐고, 범위를 다시 물었더니 <strong>갭 거름</strong>(전일 종가에서 많이 뜬 종목은 사지 않는다)을 선택했다.</p>
+<hr>
+<h2 id="3-71회차-갭-거름은-기각">3. 71회차: 갭 거름은 기각<a hidden class="anchor" aria-hidden="true" href="#3-71회차-갭-거름은-기각">#</a></h2>
+<p>사다리형 전략에 진입 허용 상한 세 단계를 붙여 학습 구간에서 20개 시드로 비교했다. 코드 변경 없이 설정 변형만 썼다. 기준(문턱)은 기준 전략 재측정값에 일정 폭을 더한 것이었는데 세 변형 모두 <strong>문턱에 한참 못 미쳤고 기준 전략보다도 낮았다.</strong> 검증 구간은 열지 않았다. 백테스트가 일봉이라 <strong>장 초반 장중 가설은 원리적으로 검증할 수 없다</strong>는 한계도 보고서에 적었다. 분봉 수집은 core 개정이라 사용자 결정으로 남겼다.</p>
+<hr>
+<h2 id="4-70회차-인버스를-국면-대리로-검토">4. 70회차: 인버스를 국면 대리로 검토<a hidden class="anchor" aria-hidden="true" href="#4-70회차-인버스를-국면-대리로-검토">#</a></h2>
+<p>사용자가 &ldquo;약세·횡보에서 이익이 나는 전략&quot;을 물었다. 인버스 ETF를 쓸 수 있는지 확인했더니 시세 DB에는 인버스 ETF 마스터 목록은 있지만 <strong>일봉이 0건</strong>이었다. 엔진으로 백테스트할 수 없어서, 지수의 -1배를 대리로 놓고 이론적 한계만 봤다.</p>
+<ul>
+<li>세 변형 모두 비용 뒤 손실이었고, 무작위 대조 분위도 높지 않았다. 검증 구간은 열지 않았다.</li>
+<li>원인은 <strong>국면 라벨의 후행성</strong>이다. 급반등 시점에 라벨이 늦어 손실이 컸다.</li>
+<li>인버스 ETF 수집 개정을 요청할 근거는 없다고 결론했다. 재도전은 후행이 적은 입력(변동성지수, 낙폭 속도, 시장 폭)으로 <strong>다른 가족</strong>에서 한다.</li>
+</ul>
+<hr>
+<h2 id="5-서버-검증이-느린-이유는-메모리가-아니었다">5. 서버 검증이 느린 이유는 메모리가 아니었다<a hidden class="anchor" aria-hidden="true" href="#5-서버-검증이-느린-이유는-메모리가-아니었다">#</a></h2>
+<p>배포 때 서버의 테스트 실행이 평소 약 29분인데 어떤 날은 53분이 걸렸다. 5초 간격으로 약 6분 측정해 보니 <strong>CPU 시간 중 약 57%가 steal</strong>(가상화 하이퍼바이저가 가져간 시간)이었고 스왑도 거의 쓰지 않았다. 서버가 느린 이유는 메모리 부족이 아니라 <strong>공유 CPU의 점유 손실</strong>이다. 유휴 회수 방지용 부하가 얼마나 기여하는지는 분리하지 못해 사용자 결정으로 남겼다.</p>
+<p>이 측정이 이후 서버 쪽 작업의 방향에 영향을 주었다(서버 두 대 구성 변경을 다룬 글 참고).</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>수정</td>
+					<td>일지 수집을 일 단위로 분할, 실패 시 기존 보존</td>
+			</tr>
+			<tr>
+					<td>분석</td>
+					<td>손익분기 승률 대비 낮은 승률, 진입 당일 손절 집중</td>
+			</tr>
+			<tr>
+					<td>연구</td>
+					<td>인버스 대리(70회차), 갭 거름(71회차) 모두 1단계 기각</td>
+			</tr>
+			<tr>
+					<td>진단</td>
+					<td>서버가 느린 원인은 CPU steal</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 자료를 쌓기 시작하면 가장 먼저 <strong>수집 파이프라인이 실제로 끊기지 않는지</strong> 확인한다. 그리고 가설이 장중 현상일 때 일봉 백테스트는 답할 수 없다는 한계를 먼저 적어 두면, 기각된 가설이 &ldquo;틀렸다&quot;가 아니라 &ldquo;이 도구로는 모른다&quot;로 남는다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/">
+    <span class="title">« 이전 페이지</span>
+    <span>자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/free-tier-cpu-reclaim-misdiagnosis/">
+    <span class="title">다음 페이지 »</span>
+    <span>무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    function close() {
+      nav.classList.remove("menu-open");
+      b.setAttribute("aria-expanded", "false");
+      b.setAttribute("aria-label", "메뉴 열기");
+    }
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) close();
+    });
+    
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && nav.classList.contains("menu-open")) { close(); b.focus(); }
+    });
+    window.matchMedia("(min-width: 769px)").addEventListener("change", function (m) { if (m.matches) close(); });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

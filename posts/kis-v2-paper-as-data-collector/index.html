@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ko" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다 | Evan&#39;s Blog</title>
+<meta name="keywords" content="설계, 연구, 배포, 리뷰">
+<meta name="description" content="백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.">
+<meta name="author" content="Evan">
+<link rel="canonical" href="https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Evan's Blog">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/sw.js").catch(function () {});
+    });
+  }
+</script>
+<meta name="color-scheme" content="light dark">
+<script>
+  
+  (function () {
+    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
+    function sync() {
+      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
+    }
+    sync();
+    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    document.addEventListener("DOMContentLoaded", sync);
+  })();
+</script>
+<meta property="og:url" content="https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/">
+  <meta property="og:site_name" content="Evan&#39;s Blog">
+  <meta property="og:title" content="자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다">
+  <meta property="og:description" content="백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-11-18T12:00:00+09:00">
+    <meta property="article:modified_time" content="2026-11-18T12:00:00+09:00">
+    <meta property="article:tag" content="설계">
+    <meta property="article:tag" content="연구">
+    <meta property="article:tag" content="배포">
+    <meta property="article:tag" content="리뷰">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/">
+      <meta property="og:see_also" content="https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다">
+  <meta name="twitter:description" content="백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://nova7zone.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "자동매매 V2 개발 · KIS (8) — 모의 계좌를 '자료 수집 장비'로 쓰기로 하다",
+      "item": "https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "자동매매 V2 개발 · KIS (8) — 모의 계좌를 '자료 수집 장비'로 쓰기로 하다",
+  "name": "자동매매 V2 개발 · KIS (8) — 모의 계좌를 \u0027자료 수집 장비\u0027로 쓰기로 하다",
+  "description": "백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.",
+  "keywords": [
+    "설계", "연구", "배포", "리뷰"
+  ],
+  "articleBody": "들어가며 연구 회차가 쌓이면서 한 가지가 분명해졌다. 백테스트는 일봉으로 체결을 가정한다. 지정가가 실제로 체결되는지, 청산 신호가 체결로 이어지는 데 얼마나 걸리는지, 시세 조회가 얼마나 지연되는지는 일봉으로 알 수 없다. 그래서 11월 14일 사용자와 브레인스토밍한 방향이 “모의 계좌를 수익을 내는 곳이 아니라 자료를 모으는 장비로 쓴다\"였다. 이 글은 11월 14일부터 18일까지의 기록이다. 금액과 종목은 공개하지 않는다.\n1. 수집 계획(D-203) 결정한 구성은 이렇다.\n1차로 연구 순위의 상위 15개 전략과 이미 운영 중인 7개를 유지한다. 노출은 두 묶음으로 나눈다(관측용 묶음과 1차 묶음에 각각 절반). 보유 종목 상한을 넉넉히 높이고, 총 노출은 100%, 최소 주문은 낮추고 1주씩 매수한다. 자본은 충분히 큰 가상 금액이다. 수집한 기록은 400일 보존한다. 여기서 중요한 것은 종목을 고르는 기준이 수익이 아니라 정보량이라는 점이다. 1주 매수와 낮은 최소 주문은 체결을 최대한 많이 관측하기 위한 설정이다.\n구현은 작업 10개로 나눴다 설계 문서와 구현 계획을 쓰고 서브에이전트에게 작업 10개를 나눠 줬다.\n전략별 노출 상한(strategy_exposure) 심사 사유와 1주 매수 수집 계획 설정(collection_plan.yaml)과 적용·되돌리기 스크립트 현재가 다건 조회 API(청산 감시가 보유 종목을 한 번에 선조회) 후보 메타(편입 이유, 변동성), 보존 기간 400일 검증 도구: --collection-sizing 옵션, 전략 유니버스 조회, 정합 점검 reconcile, 순위 산출 collection_rank 수정 회차가 세 번 있었다. 엔진의 최소 주문 동작이 라이브와 달랐던 것, 정합 점검 라벨의 우선순위가 틀렸던 것, 되돌리기가 직전 값을 복원하지 못하던 것이다. 마지막 전체 리뷰에서 8건을 더 고쳤다. 검증은 4,205개 테스트가 통과했고, 골든 지문(엔진 결과 해시)이 기준 커밋과 같음을 확인했다. 새 스위치를 모두 끄면 엔진 결과가 한 비트도 바뀌지 않는다는 뜻이다.\n순위 산출에서 작업자 4개로 돌린 첫 시도가 프로세스 풀 오류로 중단되었다. 단일 프로세스로 다시 돌렸다.\n적용은 사람이 승인한 뒤에 배포 후 collection_plan show를 돌려 현재 설정과 계획의 차이 82건을 보고했다(대시보드 리스크 설정과 연구 전략 21개 켜짐 포함). 사용자가 승인하자 설정 DB를 백업한 뒤 적용했고, 재확인한 차이는 0건, 켜진 전략은 22개였다. 설정 일괄 변경은 먼저 차이를 보여 주고 승인을 받는다.\n2. 첫 장 마감 점검(11월 17일) 수집 계획 적용 후 첫 평일의 서버를 읽기 전용으로 점검했다.\n상태 점검과 통합 점검 모두 통과. 지수 일봉이 며칠 전 멈췄다가 복구된 것도 확인했다. 다건 시세 조회: 약 400회, 한 번에 10~40종목, 평균 59초 간격, 실패 없음. 보유 38종목의 가격 경로 기록 간격이 평균 74초였다(기록 하한 60초). API 사용량은 실전 조회 계정의 일일 한도 대비 4분의 1 정도, 시세 캐시 적중률은 16%였다. 진입 판정 403건 중 체결로 이어진 것이 32건(전부 체결), 노출 상한으로 막힌 것이 54건, 이미 보유 중이라 건너뛴 것이 26건이었다. 청산 12건 중 손절이 11건이었다. 가장 큰 손실은 계획 밖에 남아 있던 옛 캐너리 보유분의 손절 4건이었다. 청산 신호부터 체결 확정까지는 45~63초였다. 체결 확정까지 걸리는 시간 분포는 일봉 백테스트로는 알 수 없는 값이다. 수집 계획이 정확히 노린 자료다.\n후속 수정 3건 점검에서 발견한 보류 항목을 작은 브랜치와 PR로 처리하고 배포했다.\n다건 시세 묶음이 실패하면 오류가 계속 쌓이던 것을 5분에 한 번만 ERROR로 남기고 사이는 DEBUG로 세게 했다. 다시 파싱에 성공하거나 더 이상 조회하지 않는 종목은 “문제 목록\"에서 지운다. 다음 실패는 다시 ERROR로 알린다. 사전 건너뜀이 후보를 모두 막으면 심사가 돌지 않아 총평가가 낡는 문제. 낡은 값이 임계(300초)를 넘으면 잔고 캐시를 다시 읽고, 실패하면 모름(None)으로 둬서 노출 때문에 건너뛰지 않는다. 배포 스크립트의 서버 테스트가 약 21분 걸렸다. 서버가 느린 환경이라 격리 검증 시간이 길다.\n3. 코드 리뷰: 환경변수 전역 상태 11월 14일 코드 리뷰(D-200~D-202 범위)에서 8건이 나왔고 치명적인 것은 없었다.\n라이브 재선정 이어가기의 예외 격리를 포지션 단위로 쪼갰다. 한 포지션의 실패가 같은 전략의 나머지를 멈추면 안 된다. 외부 백업 복원 점검이 시세 DB 백업까지 내려받아 검증하게 했다. 보류했다가 이후 수정한 항목: --no-renew 옵션이 모듈 전역과 환경변수로 전달되던 것. 셸에 같은 이름의 환경변수가 남아 있으면 의도치 않게 동작이 바뀐다. 전역을 지우고 실행 설정 객체(RunSpec, SearchContext)의 필드로 옮겼다. 작업자 프로세스는 직렬화된 값으로 받는다. 시험은 실패를 먼저 확인한 8건이다. 관련해서 시세 DB 외부 백업의 폴더 문제도 있었다. 사용자의 질문(“외부 백업에서 시세 DB는 하지 않나?\")이 계기였다. 백업은 이미 정상이었는데 모의 모드 폴더에 섞여 있었다. 시세 DB는 모의와 실전이 같이 쓰므로 별도 폴더로 분리하고 기존 백업 두 개를 옮겼다.\n4. 연구 69회차: 업종 모멘텀 사용자가 “너만의 전략을 만들어 달라. 기존 지표 전략이 안 되면 AI 전략도 검토하라\"고 요청했다. 69회차는 업종 모멘텀이다. 업종 마스터가 들어와 데이터 제약이 풀렸고 아직 시도하지 않은 가족이었다.\n탐색 에이전트가 후보를 냈다. 해외 문헌 근거는 있지만 한국 시장 근거는 약했다(최근 연구에서는 부정적). 명세에서 학습 59개월과 검증 40개월로 나누고, 거래대금 가중 상위 업종 3개에 종목을 7·7·6개로 나눠 담는 구조로 사전등록했다. 업종 안의 종목이 모자라면 4위 이하 업종에서 채운다. 구현 중 테스트가 버그를 잡았다. 모자란 종목을 상위 업종의 더 깊은 순위에서 채우고 있었다. 검증 에이전트가 1차에서 멈췄다. 재선정 이어가기가 엔진의 기본값이 아니라 YAML 설정이었는데 설정이 빠져 있었다. 학습 구간을 열기 전에 설정을 추가하고 명세를 정정했다. 결과는 1단계 실패였다. 수익 팩터가 1.0 아래였고 낙폭이 컸으며 무작위 대조 3개 모두에 졌다. 신규 진입이 달마다 20건과 1~5건으로 번갈아 나왔다. 시간 청산 21일과 거래일 수가 적은 달의 슬롯 공백이 겹친 것이다. 손실은 코스닥 제조업에 집중되었다. 부호를 뒤집거나 풀을 바꾸는 수정은 가설 변경이라서 하지 않았다(1·2회차 선례).\nAI/ML 경로 검토 보고서의 한 절이 AI 경로 검토다. 결론은 단계적 접근이다.\n정보원을 넓힌다(수급, 공매도 등). 머신러닝 요인 결합기를 한 회차로 시도한다(코어 개정 필요). LLM은 모의 관측 전용으로만 쓴다. LLM의 판단을 매매에 쓰기 전에, 먼저 관측만 해서 정보가 있는지 본다는 순서다.\n5. 월간 리밸런싱 기준일: 20일 잔고 조회 실패가 모의에서만 7일간 발생한 것을 먼저 확인했다. 모의 서버의 초당 거래 건수 초과 응답이었고, 진입 6건과의 인과는 확인하지 못했다고 적었다. 이어 사용자 요청으로 모의 월간 전략의 리밸런싱을 매월 20일(휴장이면 다음 거래일)로 바꿨다. 파라미터 rebalance_day를 전략 세 개와 설정 다섯 개에 추가하고 테스트를 갱신했다.\n장중 배포를 허용받아 반영하다가 문제가 있었다. 데몬이 종료 신호에 60초 안에 멈추지 않아 강제 종료되었고, 첫 하트비트가 약 4분 뒤에 나왔다. 종료 시간 제한과 실제 정리 시간이 맞지 않는다는 신호다.\n정리 영역 내용 방향 모의 계좌를 수익이 아니라 자료 수집 장비로 사용 구현 노출 상한, 1주 매수, 수집 계획 적용·되돌리기, 다건 시세 조회 점검 체결 확정 시간 분포, 사전 건너뜀 총평가 낡음 수정 리뷰 환경변수 전역 상태를 실행 설정으로 이전 연구 업종 모멘텀 1단계 실패, AI/ML은 관측 전용부터 배운 점: 백테스트와 라이브의 차이는 전략이 아니라 집행 현실에서 온다. 그래서 수익 없이도 가치 있는 실험이 있다. 모의 계좌를 자료 수집 장비로 쓰되, 설정을 바꿀 때는 차이를 먼저 보여 주고 승인을 받고 백업한다. 그리고 환경변수 같은 숨은 전역 상태는 한 번 겪어야 보이는 종류의 버그라서, 리뷰에서 잡아 실행 설정으로 올려 두는 것이 값싸다.\n",
+  "wordCount" : "3106",
+  "inLanguage": "ko",
+  "datePublished": "2026-11-18T12:00:00+09:00",
+  "dateModified": "2026-11-18T12:00:00+09:00",
+  "author":{
+    "@type": "Person",
+    "name": "Evan"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Evan's Blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://nova7zone.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://nova7zone.github.io/posts/" title="글">
+                    <span>글</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/series/" title="시리즈">
+                    <span>시리즈</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/categories/" title="카테고리">
+                    <span>카테고리</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/tags/" title="태그">
+                    <span>태그</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://nova7zone.github.io/about/" title="소개">
+                    <span>소개</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">홈</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다
+    </h1>
+    <div class="post-description">
+      백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.
+    </div>
+    <div class="post-meta">
+
+<span title='2026-11-18T12:00:00+09:00'>2026년 11월 18일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+
+</div>
+  </header> <details class="toc" >
+    <summary accesskey="c" title="(Alt + C)">
+        <span class="title">목차</span>
+    </summary>
+
+    <div class="inner"><ul>
+            <li>
+                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
+            <li>
+                <a href="#1-%ec%88%98%ec%a7%91-%ea%b3%84%ed%9a%8dd-203" aria-label="1. 수집 계획(D-203)">1. 수집 계획(D-203)</a><ul>
+                    
+            <li>
+                <a href="#%ea%b5%ac%ed%98%84%ec%9d%80-%ec%9e%91%ec%97%85-10%ea%b0%9c%eb%a1%9c-%eb%82%98%eb%88%b4%eb%8b%a4" aria-label="구현은 작업 10개로 나눴다">구현은 작업 10개로 나눴다</a></li>
+            <li>
+                <a href="#%ec%a0%81%ec%9a%a9%ec%9d%80-%ec%82%ac%eb%9e%8c%ec%9d%b4-%ec%8a%b9%ec%9d%b8%ed%95%9c-%eb%92%a4%ec%97%90" aria-label="적용은 사람이 승인한 뒤에">적용은 사람이 승인한 뒤에</a></li></ul>
+            </li>
+            <li>
+                <a href="#2-%ec%b2%ab-%ec%9e%a5-%eb%a7%88%ea%b0%90-%ec%a0%90%ea%b2%8011%ec%9b%94-17%ec%9d%bc" aria-label="2. 첫 장 마감 점검(11월 17일)">2. 첫 장 마감 점검(11월 17일)</a><ul>
+                    
+            <li>
+                <a href="#%ed%9b%84%ec%86%8d-%ec%88%98%ec%a0%95-3%ea%b1%b4" aria-label="후속 수정 3건">후속 수정 3건</a></li></ul>
+            </li>
+            <li>
+                <a href="#3-%ec%bd%94%eb%93%9c-%eb%a6%ac%eb%b7%b0-%ed%99%98%ea%b2%bd%eb%b3%80%ec%88%98-%ec%a0%84%ec%97%ad-%ec%83%81%ed%83%9c" aria-label="3. 코드 리뷰: 환경변수 전역 상태">3. 코드 리뷰: 환경변수 전역 상태</a></li>
+            <li>
+                <a href="#4-%ec%97%b0%ea%b5%ac-69%ed%9a%8c%ec%b0%a8-%ec%97%85%ec%a2%85-%eb%aa%a8%eb%a9%98%ed%85%80" aria-label="4. 연구 69회차: 업종 모멘텀">4. 연구 69회차: 업종 모멘텀</a><ul>
+                    
+            <li>
+                <a href="#aiml-%ea%b2%bd%eb%a1%9c-%ea%b2%80%ed%86%a0" aria-label="AI/ML 경로 검토">AI/ML 경로 검토</a></li></ul>
+            </li>
+            <li>
+                <a href="#5-%ec%9b%94%ea%b0%84-%eb%a6%ac%eb%b0%b8%eb%9f%b0%ec%8b%b1-%ea%b8%b0%ec%a4%80%ec%9d%bc-20%ec%9d%bc" aria-label="5. 월간 리밸런싱 기준일: 20일">5. 월간 리밸런싱 기준일: 20일</a></li>
+            <li>
+                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
+            </li>
+        </ul>
+    </div>
+</details>
+
+  <div class="post-content md-content"><h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<p>연구 회차가 쌓이면서 한 가지가 분명해졌다. 백테스트는 <strong>일봉으로 체결을 가정</strong>한다. 지정가가 실제로 체결되는지, 청산 신호가 체결로 이어지는 데 얼마나 걸리는지, 시세 조회가 얼마나 지연되는지는 일봉으로 알 수 없다. 그래서 11월 14일 사용자와 브레인스토밍한 방향이 &ldquo;모의 계좌를 수익을 내는 곳이 아니라 <strong>자료를 모으는 장비</strong>로 쓴다&quot;였다. 이 글은 11월 14일부터 18일까지의 기록이다. 금액과 종목은 공개하지 않는다.</p>
+<hr>
+<h2 id="1-수집-계획d-203">1. 수집 계획(D-203)<a hidden class="anchor" aria-hidden="true" href="#1-수집-계획d-203">#</a></h2>
+<p>결정한 구성은 이렇다.</p>
+<ul>
+<li>1차로 연구 순위의 상위 15개 전략과 이미 운영 중인 7개를 유지한다.</li>
+<li>노출은 두 묶음으로 나눈다(관측용 묶음과 1차 묶음에 각각 절반).</li>
+<li>보유 종목 상한을 넉넉히 높이고, 총 노출은 100%, 최소 주문은 낮추고 <strong>1주씩 매수</strong>한다. 자본은 충분히 큰 가상 금액이다.</li>
+<li>수집한 기록은 400일 보존한다.</li>
+</ul>
+<p>여기서 중요한 것은 종목을 고르는 기준이 수익이 아니라 <strong>정보량</strong>이라는 점이다. 1주 매수와 낮은 최소 주문은 체결을 최대한 많이 관측하기 위한 설정이다.</p>
+<h3 id="구현은-작업-10개로-나눴다">구현은 작업 10개로 나눴다<a hidden class="anchor" aria-hidden="true" href="#구현은-작업-10개로-나눴다">#</a></h3>
+<p>설계 문서와 구현 계획을 쓰고 서브에이전트에게 작업 10개를 나눠 줬다.</p>
+<ul>
+<li>전략별 노출 상한(<code>strategy_exposure</code>) 심사 사유와 1주 매수</li>
+<li>수집 계획 설정(<code>collection_plan.yaml</code>)과 적용·되돌리기 스크립트</li>
+<li>현재가 <strong>다건 조회</strong> API(청산 감시가 보유 종목을 한 번에 선조회)</li>
+<li>후보 메타(편입 이유, 변동성), 보존 기간 400일</li>
+<li>검증 도구: <code>--collection-sizing</code> 옵션, 전략 유니버스 조회, 정합 점검 <code>reconcile</code>, 순위 산출 <code>collection_rank</code></li>
+</ul>
+<p>수정 회차가 세 번 있었다. 엔진의 최소 주문 동작이 라이브와 달랐던 것, 정합 점검 라벨의 우선순위가 틀렸던 것, 되돌리기가 직전 값을 복원하지 못하던 것이다. 마지막 전체 리뷰에서 8건을 더 고쳤다. 검증은 4,205개 테스트가 통과했고, <strong>골든 지문(엔진 결과 해시)이 기준 커밋과 같음</strong>을 확인했다. 새 스위치를 모두 끄면 엔진 결과가 한 비트도 바뀌지 않는다는 뜻이다.</p>
+<p>순위 산출에서 작업자 4개로 돌린 첫 시도가 프로세스 풀 오류로 중단되었다. 단일 프로세스로 다시 돌렸다.</p>
+<h3 id="적용은-사람이-승인한-뒤에">적용은 사람이 승인한 뒤에<a hidden class="anchor" aria-hidden="true" href="#적용은-사람이-승인한-뒤에">#</a></h3>
+<p>배포 후 <code>collection_plan show</code>를 돌려 현재 설정과 계획의 <strong>차이 82건</strong>을 보고했다(대시보드 리스크 설정과 연구 전략 21개 켜짐 포함). 사용자가 승인하자 설정 DB를 백업한 뒤 적용했고, 재확인한 차이는 0건, 켜진 전략은 22개였다. 설정 일괄 변경은 먼저 차이를 보여 주고 승인을 받는다.</p>
+<hr>
+<h2 id="2-첫-장-마감-점검11월-17일">2. 첫 장 마감 점검(11월 17일)<a hidden class="anchor" aria-hidden="true" href="#2-첫-장-마감-점검11월-17일">#</a></h2>
+<p>수집 계획 적용 후 첫 평일의 서버를 읽기 전용으로 점검했다.</p>
+<ul>
+<li>상태 점검과 통합 점검 모두 통과. 지수 일봉이 며칠 전 멈췄다가 복구된 것도 확인했다.</li>
+<li><strong>다건 시세 조회</strong>: 약 400회, 한 번에 10~40종목, 평균 59초 간격, 실패 없음. 보유 38종목의 가격 경로 기록 간격이 평균 74초였다(기록 하한 60초).</li>
+<li>API 사용량은 실전 조회 계정의 일일 한도 대비 4분의 1 정도, 시세 캐시 적중률은 16%였다.</li>
+<li>진입 판정 403건 중 체결로 이어진 것이 32건(전부 체결), 노출 상한으로 막힌 것이 54건, 이미 보유 중이라 건너뛴 것이 26건이었다.</li>
+<li>청산 12건 중 손절이 11건이었다. 가장 큰 손실은 계획 밖에 남아 있던 옛 캐너리 보유분의 손절 4건이었다. 청산 신호부터 체결 확정까지는 45~63초였다.</li>
+</ul>
+<p>체결 확정까지 걸리는 시간 분포는 일봉 백테스트로는 알 수 없는 값이다. 수집 계획이 정확히 노린 자료다.</p>
+<h3 id="후속-수정-3건">후속 수정 3건<a hidden class="anchor" aria-hidden="true" href="#후속-수정-3건">#</a></h3>
+<p>점검에서 발견한 보류 항목을 작은 브랜치와 PR로 처리하고 배포했다.</p>
+<ol>
+<li>다건 시세 묶음이 실패하면 오류가 계속 쌓이던 것을 <strong>5분에 한 번만 ERROR</strong>로 남기고 사이는 DEBUG로 세게 했다.</li>
+<li>다시 파싱에 성공하거나 더 이상 조회하지 않는 종목은 &ldquo;문제 목록&quot;에서 지운다. 다음 실패는 다시 ERROR로 알린다.</li>
+<li>사전 건너뜀이 후보를 모두 막으면 심사가 돌지 않아 <strong>총평가가 낡는</strong> 문제. 낡은 값이 임계(300초)를 넘으면 잔고 캐시를 다시 읽고, 실패하면 모름(None)으로 둬서 노출 때문에 건너뛰지 않는다.</li>
+</ol>
+<p>배포 스크립트의 서버 테스트가 약 21분 걸렸다. 서버가 느린 환경이라 격리 검증 시간이 길다.</p>
+<hr>
+<h2 id="3-코드-리뷰-환경변수-전역-상태">3. 코드 리뷰: 환경변수 전역 상태<a hidden class="anchor" aria-hidden="true" href="#3-코드-리뷰-환경변수-전역-상태">#</a></h2>
+<p>11월 14일 코드 리뷰(D-200~D-202 범위)에서 8건이 나왔고 치명적인 것은 없었다.</p>
+<ul>
+<li>라이브 재선정 이어가기의 예외 격리를 <strong>포지션 단위</strong>로 쪼갰다. 한 포지션의 실패가 같은 전략의 나머지를 멈추면 안 된다.</li>
+<li>외부 백업 복원 점검이 시세 DB 백업까지 내려받아 검증하게 했다.</li>
+<li>보류했다가 이후 수정한 항목: <code>--no-renew</code> 옵션이 <strong>모듈 전역과 환경변수</strong>로 전달되던 것. 셸에 같은 이름의 환경변수가 남아 있으면 의도치 않게 동작이 바뀐다. 전역을 지우고 실행 설정 객체(<code>RunSpec</code>, <code>SearchContext</code>)의 필드로 옮겼다. 작업자 프로세스는 직렬화된 값으로 받는다. 시험은 실패를 먼저 확인한 8건이다.</li>
+</ul>
+<p>관련해서 시세 DB 외부 백업의 폴더 문제도 있었다. 사용자의 질문(&ldquo;외부 백업에서 시세 DB는 하지 않나?&quot;)이 계기였다. 백업은 이미 정상이었는데 <strong>모의 모드 폴더에 섞여</strong> 있었다. 시세 DB는 모의와 실전이 같이 쓰므로 별도 폴더로 분리하고 기존 백업 두 개를 옮겼다.</p>
+<hr>
+<h2 id="4-연구-69회차-업종-모멘텀">4. 연구 69회차: 업종 모멘텀<a hidden class="anchor" aria-hidden="true" href="#4-연구-69회차-업종-모멘텀">#</a></h2>
+<p>사용자가 &ldquo;너만의 전략을 만들어 달라. 기존 지표 전략이 안 되면 AI 전략도 검토하라&quot;고 요청했다. 69회차는 업종 모멘텀이다. 업종 마스터가 들어와 데이터 제약이 풀렸고 아직 시도하지 않은 가족이었다.</p>
+<ul>
+<li>탐색 에이전트가 후보를 냈다. 해외 문헌 근거는 있지만 <strong>한국 시장 근거는 약했다</strong>(최근 연구에서는 부정적).</li>
+<li>명세에서 학습 59개월과 검증 40개월로 나누고, 거래대금 가중 상위 업종 3개에 종목을 7·7·6개로 나눠 담는 구조로 사전등록했다. 업종 안의 종목이 모자라면 4위 이하 업종에서 채운다.</li>
+<li>구현 중 테스트가 버그를 잡았다. 모자란 종목을 <strong>상위 업종의 더 깊은 순위</strong>에서 채우고 있었다.</li>
+<li>검증 에이전트가 1차에서 멈췄다. 재선정 이어가기가 엔진의 기본값이 아니라 YAML 설정이었는데 설정이 빠져 있었다. 학습 구간을 열기 <strong>전에</strong> 설정을 추가하고 명세를 정정했다.</li>
+</ul>
+<p>결과는 1단계 실패였다. 수익 팩터가 1.0 아래였고 낙폭이 컸으며 무작위 대조 3개 모두에 졌다. 신규 진입이 달마다 20건과 1~5건으로 번갈아 나왔다. 시간 청산 21일과 거래일 수가 적은 달의 슬롯 공백이 겹친 것이다. 손실은 코스닥 제조업에 집중되었다. 부호를 뒤집거나 풀을 바꾸는 수정은 <strong>가설 변경</strong>이라서 하지 않았다(1·2회차 선례).</p>
+<h3 id="aiml-경로-검토">AI/ML 경로 검토<a hidden class="anchor" aria-hidden="true" href="#aiml-경로-검토">#</a></h3>
+<p>보고서의 한 절이 AI 경로 검토다. 결론은 단계적 접근이다.</p>
+<ol>
+<li>정보원을 넓힌다(수급, 공매도 등).</li>
+<li>머신러닝 요인 결합기를 한 회차로 시도한다(코어 개정 필요).</li>
+<li>LLM은 모의 <strong>관측 전용</strong>으로만 쓴다.</li>
+</ol>
+<p>LLM의 판단을 매매에 쓰기 전에, 먼저 관측만 해서 정보가 있는지 본다는 순서다.</p>
+<hr>
+<h2 id="5-월간-리밸런싱-기준일-20일">5. 월간 리밸런싱 기준일: 20일<a hidden class="anchor" aria-hidden="true" href="#5-월간-리밸런싱-기준일-20일">#</a></h2>
+<p>잔고 조회 실패가 모의에서만 7일간 발생한 것을 먼저 확인했다. 모의 서버의 초당 거래 건수 초과 응답이었고, 진입 6건과의 인과는 확인하지 못했다고 적었다. 이어 사용자 요청으로 모의 월간 전략의 리밸런싱을 <strong>매월 20일</strong>(휴장이면 다음 거래일)로 바꿨다. 파라미터 <code>rebalance_day</code>를 전략 세 개와 설정 다섯 개에 추가하고 테스트를 갱신했다.</p>
+<p>장중 배포를 허용받아 반영하다가 문제가 있었다. 데몬이 종료 신호에 60초 안에 멈추지 않아 강제 종료되었고, 첫 하트비트가 약 4분 뒤에 나왔다. 종료 시간 제한과 실제 정리 시간이 맞지 않는다는 신호다.</p>
+<hr>
+<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>영역</th>
+					<th>내용</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>방향</td>
+					<td>모의 계좌를 수익이 아니라 자료 수집 장비로 사용</td>
+			</tr>
+			<tr>
+					<td>구현</td>
+					<td>노출 상한, 1주 매수, 수집 계획 적용·되돌리기, 다건 시세 조회</td>
+			</tr>
+			<tr>
+					<td>점검</td>
+					<td>체결 확정 시간 분포, 사전 건너뜀 총평가 낡음 수정</td>
+			</tr>
+			<tr>
+					<td>리뷰</td>
+					<td>환경변수 전역 상태를 실행 설정으로 이전</td>
+			</tr>
+			<tr>
+					<td>연구</td>
+					<td>업종 모멘텀 1단계 실패, AI/ML은 관측 전용부터</td>
+			</tr>
+	</tbody>
+</table>
+<p><strong>배운 점</strong>: 백테스트와 라이브의 차이는 전략이 아니라 <strong>집행 현실</strong>에서 온다. 그래서 수익 없이도 가치 있는 실험이 있다. 모의 계좌를 자료 수집 장비로 쓰되, 설정을 바꿀 때는 차이를 먼저 보여 주고 승인을 받고 백업한다. 그리고 환경변수 같은 숨은 전역 상태는 한 번 겪어야 보이는 종류의 버그라서, 리뷰에서 잡아 실행 설정으로 올려 두는 것이 값싸다.</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포</a></li>
+      <li><a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a></li>
+    </ul>
+<nav class="paginav">
+  <a class="prev" href="https://nova7zone.github.io/posts/free-tier-cpu-reclaim-misdiagnosis/">
+    <span class="title">« 이전 페이지</span>
+    <span>무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록</span>
+  </a>
+  <a class="next" href="https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/">
+    <span class="title">다음 페이지 »</span>
+    <span>자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다</span>
+  </a>
+</nav>
+
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a><script>
+  
+  (function () {
+    var nav = document.querySelector(".header-nav");
+    var menu = document.getElementById("menu");
+    var sw = document.querySelector(".logo-switches");
+    if (!nav || !menu || !sw) return;
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "menu-toggle";
+    b.setAttribute("aria-label", "메뉴 열기");
+    b.setAttribute("aria-expanded", "false");
+    b.setAttribute("aria-controls", "menu");
+    b.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
+      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
+    sw.appendChild(b);
+    b.addEventListener("click", function () {
+      var open = nav.classList.toggle("menu-open");
+      b.setAttribute("aria-expanded", open ? "true" : "false");
+      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+    });
+    function close() {
+      nav.classList.remove("menu-open");
+      b.setAttribute("aria-expanded", "false");
+      b.setAttribute("aria-label", "메뉴 열기");
+    }
+    menu.addEventListener("click", function (e) {
+      if (e.target.closest("a")) close();
+    });
+    
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && nav.classList.contains("menu-open")) { close(); b.focus(); }
+    });
+    window.matchMedia("(min-width: 769px)").addEventListener("change", function (m) { if (m.matches) close(); });
+  })();
+</script>
+
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        
+        let menuScrollTimeout;
+        menu.addEventListener("scroll", function () {
+            clearTimeout(menuScrollTimeout);
+            menuScrollTimeout = setTimeout(function () {
+                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+            }, 150);
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                target.scrollIntoView();
+            }
+            
+            
+            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
+                target.setAttribute("tabindex", "-1");
+            }
+            target.focus({ preventScroll: true });
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    var scrollTicking = false;
+    
+    window.addEventListener("scroll", function () {
+        if (scrollTicking) {
+            return;
+        }
+        scrollTicking = true;
+        requestAnimationFrame(function () {
+            const scrollThreshold = window.innerHeight;
+            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
+            toplink.classList.toggle("hidden", !shown);
+            scrollTicking = false;
+        });
+    }, { passive: true });
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = '복사';
+
+        function copyingDone() {
+            copybutton.innerHTML = '복사 완료!';
+            setTimeout(() => {
+                copybutton.innerHTML = '복사';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

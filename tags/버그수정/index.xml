@@ -6,8 +6,43 @@
     <description>Recent content in 버그수정 on Evan&#39;s Blog</description>
     <generator>Hugo</generator>
     <language>ko-KR</language>
-    <lastBuildDate>Wed, 11 Nov 2026 16:00:00 +0900</lastBuildDate>
+    <lastBuildDate>Tue, 24 Nov 2026 14:02:00 +0900</lastBuildDate>
     <atom:link href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>서버 관리를 앱 저장소에서 떼어 내고, Python 버전을 패치 단위로 고정하기</title>
+      <link>https://nova7zone.github.io/posts/server-management-split-and-python-pin/</link>
+      <pubDate>Tue, 24 Nov 2026 14:02:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/server-management-split-and-python-pin/</guid>
+      <description>앱 저장소 세 개에 흩어져 있던 서버 수준 작업(회수 방지 부하, 저널 정책, 디스크·메모리 점검)을 서버 관리 전용 저장소로 모은 과정, Python을 3.12.15로 패치 고정하며 만난 venv 링크 함정, 배포 스크립트에서 단계를 지울 때의 함정, 그리고 불필요해진 옛 서비스를 지운 일을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/</link>
+      <pubDate>Sat, 21 Nov 2026 18:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/</guid>
+      <description>11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.</description>
+    </item>
+    <item>
+      <title>무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록</title>
+      <link>https://nova7zone.github.io/posts/free-tier-cpu-reclaim-misdiagnosis/</link>
+      <pubDate>Fri, 20 Nov 2026 20:30:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/free-tier-cpu-reclaim-misdiagnosis/</guid>
+      <description>무료 클라우드 서버는 유휴 상태가 길면 회수될 수 있다. 서버 두 대의 사용량 지표를 검증하는 도구와 점검 스킬을 만들던 중, 한 서버의 CPU 지표가 기준 아래로 내려간 원인을 잘못 추정했다가 다른 세션의 측정으로 바로잡고 부하 값을 올린 과정을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다</title>
+      <link>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</link>
+      <pubDate>Wed, 18 Nov 2026 11:09:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</guid>
+      <description>11월 15~18일: 종목 거부 처리 개선, 데이터 윈도우를 마지막으로 열어 본 SEALED 판정, 첫 정식 전략 편입, 단가 하한, 그리고 일봉 롱·깊은 손절 청산·BULL 조건 탐색이 모두 닫힌 과정과 거기서 얻은 교훈을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다</title>
+      <link>https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/</link>
+      <pubDate>Fri, 13 Nov 2026 23:55:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/</guid>
+      <description>연구 66~68회차와 &amp;#39;역방향 홀드아웃&amp;#39; 규칙 도입, 이를 월간 리밸런싱 전략에 적용해 검증이 실패한 과정. 실패 원인을 추적하다가 같은 날 재매수를 막는 엔진 스위치가 월간 전략의 설계 결함 후보임을 찾아, 재선정된 보유 종목을 팔지 않고 이어가는 규칙을 구현한 일을 정리한다.</description>
+    </item>
     <item>
       <title>공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유</title>
       <link>https://nova7zone.github.io/posts/blog-publish-pipeline-and-security-scanner/</link>

@@ -6,8 +6,29 @@
     <description>Recent content in 자동매매 V2 개발 · Upbit on Evan&#39;s Blog</description>
     <generator>Hugo</generator>
     <language>ko-KR</language>
-    <lastBuildDate>Tue, 10 Nov 2026 19:30:00 +0900</lastBuildDate>
+    <lastBuildDate>Mon, 23 Nov 2026 12:42:00 +0900</lastBuildDate>
     <atom:link href="https://nova7zone.github.io/series/%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4-v2-%EA%B0%9C%EB%B0%9C--upbit/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다</title>
+      <link>https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/</link>
+      <pubDate>Mon, 23 Nov 2026 12:42:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/</guid>
+      <description>11월 19~23일: 공개 전략 3종의 엔진 대조, 거래량 진입 탐색 실패, 시장 신호 4시간 요약 영구 보관, 국면 보유 전략이 처음 후보가 되고 캐너리로 라이브 전진 검증을 시작한 과정, 알트 확장·숏·빠른 국면 보유 후속 연구를 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다</title>
+      <link>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</link>
+      <pubDate>Wed, 18 Nov 2026 11:09:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</guid>
+      <description>11월 15~18일: 종목 거부 처리 개선, 데이터 윈도우를 마지막으로 열어 본 SEALED 판정, 첫 정식 전략 편입, 단가 하한, 그리고 일봉 롱·깊은 손절 청산·BULL 조건 탐색이 모두 닫힌 과정과 거기서 얻은 교훈을 정리한다.</description>
+    </item>
+    <item>
+      <title>자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다</title>
+      <link>https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/</link>
+      <pubDate>Sat, 14 Nov 2026 19:20:00 +0900</pubDate>
+      <guid>https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/</guid>
+      <description>펀딩비·미결제약정·김치 프리미엄·호가 자료를 쌓으면서 그 자료로 바로 매매하는 캐너리 3종을 만들고, 코드 리뷰 10건과 이상치 처리, 백업 스크립트가 운영 틱을 지연시킨 사고, 라이브 구간 로컬 재현 진단까지 11월 11~14일의 작업을 정리한다.</description>
+    </item>
     <item>
       <title>자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트</title>
       <link>https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/</link>
