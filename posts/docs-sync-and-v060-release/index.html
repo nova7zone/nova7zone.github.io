@@ -1,304 +1,121 @@
 <!DOCTYPE html>
-<html lang="ko" dir="auto" data-theme="auto">
-
-<head><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
-<title>자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈 | Evan&#39;s Blog</title>
-<meta name="keywords" content="릴리스">
-<meta name="description" content="직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.">
-<meta name="author" content="Evan">
-<link rel="canonical" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
-<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
-<noscript>
-    <style>
-        #theme-toggle,
-        .top-link {
-            display: none;
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈 - Evan&#39;s Blog</title>
+    <meta name="description" content="직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Evan's Blog">
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function () {});
+        });
+      }
+    </script>
+    <style type="text/css">
+        img.wp-smiley,
+        img.emoji {
+            display: inline !important;
+            border: none !important;
+            box-shadow: none !important;
+            height: 1em !important;
+            width: 1em !important;
+            margin: 0 .07em !important;
+            vertical-align: -0.1em !important;
+            background: none !important;
+            padding: 0 !important;
         }
-
     </style>
-    <style>
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --theme: rgb(29, 30, 32);
-                --entry: rgb(46, 46, 51);
-                --primary: rgb(218, 218, 219);
-                --secondary: rgb(155, 156, 157);
-                --tertiary: rgb(65, 66, 68);
-                --content: rgb(196, 196, 197);
-                --code-block-bg: rgb(46, 46, 51);
-                --code-bg: rgb(55, 56, 62);
-                --border: rgb(51, 51, 51);
-                color-scheme: dark;
-            }
-
-            .list {
-                background: var(--theme);
-            }
-
-            .toc {
-                background: var(--entry);
-            }
-        }
-
-    </style>
-</noscript>
-<script>
-    if (localStorage.getItem("pref-theme") === "dark") {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else if (localStorage.getItem("pref-theme") === "light") {
-       document.querySelector("html").dataset.theme = 'light';
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else {
-        document.querySelector("html").dataset.theme = 'light';
-    }
-
-</script><link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Evan's Blog">
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function () {});
-    });
-  }
-</script>
-<meta name="color-scheme" content="light dark">
-<script>
-  
-  (function () {
-    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
-    function sync() {
-      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
-    }
-    sync();
-    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    document.addEventListener("DOMContentLoaded", sync);
-  })();
-</script>
-<meta property="og:url" content="https://nova7zone.github.io/posts/docs-sync-and-v060-release/">
-  <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈">
-  <meta property="og:description" content="직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.">
-  <meta property="og:locale" content="ko_KR">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2026-06-23T23:00:00+09:00">
-    <meta property="article:modified_time" content="2026-06-23T23:00:00+09:00">
-    <meta property="article:tag" content="릴리스">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/review-followup-phase1-3-and-v072-release/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/missing-stock-names-and-premarket-schedule/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/krx-401-and-market-filter-incomplete-candle/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-holdings-snapshot-and-v071-release/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-market-context-log-and-candidate-outcome/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/phase2-sell-evaluation-log-and-orders/">
-      <meta property="og:see_also" content="https://nova7zone.github.io/posts/vkospi-fix-and-risk-bugs-and-v3-ops-verification/">
-
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈">
-  <meta name="twitter:description" content="직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.">
-
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://nova7zone.github.io/posts/"
-    }, 
-    {
-      "@type": "ListItem",
-      "position":  2 ,
-      "name": "자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈",
-      "item": "https://nova7zone.github.io/posts/docs-sync-and-v060-release/"
-    }
-  ]
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈",
-  "name": "자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈",
-  "description": "직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.",
-  "keywords": [
-    "릴리스"
-  ],
-  "articleBody": "작성일: 2026년 6월 23일\n최종 수정: 2026년 6월 23일\n분야: AI Trading, Development\n난이도: Intermediate\n상태: Production Ready\n들어가며 이전 글에서 본계좌 실시간 잔고 동기화로 수량 phantom position을 정정하고, docs-sync skill을 새로 만들었다. 6월 23일 후반은 그 skill을 실제로 돌려 docs/ 폴더 19개 문서 전체를 재작성하는 “문서 전체 점검 + docs-sync + 릴리즈” 5단계 작업으로 마무리했다.\n결론부터 말하면, 5개 카테고리(시작하기/설정/매매전략/운영·테스트/안전)로 나눠 19개 문서를 전부 재작성하면서 stale 내용 여러 건을 함께 정정했다. CLAUDE.md/AI_PROJECT_PROMPT.md도 코드와 다시 대조해 테스트 파일 개수, DB 테이블 개수 같은 기본적인 숫자 오기까지 잡았다. 마지막으로 v0.5.2 이후 머지된 PR 16건을 정리해 v0.6.0을 릴리즈했다.\n작은 운영 수정 두 건 본격적인 문서 작업에 들어가기 전에, OCI에서 보고된 작은 문제 두 가지를 먼저 처리했다.\nupdate_oci.sh 자동 stash 대상 확장: 사용자가 OCI 서버에서 scripts/update_oci.sh를 실행하던 중 settings/app.yaml 외에 strategy_v2/settings/screen_config/second_stage/reversal.yaml도 로컬 변경 상태라 “추적 파일에 로컬 변경이 있습니다” 에러로 막혔다. 이건 웹 대시보드의 “2차 스크리닝 조건 가중치 변경” 기능으로 서버에서 직접 수정된 정상적인 파일이었는데, 스크립트가 app.yaml 하나만 자동 stash 화이트리스트로 허용하고 있던 게 원인이었다. web/routers/config_router.py::_allowed_yaml_files()가 정의하고 있는 실제 웹 편집 가능 범위(strategy_vN/settings/ 트리 전체 포함)를 그대로 스크립트의 is_web_editable_yaml()로 옮겨 일반화했다.\ndocs cron 시각표 stale 시각 정정: 사용자가 공유한 실제 crontab을 기준으로 --update-journal(15:35→16:15), --report-daily(16:00→16:30)를 정정했다. 같은 표가 중복돼 있던 docs/USAGE.md, README.md, docs/INSTALL.md, docs/UPDATE.md 4개 파일을 모두 수정했다.\nstrategy_v1/v2 DEVELOPMENT_SPEC.md 정합성 점검 Explore 서브에이전트로 두 SPEC 문서를 실제 코드와 항목별로 대조했다.\nv1: 실질적 stale 내용은 없었다. balanced.yaml을 “10개 조건 균등 분산\"으로 서술했지만 실제 가중치는 {12,12,12,10,10,10,10,10,7,7}로 완전 균등이 아니라는 표현 오차 1건만 수정했다. v2: 세 가지를 발견·정정했다. (1) 그룹 top_n 오기 — §9 다이어그램·YAML 예시·코드 주석 전부 40으로 남아있었는데 실제론 6/13에 이미 15(합계 60)로 바뀌어 있었다. (2) 슬롯제 잔존 서술 — §9 다이어그램이 여전히 “09:00 GroupA / 09:15 GroupB …” 식 순차 실행을 암시하고 있었는데, 실제로는 6/18부터 통합 스크리닝+풀링 매수로 바뀐 상태였다. (3) --reconcile 시각 오기(16:00 → 실제 15:40) — 두 개 문서에서 동일하게 발견. docs-sync 카테고리 1~5 — 19개 문서 전체 재작성 전날 만든 docs-sync skill로 docs/ 폴더 전체를 5개 카테고리로 나눠 순서대로 재작성했다. docs-sync skill 자체가 disable-model-invocation: true라 Skill 도구로 직접 호출하지 못해 skill.md를 Read로 읽어 절차를 수동으로 수행했다. 카테고리마다 Explore 서브에이전트를 병렬로 디스패치해 초안+stale 점검 결과를 받고, 직접 코드로 재검증한 뒤 최종 작성하는 방식으로 진행했다.\n카테고리 문서 실질 stale 발견·수정 1. 시작하기 INSTALL/OCI_QUICKSTART/UPDATE/WEBSERVICE_DEPLOY WEBSERVICE_DEPLOY.md의 “SSH 터널용 (IP)” 서술이 실제론 이미 (IP) 고정(PR #49)인데 반영 안 됨 2. 설정 APP_SETTINGS/SETTINGS_GUIDE/SETTINGS_REFERENCE/ACCOUNTS_GUIDE balanced.yaml “균등 분산” 표현 정정, ACCOUNTS_GUIDE.md에 sync_broker_holdings() 누락 보강 3. 매매전략 TRADING_FLOW.md → STRATEGY_V1/V2_trading_flow.md 분리, CONDITIONS_GUIDE v2 전용 조건 10개(adx/aroon/candlestick 등)가 “20개 조건\"이라는 제목과 달리 전혀 문서화돼 있지 않았던 콘텐츠 공백 발견·보강 4. 운영·테스트 WORKFLOW/TESTING_GUIDE/BACKTEST_GUIDE/BACKTEST_DATA_GUIDE 테스트 파일 6개 누락 발견, 웹 백테스트 데이터 다운로드(6/22 구현) 기능이 전혀 언급 안 된 콘텐츠 공백 보강 5. 안전 AI_CODE_SAFETY_CHECKLIST/TOKEN_BLOCKED utils/reconcile.py API 레이어 제약 목록 누락 추가 각 카테고리마다 docs/README.md의 체크리스트를 갱신했고, 마지막엔 docs/*.md + 루트 README.md/CLAUDE.md의 마크다운 링크를 스크립트로 전수 검사해 깨진 링크 0건을 확인했다. 이로써 19/19 문서 전체 재작성을 완료했다. 매 카테고리마다 pytest tests/ 717개를 재확인했다(문서만 변경이라 당연한 결과였지만, 검증 원칙상 직접 실행).\nCLAUDE.md/AI_PROJECT_PROMPT.md 정합성 점검 완료 docs-sync 카테고리4 작업 중 발견했던 “tests/ 37개\"라는 오기를 포함해, CLAUDE.md/AI_PROJECT_PROMPT.md 전체를 코드와 다시 대조했다.\ntests/ 파일 개수 “37개” → “41개”(실제 test_*.py 개수) docs/ 파일 개수 “18개” → “21개”(docs-sync 19개 + README.md + 범위 밖이던 USAGE.md) DB 테이블 개수 오기: db/schema.py를 직접 grep해 실제 CREATE TABLE 9개(data_download_runs 포함)를 확인했는데, 문서는 “8개”/“7개” 두 곳 모두 다르게 틀려 있었다 — 9개로 통일 AI_PROJECT_PROMPT.md의 “Oracle 서버 배포” 섹션이 잘못된 경로(~/trader 누락)로 안내하고 있던 것을 scripts/update_oci.sh 사용으로 교체 범위 밖으로 분리한 발견 1건: docs/USAGE.md가 docs-sync의 19개 문서 분류에서 빠져 있었다(설계 당시 18→19 집계 누락으로 추정) — 현재 작동엔 문제없어 next-tasks.md에 기록만 했다. 코드 변경은 없었다(문서만), pytest tests/ 영향도 없었다.\nPR #67 merge + v0.6.0 릴리즈 “문서 전체 점검 + docs-sync + 릴리즈” 5단계 작업의 1~4단계(cron 시각표 정정, v1/v2 SPEC 점검, docs-sync 19개 문서 재작성, CLAUDE.md/AI_PROJECT_PROMPT.md 점검)를 묶어 PR #67로 master에 squash-merge했다.\nrelease-notes skill 절차로 v0.5.2 이후 머지된 PR #52~#67(16건)을 조사해 초안을 작성했다. 버전 번호는 신규 기능 다수 + 운영 안정성 핵심 변경(주문체결 판단 전면 교체, 본계좌 실시간 잔고 동기화) + 실거래 동작 변경(1주 예외매수)을 근거로 v0.5.3(patch) 대신 v0.6.0(minor)을 제안해 사용자 확인을 받았다.\nbuild-docs/release-notes-draft-v0.6.0.md를 9개 주제로 정리(주문체결 판단 전환, 본계좌 잔고 동기화, 1주 예외매수, 웹 백테스트, v2 동적 국면전환 백테스트, 데이터 다운로드 버그 3건, OCI 자동화, extra_05+sold 고착 버그, docs-sync)한 뒤, 태그 생성·push·gh release create로 릴리즈를 발행했다. 발행 후 릴리즈 노트 본문 제목이 초안 파일 제목 그대로 # v0.6.0 (draft)로 남아있는 걸 발견해, gh release edit --notes-file로 본문 제목만 # v0.6.0으로 정정했다.\n정리 작업 내용 운영 수정 2건 update_oci.sh stash 범위 확장, cron 시각표 stale 정정 SPEC 점검 v1 표현 오차 1건, v2 top_n·슬롯제 서술·reconcile 시각 3건 docs-sync 19개 문서 5개 카테고리 전체 재작성, 링크 무결성 0건 깨짐 확인 CLAUDE.md 정합성 테스트 37→41개, DB 테이블 통일 9개, 배포 경로 정정 v0.6.0 릴리즈 PR #52~#67(16건) 정리, minor 버전 격상 6/15부터 6/23까지 9일간 이어진 이 시리즈는 거래량순위 API 한도 추적, IRP 평가금액 보정, 매수 무한반복 사고와 holdings-diff 전환, 그리고 문서 전체 재정비까지 — 기능 추가보다 운영하면서 드러난 구조적 문제를 추적해 고치는 작업이 점점 더 큰 비중을 차지했던 기간이었다. v0.6.0 릴리즈로 이번 시리즈를 마무리한다.\n",
-  "wordCount" : "3037",
-  "inLanguage": "ko",
-  "datePublished": "2026-06-23T23:00:00+09:00",
-  "dateModified": "2026-06-23T23:00:00+09:00",
-  "author":{
-    "@type": "Person",
-    "name": "Evan"
-  },
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://nova7zone.github.io/posts/docs-sync-and-v060-release/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Evan's Blog",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://nova7zone.github.io/favicon.ico"
-    }
-  }
-}
-</script>
+    
+    <link rel='stylesheet' href='/css/style.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/custom.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/syntax.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/toc.css' type='text/css' media='all' />
+    <meta property="og:site_name" content="Evan&#39;s Blog">
 </head>
-<body id="top">
-    <header class="header">
-    <nav class="header-nav">
-        <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
-            <div class="logo-switches">
-                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
-                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <ul id="menu" class="menu">
-            <li>
-                <a href="https://nova7zone.github.io/posts/" title="글">
-                    <span>글</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/series/" title="시리즈">
-                    <span>시리즈</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/categories/" title="카테고리">
-                    <span>카테고리</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/" title="태그">
-                    <span>태그</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/about/" title="소개">
-                    <span>소개</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-</header>
-<main class="main">
 
-<article class="post-single">
-  <header class="post-header">
-    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
-            <a href="/">홈</a>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-            <a href="/posts/">Posts</a>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
-        <polyline points="9 18 15 12 9 6"></polyline>
-    </svg>
-</nav>
-    <h1 class="post-title entry-hint-parent">
-      자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈
-    </h1>
-    <div class="post-description">
-      직전에 신설한 docs-sync skill로 docs/ 폴더 19개 문서를 5개 카테고리로 나눠 전부 재작성했다. CLAUDE.md와 AI_PROJECT_PROMPT.md의 stale 정보까지 정정한 뒤, v0.5.2 이후 16건의 PR을 정리해 v0.6.0을 릴리즈하며 6월 23일을 마무리한 과정을 정리한다.
-    </div>
-    <div class="post-meta">
+    <body class="two-column">
+        <a href="#content">Skip to content</a>
+<div class="wrapper">
+    <header role="banner" class="banner widgets columns-1">
+        <a href="/" rel="home">
+            <h1 class="site">Evan&#39;s Blog</h1>
+            <p></p>
+        </a>
+        <nav role="navigation" aria-label="Primary Navigation">
 
-<span title='2026-06-23T23:00:00+09:00'>2026년 6월 23일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span>
+            <ul class="menu">
+                <li class="menu-item "><a class="menu__link" href="/posts/">글</a></li>
+                <li class="menu-item "><a class="menu__link" href="/series/">시리즈</a></li>
+                <li class="menu-item "><a class="menu__link" href="/categories/">카테고리</a></li>
+                <li class="menu-item "><a class="menu__link" href="/tags/">태그</a></li>
+                <li class="menu-item "><a class="menu__link" href="/about/">소개</a></li>
+            </ul>
+            <select onChange="location.href=value;">
+                <option value="/posts/" class="menu-item menu-item-type-custom menu-item-object-custom" >글</option>
+                <option value="/series/" class="menu-item menu-item-type-custom menu-item-object-custom" >시리즈</option>
+                <option value="/categories/" class="menu-item menu-item-type-custom menu-item-object-custom" >카테고리</option>
+                <option value="/tags/" class="menu-item menu-item-type-custom menu-item-object-custom" >태그</option>
+                <option value="/about/" class="menu-item menu-item-type-custom menu-item-object-custom" >소개</option>
+            </select>
+        </nav>
+    </header>
 
+    <br>
+    <div style="width: 100%; max-height: 100px; text-align: center;">
+       
 </div>
-  </header> <details class="toc" >
-    <summary accesskey="c" title="(Alt + C)">
-        <span class="title">목차</span>
-    </summary>
 
-    <div class="inner"><ul>
-            <li>
-                <a href="#%eb%93%a4%ec%96%b4%ea%b0%80%eb%a9%b0" aria-label="들어가며">들어가며</a></li>
-            <li>
-                <a href="#%ec%9e%91%ec%9d%80-%ec%9a%b4%ec%98%81-%ec%88%98%ec%a0%95-%eb%91%90-%ea%b1%b4" aria-label="작은 운영 수정 두 건">작은 운영 수정 두 건</a></li>
-            <li>
-                <a href="#strategy_v1v2-development_specmd-%ec%a0%95%ed%95%a9%ec%84%b1-%ec%a0%90%ea%b2%80" aria-label="strategy_v1/v2 DEVELOPMENT_SPEC.md 정합성 점검">strategy_v1/v2 DEVELOPMENT_SPEC.md 정합성 점검</a></li>
-            <li>
-                <a href="#docs-sync-%ec%b9%b4%ed%85%8c%ea%b3%a0%eb%a6%ac-15--19%ea%b0%9c-%eb%ac%b8%ec%84%9c-%ec%a0%84%ec%b2%b4-%ec%9e%ac%ec%9e%91%ec%84%b1" aria-label="docs-sync 카테고리 1~5 — 19개 문서 전체 재작성">docs-sync 카테고리 1~5 — 19개 문서 전체 재작성</a></li>
-            <li>
-                <a href="#claudemdai_project_promptmd-%ec%a0%95%ed%95%a9%ec%84%b1-%ec%a0%90%ea%b2%80-%ec%99%84%eb%a3%8c" aria-label="CLAUDE.md/AI_PROJECT_PROMPT.md 정합성 점검 완료">CLAUDE.md/AI_PROJECT_PROMPT.md 정합성 점검 완료</a></li>
-            <li>
-                <a href="#pr-67-merge--v060-%eb%a6%b4%eb%a6%ac%ec%a6%88" aria-label="PR #67 merge &#43; v0.6.0 릴리즈">PR #67 merge + v0.6.0 릴리즈</a></li>
-            <li>
-                <a href="#%ec%a0%95%eb%a6%ac" aria-label="정리">정리</a>
-            </li>
-        </ul>
+    <div class="breadcrumbs">
+        
     </div>
-</details>
+        <div id="content" class="content">
 
-  <div class="post-content md-content"><p><strong>작성일</strong>: 2026년 6월 23일<br>
+<main role="main">
+    <article role="article" class="post type-post format-standard hentry">
+        <header class="post-header">
+            <h1>자동매매 코드 개발 (32) — 문서 전체 점검, docs-sync 19개 문서 재작성, v0.6.0 릴리즈</h1>
+            <div class="post-details">
+                <a rel="bookmark">
+                    <time datetime="2026-06-23T623:110:06">2026-06-23</time>
+                </a>
+				
+            </div>
+        </header>
+
+        
+
+        <div class="post-content">
+            <p><strong>작성일</strong>: 2026년 6월 23일<br>
 <strong>최종 수정</strong>: 2026년 6월 23일<br>
 <strong>분야</strong>: AI Trading, Development<br>
 <strong>난이도</strong>: Intermediate<br>
 <strong>상태</strong>: Production Ready</p>
 <hr>
-<h2 id="들어가며">들어가며<a hidden class="anchor" aria-hidden="true" href="#들어가며">#</a></h2>
+<h2 id="들어가며">들어가며</h2>
 <p><a href="/posts/broker-sync-and-oci-automation/">이전 글</a>에서 본계좌 실시간 잔고 동기화로 수량 phantom position을 정정하고, docs-sync skill을 새로 만들었다. 6월 23일 후반은 그 skill을 실제로 돌려 <strong>docs/ 폴더 19개 문서 전체를 재작성</strong>하는 &ldquo;문서 전체 점검 + docs-sync + 릴리즈&rdquo; 5단계 작업으로 마무리했다.</p>
 <p>결론부터 말하면, 5개 카테고리(시작하기/설정/매매전략/운영·테스트/안전)로 나눠 19개 문서를 전부 재작성하면서 stale 내용 여러 건을 함께 정정했다. CLAUDE.md/AI_PROJECT_PROMPT.md도 코드와 다시 대조해 테스트 파일 개수, DB 테이블 개수 같은 기본적인 숫자 오기까지 잡았다. 마지막으로 v0.5.2 이후 머지된 PR 16건을 정리해 v0.6.0을 릴리즈했다.</p>
 <hr>
-<h2 id="작은-운영-수정-두-건">작은 운영 수정 두 건<a hidden class="anchor" aria-hidden="true" href="#작은-운영-수정-두-건">#</a></h2>
+<h2 id="작은-운영-수정-두-건">작은 운영 수정 두 건</h2>
 <p>본격적인 문서 작업에 들어가기 전에, OCI에서 보고된 작은 문제 두 가지를 먼저 처리했다.</p>
 <p><strong>update_oci.sh 자동 stash 대상 확장</strong>: 사용자가 OCI 서버에서 <code>scripts/update_oci.sh</code>를 실행하던 중 <code>settings/app.yaml</code> 외에 <code>strategy_v2/settings/screen_config/second_stage/reversal.yaml</code>도 로컬 변경 상태라 &ldquo;추적 파일에 로컬 변경이 있습니다&rdquo; 에러로 막혔다. 이건 웹 대시보드의 &ldquo;2차 스크리닝 조건 가중치 변경&rdquo; 기능으로 서버에서 직접 수정된 정상적인 파일이었는데, 스크립트가 <code>app.yaml</code> 하나만 자동 stash 화이트리스트로 허용하고 있던 게 원인이었다. <code>web/routers/config_router.py::_allowed_yaml_files()</code>가 정의하고 있는 실제 웹 편집 가능 범위(<code>strategy_vN/settings/</code> 트리 전체 포함)를 그대로 스크립트의 <code>is_web_editable_yaml()</code>로 옮겨 일반화했다.</p>
 <p><strong>docs cron 시각표 stale 시각 정정</strong>: 사용자가 공유한 실제 crontab을 기준으로 <code>--update-journal</code>(15:35→16:15), <code>--report-daily</code>(16:00→16:30)를 정정했다. 같은 표가 중복돼 있던 <code>docs/USAGE.md</code>, <code>README.md</code>, <code>docs/INSTALL.md</code>, <code>docs/UPDATE.md</code> 4개 파일을 모두 수정했다.</p>
 <hr>
-<h2 id="strategy_v1v2-development_specmd-정합성-점검">strategy_v1/v2 DEVELOPMENT_SPEC.md 정합성 점검<a hidden class="anchor" aria-hidden="true" href="#strategy_v1v2-development_specmd-정합성-점검">#</a></h2>
+<h2 id="strategy_v1v2-development_specmd-정합성-점검">strategy_v1/v2 DEVELOPMENT_SPEC.md 정합성 점검</h2>
 <p>Explore 서브에이전트로 두 SPEC 문서를 실제 코드와 항목별로 대조했다.</p>
 <ul>
 <li><strong>v1</strong>: 실질적 stale 내용은 없었다. <code>balanced.yaml</code>을 &ldquo;10개 조건 균등 분산&quot;으로 서술했지만 실제 가중치는 <code>{12,12,12,10,10,10,10,10,7,7}</code>로 완전 균등이 아니라는 표현 오차 1건만 수정했다.</li>
 <li><strong>v2</strong>: 세 가지를 발견·정정했다. (1) 그룹 <code>top_n</code> 오기 — §9 다이어그램·YAML 예시·코드 주석 전부 <code>40</code>으로 남아있었는데 실제론 6/13에 이미 <code>15</code>(합계 60)로 바뀌어 있었다. (2) 슬롯제 잔존 서술 — §9 다이어그램이 여전히 &ldquo;09:00 GroupA / 09:15 GroupB &hellip;&rdquo; 식 순차 실행을 암시하고 있었는데, 실제로는 6/18부터 통합 스크리닝+풀링 매수로 바뀐 상태였다. (3) <code>--reconcile</code> 시각 오기(16:00 → 실제 15:40) — 두 개 문서에서 동일하게 발견.</li>
 </ul>
 <hr>
-<h2 id="docs-sync-카테고리-15--19개-문서-전체-재작성">docs-sync 카테고리 1~5 — 19개 문서 전체 재작성<a hidden class="anchor" aria-hidden="true" href="#docs-sync-카테고리-15--19개-문서-전체-재작성">#</a></h2>
+<h2 id="docs-sync-카테고리-15--19개-문서-전체-재작성">docs-sync 카테고리 1~5 — 19개 문서 전체 재작성</h2>
 <p>전날 만든 <code>docs-sync</code> skill로 <code>docs/</code> 폴더 전체를 5개 카테고리로 나눠 순서대로 재작성했다. <code>docs-sync</code> skill 자체가 <code>disable-model-invocation: true</code>라 Skill 도구로 직접 호출하지 못해 <code>skill.md</code>를 Read로 읽어 절차를 수동으로 수행했다. 카테고리마다 Explore 서브에이전트를 병렬로 디스패치해 초안+stale 점검 결과를 받고, 직접 코드로 재검증한 뒤 최종 작성하는 방식으로 진행했다.</p>
 <table>
 	<thead>
@@ -338,7 +155,7 @@
 </table>
 <p>각 카테고리마다 <code>docs/README.md</code>의 체크리스트를 갱신했고, 마지막엔 <code>docs/*.md</code> + 루트 <code>README.md</code>/<code>CLAUDE.md</code>의 마크다운 링크를 스크립트로 전수 검사해 깨진 링크 0건을 확인했다. <strong>이로써 19/19 문서 전체 재작성을 완료</strong>했다. 매 카테고리마다 <code>pytest tests/</code> 717개를 재확인했다(문서만 변경이라 당연한 결과였지만, 검증 원칙상 직접 실행).</p>
 <hr>
-<h2 id="claudemdai_project_promptmd-정합성-점검-완료">CLAUDE.md/AI_PROJECT_PROMPT.md 정합성 점검 완료<a hidden class="anchor" aria-hidden="true" href="#claudemdai_project_promptmd-정합성-점검-완료">#</a></h2>
+<h2 id="claudemdai_project_promptmd-정합성-점검-완료">CLAUDE.md/AI_PROJECT_PROMPT.md 정합성 점검 완료</h2>
 <p>docs-sync 카테고리4 작업 중 발견했던 &ldquo;tests/ 37개&quot;라는 오기를 포함해, <code>CLAUDE.md</code>/<code>AI_PROJECT_PROMPT.md</code> 전체를 코드와 다시 대조했다.</p>
 <ul>
 <li><code>tests/</code> 파일 개수 &ldquo;37개&rdquo; → &ldquo;41개&rdquo;(실제 <code>test_*.py</code> 개수)</li>
@@ -348,12 +165,12 @@
 </ul>
 <p>범위 밖으로 분리한 발견 1건: <code>docs/USAGE.md</code>가 docs-sync의 19개 문서 분류에서 빠져 있었다(설계 당시 18→19 집계 누락으로 추정) — 현재 작동엔 문제없어 <code>next-tasks.md</code>에 기록만 했다. 코드 변경은 없었다(문서만), <code>pytest tests/</code> 영향도 없었다.</p>
 <hr>
-<h2 id="pr-67-merge--v060-릴리즈">PR #67 merge + v0.6.0 릴리즈<a hidden class="anchor" aria-hidden="true" href="#pr-67-merge--v060-릴리즈">#</a></h2>
+<h2 id="pr-67-merge--v060-릴리즈">PR #67 merge + v0.6.0 릴리즈</h2>
 <p>&ldquo;문서 전체 점검 + docs-sync + 릴리즈&rdquo; 5단계 작업의 1~4단계(cron 시각표 정정, v1/v2 SPEC 점검, docs-sync 19개 문서 재작성, CLAUDE.md/AI_PROJECT_PROMPT.md 점검)를 묶어 PR #67로 master에 squash-merge했다.</p>
 <p><code>release-notes</code> skill 절차로 v0.5.2 이후 머지된 PR #52~#67(16건)을 조사해 초안을 작성했다. 버전 번호는 신규 기능 다수 + 운영 안정성 핵심 변경(주문체결 판단 전면 교체, 본계좌 실시간 잔고 동기화) + 실거래 동작 변경(1주 예외매수)을 근거로 <code>v0.5.3</code>(patch) 대신 <code>v0.6.0</code>(minor)을 제안해 사용자 확인을 받았다.</p>
 <p><code>build-docs/release-notes-draft-v0.6.0.md</code>를 9개 주제로 정리(주문체결 판단 전환, 본계좌 잔고 동기화, 1주 예외매수, 웹 백테스트, v2 동적 국면전환 백테스트, 데이터 다운로드 버그 3건, OCI 자동화, extra_05+sold 고착 버그, docs-sync)한 뒤, 태그 생성·push·<code>gh release create</code>로 릴리즈를 발행했다. 발행 후 릴리즈 노트 본문 제목이 초안 파일 제목 그대로 <code># v0.6.0 (draft)</code>로 남아있는 걸 발견해, <code>gh release edit --notes-file</code>로 본문 제목만 <code># v0.6.0</code>으로 정정했다.</p>
 <hr>
-<h2 id="정리">정리<a hidden class="anchor" aria-hidden="true" href="#정리">#</a></h2>
+<h2 id="정리">정리</h2>
 <table>
 	<thead>
 			<tr>
@@ -386,208 +203,99 @@
 </table>
 <p>6/15부터 6/23까지 9일간 이어진 이 시리즈는 거래량순위 API 한도 추적, IRP 평가금액 보정, 매수 무한반복 사고와 holdings-diff 전환, 그리고 문서 전체 재정비까지 — 기능 추가보다 <strong>운영하면서 드러난 구조적 문제를 추적해 고치는 작업</strong>이 점점 더 큰 비중을 차지했던 기간이었다. v0.6.0 릴리즈로 이번 시리즈를 마무리한다.</p>
 
+        </div>
 
-  </div>
 
-  <footer class="post-footer">
-    <ul class="post-tags">
-      <li><a href="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">릴리스</a></li>
-    </ul>
-<nav class="paginav">
-  <a class="prev" href="https://nova7zone.github.io/posts/dynamic-buy-budget-and-cash-floor-sell/">
-    <span class="title">« 이전 페이지</span>
-    <span>자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도</span>
-  </a>
-  <a class="next" href="https://nova7zone.github.io/posts/broker-sync-and-oci-automation/">
-    <span class="title">다음 페이지 »</span>
-    <span>자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화</span>
-  </a>
-</nav>
 
-  </footer>
-</article>
-    </main>
+        <footer class="post-footer">
+                
+                
+                
+                <span class="post-categories">
+                        <a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매</a>&emsp;
+                        
+                </span>
+                
+        
+                
+                
+                
+                <span class="post-tags">
+                        <a href="/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">릴리스</a>&emsp;
+                        
+                </span>
+                
+        </footer>
+        
+<table cellspacing="15" style="width:100%; border: none;">
+    <tr>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+    </tr>
+</table>
+
+        
+    </article>
+
     
-<footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+    <nav class="navigation post-navigation" role="navigation">
+        <div class="nav-links">
+            <div class="nav-previous">
+                
+                <a class="previous" href="/posts/broker-sync-and-oci-automation/"> 자동매매 코드 개발 (31) — 본계좌 실시간 잔고 동기화, v2 백테스트 국면전환, OCI 자동화</a>
+                
+            </div>
+            <div class="nav-next">
+                
+                <a class="next" href="/posts/dynamic-buy-budget-and-cash-floor-sell/"> 자동매매 코드 개발 (33) — 종목당 매수금액 동적화, 현금 하한선 강제매도</a>
+                
+            </div>
+        </div>
+    </nav>
+    
 
+</main>
+
+
+        <div class="sidebar1 widgets columns-1">
+
+    <aside>
     
-    
-    <span>
-        Powered by
-        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
-        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
-    </span>
+</aside>
+    <aside class="widget widget_categories">
+        <h2>카테고리</h2>
+        <ul class="widget__list"><li class="cat-item cat-item-2">
+                <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트 (23)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매 (60)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라 (10)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매 (31)</a>
+            </li>
+        </ul>
+    </aside>
+
+    <aside class="widget widget_tag_cloud">
+        <h2>태그</h2>
+        <div class="tagcloud"><a class="tag-cloud-link" href="/tags/%EB%A6%AC%EB%B7%B0/" title="리뷰" style="font-size: 12pt;">리뷰</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/" title="릴리스" style="font-size: 12pt;">릴리스</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B0%B0%ED%8F%AC/" title="배포" style="font-size: 12pt;">배포</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/" title="버그수정" style="font-size: 12pt;">버그수정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EA%B3%84/" title="설계" style="font-size: 12pt;">설계</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EC%A0%95/" title="설정" style="font-size: 12pt;">설정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%97%B0%EA%B5%AC/" title="연구" style="font-size: 12pt;">연구</a>&emsp;<a class="tag-cloud-link" href="/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/" title="프롬프트" style="font-size: 12pt;">프롬프트</a>&emsp;
+        </div>
+    </aside>
+
+</div>
+        </div>
+        </div>
+<footer role="contentinfo" class="document-footer contentinfo widgets columns-1">
+
+    <aside class="widget widget_text">
+        <div class="textwidget">
+            <p>© Evan&#39;s Blog / Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/tosi29/inkblotty" target="_blank">Inkblotty</a></p>
+        </div>
+    </aside>
 </footer>
-<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
-        <polyline points="17 11 12 6 7 11"></polyline>
-        <polyline points="17 18 12 13 7 18"></polyline>
-    </svg>
-</a><script>
-  
-  (function () {
-    var nav = document.querySelector(".header-nav");
-    var menu = document.getElementById("menu");
-    var sw = document.querySelector(".logo-switches");
-    if (!nav || !menu || !sw) return;
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "menu-toggle";
-    b.setAttribute("aria-label", "메뉴 열기");
-    b.setAttribute("aria-expanded", "false");
-    b.setAttribute("aria-controls", "menu");
-    b.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
-      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
-    sw.appendChild(b);
-    b.addEventListener("click", function () {
-      var open = nav.classList.toggle("menu-open");
-      b.setAttribute("aria-expanded", open ? "true" : "false");
-      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
-    });
-    function close() {
-      nav.classList.remove("menu-open");
-      b.setAttribute("aria-expanded", "false");
-      b.setAttribute("aria-label", "메뉴 열기");
-    }
-    menu.addEventListener("click", function (e) {
-      if (e.target.closest("a")) close();
-    });
-    
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && nav.classList.contains("menu-open")) { close(); b.focus(); }
-    });
-    window.matchMedia("(min-width: 769px)").addEventListener("change", function (m) { if (m.matches) close(); });
-  })();
-</script>
+</div>
 
-
-<script>
-    let menu = document.getElementById('menu');
-    if (menu) {
-        
-        const scrollPosition = localStorage.getItem("menu-scroll-position");
-        if (scrollPosition) {
-            menu.scrollLeft = parseInt(scrollPosition, 10);
-        }
-        
-        
-        let menuScrollTimeout;
-        menu.addEventListener("scroll", function () {
-            clearTimeout(menuScrollTimeout);
-            menuScrollTimeout = setTimeout(function () {
-                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
-            }, 150);
-        }, { passive: true });
-    }
-
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                target.scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                target.scrollIntoView();
-            }
-            
-            
-            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
-                target.setAttribute("tabindex", "-1");
-            }
-            target.focus({ preventScroll: true });
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-
-</script>
-<script>
-    var toplink = document.getElementById("top-link");
-    var scrollTicking = false;
-    
-    window.addEventListener("scroll", function () {
-        if (scrollTicking) {
-            return;
-        }
-        scrollTicking = true;
-        requestAnimationFrame(function () {
-            const scrollThreshold = window.innerHeight;
-            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
-            toplink.classList.toggle("hidden", !shown);
-            scrollTicking = false;
-        });
-    }, { passive: true });
-
-</script>
-<script>
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-        const html = document.querySelector("html");
-        if (html.dataset.theme === "dark") {
-            html.dataset.theme = 'light';
-            localStorage.setItem("pref-theme", 'light');
-        } else {
-            html.dataset.theme = 'dark';
-            localStorage.setItem("pref-theme", 'dark');
-        }
-    })
-
-</script>
-<script>
-    document.querySelectorAll('pre > code').forEach((codeblock) => {
-        const container = codeblock.parentNode.parentNode;
-
-        const copybutton = document.createElement('button');
-        copybutton.classList.add('copy-code');
-        copybutton.innerHTML = '복사';
-
-        function copyingDone() {
-            copybutton.innerHTML = '복사 완료!';
-            setTimeout(() => {
-                copybutton.innerHTML = '복사';
-            }, 2000);
-        }
-
-        copybutton.addEventListener('click', (cb) => {
-            if ('clipboard' in navigator) {
-                navigator.clipboard.writeText(codeblock.textContent);
-                copyingDone();
-                return;
-            }
-
-            const range = document.createRange();
-            range.selectNodeContents(codeblock);
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            try {
-                document.execCommand('copy');
-                copyingDone();
-            } catch (e) { };
-            selection.removeRange(range);
-        });
-
-        if (container.classList.contains("highlight")) {
-            container.appendChild(copybutton);
-        } else if (container.parentNode.firstChild == container) {
-            
-        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
-            
-            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
-        } else {
-            
-            codeblock.parentNode.appendChild(copybutton);
-        }
-    });
-</script>
-</body>
-
+    </body>
 </html>

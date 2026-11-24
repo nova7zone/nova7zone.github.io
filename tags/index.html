@@ -1,331 +1,370 @@
 <!DOCTYPE html>
-<html lang="ko" dir="auto" data-theme="auto">
-
-<head><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
-<title>Tags | Evan&#39;s Blog</title>
-<meta name="keywords" content="">
-<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-<meta name="author" content="Evan">
-<link rel="canonical" href="https://nova7zone.github.io/tags/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
-<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/tags/index.xml" title="rss">
-<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/tags/">
-<noscript>
-    <style>
-        #theme-toggle,
-        .top-link {
-            display: none;
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Tags - Evan&#39;s Blog</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Evan's Blog">
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function () {});
+        });
+      }
+    </script>
+    <style type="text/css">
+        img.wp-smiley,
+        img.emoji {
+            display: inline !important;
+            border: none !important;
+            box-shadow: none !important;
+            height: 1em !important;
+            width: 1em !important;
+            margin: 0 .07em !important;
+            vertical-align: -0.1em !important;
+            background: none !important;
+            padding: 0 !important;
         }
-
     </style>
-    <style>
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --theme: rgb(29, 30, 32);
-                --entry: rgb(46, 46, 51);
-                --primary: rgb(218, 218, 219);
-                --secondary: rgb(155, 156, 157);
-                --tertiary: rgb(65, 66, 68);
-                --content: rgb(196, 196, 197);
-                --code-block-bg: rgb(46, 46, 51);
-                --code-bg: rgb(55, 56, 62);
-                --border: rgb(51, 51, 51);
-                color-scheme: dark;
-            }
-
-            .list {
-                background: var(--theme);
-            }
-
-            .toc {
-                background: var(--entry);
-            }
-        }
-
-    </style>
-</noscript>
-<script>
-    if (localStorage.getItem("pref-theme") === "dark") {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else if (localStorage.getItem("pref-theme") === "light") {
-       document.querySelector("html").dataset.theme = 'light';
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else {
-        document.querySelector("html").dataset.theme = 'light';
-    }
-
-</script><link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Evan's Blog">
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function () {});
-    });
-  }
-</script>
-<meta name="color-scheme" content="light dark">
-<script>
-  
-  (function () {
-    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
-    function sync() {
-      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
-    }
-    sync();
-    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    document.addEventListener("DOMContentLoaded", sync);
-  })();
-</script>
-<meta property="og:url" content="https://nova7zone.github.io/tags/">
-  <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="Tags">
-  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-  <meta property="og:locale" content="ko_KR">
-  <meta property="og:type" content="website">
-
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Tags">
-  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-
+    
+    <link rel='stylesheet' href='/css/style.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/custom.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/syntax.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/toc.css' type='text/css' media='all' />
+    <meta property="og:site_name" content="Evan&#39;s Blog">
 </head>
-<body class="list" id="top">
-    <header class="header">
-    <nav class="header-nav">
-        <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
-            <div class="logo-switches">
-                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
-                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <ul id="menu" class="menu">
-            <li>
-                <a href="https://nova7zone.github.io/posts/" title="글">
-                    <span>글</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/series/" title="시리즈">
-                    <span>시리즈</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/categories/" title="카테고리">
-                    <span>카테고리</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/" title="태그">
-                    <span class="active">태그</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/about/" title="소개">
-                    <span>소개</span>
-                </a>
+
+    <body class="two-column">
+        <a href="#content">Skip to content</a>
+<div class="wrapper">
+    <header role="banner" class="banner widgets columns-1">
+        <a href="/" rel="home">
+            <h1 class="site">Evan&#39;s Blog</h1>
+            <p></p>
+        </a>
+        <nav role="navigation" aria-label="Primary Navigation">
+
+            <ul class="menu">
+                <li class="menu-item "><a class="menu__link" href="/posts/">글</a></li>
+                <li class="menu-item "><a class="menu__link" href="/series/">시리즈</a></li>
+                <li class="menu-item "><a class="menu__link" href="/categories/">카테고리</a></li>
+                <li class="menu-item  current-menu-item current_page_item "><a class="menu__link" href="/tags/">태그</a></li>
+                <li class="menu-item "><a class="menu__link" href="/about/">소개</a></li>
+            </ul>
+            <select onChange="location.href=value;">
+                <option value="/posts/" class="menu-item menu-item-type-custom menu-item-object-custom" >글</option>
+                <option value="/series/" class="menu-item menu-item-type-custom menu-item-object-custom" >시리즈</option>
+                <option value="/categories/" class="menu-item menu-item-type-custom menu-item-object-custom" >카테고리</option>
+                <option value="/tags/" class="menu-item menu-item-type-custom menu-item-object-custom"  selected="selected" >태그</option>
+                <option value="/about/" class="menu-item menu-item-type-custom menu-item-object-custom" >소개</option>
+            </select>
+        </nav>
+    </header>
+
+    <br>
+    <div style="width: 100%; max-height: 100px; text-align: center;">
+       
+</div>
+
+    <div class="breadcrumbs">
+        
+    </div>
+        <div id="content" class="content">
+<main aria-role="main">
+  <header class="homepage-header">
+    <h1>Tags</h1>
+    
+  </header>
+  <div class="homepage-content">
+    
+    
+  </div>
+  <div>
+    
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%EB%B0%B0%ED%8F%AC/" rel="bookmark">배포</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-24T14:02:00">2026-11-24</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/" rel="bookmark">버그수정</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-24T14:02:00">2026-11-24</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%EC%84%A4%EA%B3%84/" rel="bookmark">설계</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-24T14:02:00">2026-11-24</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%EC%84%A4%EC%A0%95/" rel="bookmark">설정</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-24T14:02:00">2026-11-24</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%EC%97%B0%EA%B5%AC/" rel="bookmark">연구</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-23T12:42:00">2026-11-23</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%EB%A6%AC%EB%B7%B0/" rel="bookmark">리뷰</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-18T12:00:00">2026-11-18</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/" rel="bookmark">프롬프트</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-10-18T23:40:00">2026-10-18</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/" rel="bookmark">릴리스</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-07-08T22:00:00">2026-07-08</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+
+		
+		
+		
+	</footer>
+
+</article>
+    
+  </div>
+
+
+
+<table cellspacing="15" style="width:100%; border: none;">
+    <tr>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+    </tr>
+</table>
+
+</main>
+
+
+        <div class="sidebar1 widgets columns-1">
+
+    <aside>
+    
+</aside>
+    <aside class="widget widget_categories">
+        <h2>카테고리</h2>
+        <ul class="widget__list"><li class="cat-item cat-item-2">
+                <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트 (23)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매 (60)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라 (10)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매 (31)</a>
             </li>
         </ul>
-    </nav>
-</header>
-<main class="main">
-<header class="page-header">
-    <h1>Tags</h1>
-</header>
+    </aside>
 
-<ul class="terms-tags">
-            <li>
-                <a href="https://nova7zone.github.io/tags/%EB%A6%AC%EB%B7%B0/">리뷰 <sup><strong><sup>16</sup></strong></sup> </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/">릴리스 <sup><strong><sup>11</sup></strong></sup> </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/%EB%B0%B0%ED%8F%AC/">배포 <sup><strong><sup>26</sup></strong></sup> </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정 <sup><strong><sup>50</sup></strong></sup> </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/%EC%84%A4%EA%B3%84/">설계 <sup><strong><sup>69</sup></strong></sup> </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/%EC%84%A4%EC%A0%95/">설정 <sup><strong><sup>25</sup></strong></sup> </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/">연구 <sup><strong><sup>21</sup></strong></sup> </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/">프롬프트 <sup><strong><sup>10</sup></strong></sup> </a>
-            </li>
-</ul>
-    </main>
-    
-<footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+    <aside class="widget widget_tag_cloud">
+        <h2>태그</h2>
+        <div class="tagcloud"><a class="tag-cloud-link" href="/tags/%EB%A6%AC%EB%B7%B0/" title="리뷰" style="font-size: 12pt;">리뷰</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/" title="릴리스" style="font-size: 12pt;">릴리스</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B0%B0%ED%8F%AC/" title="배포" style="font-size: 12pt;">배포</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/" title="버그수정" style="font-size: 12pt;">버그수정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EA%B3%84/" title="설계" style="font-size: 12pt;">설계</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EC%A0%95/" title="설정" style="font-size: 12pt;">설정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%97%B0%EA%B5%AC/" title="연구" style="font-size: 12pt;">연구</a>&emsp;<a class="tag-cloud-link" href="/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/" title="프롬프트" style="font-size: 12pt;">프롬프트</a>&emsp;
+        </div>
+    </aside>
 
-    
-    
-    <span>
-        Powered by
-        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
-        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
-    </span>
+</div>
+        </div>
+        </div>
+<footer role="contentinfo" class="document-footer contentinfo widgets columns-1">
+
+    <aside class="widget widget_text">
+        <div class="textwidget">
+            <p>© Evan&#39;s Blog / Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/tosi29/inkblotty" target="_blank">Inkblotty</a></p>
+        </div>
+    </aside>
 </footer>
-<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
-        <polyline points="17 11 12 6 7 11"></polyline>
-        <polyline points="17 18 12 13 7 18"></polyline>
-    </svg>
-</a><script>
-  
-  (function () {
-    var nav = document.querySelector(".header-nav");
-    var menu = document.getElementById("menu");
-    var sw = document.querySelector(".logo-switches");
-    if (!nav || !menu || !sw) return;
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "menu-toggle";
-    b.setAttribute("aria-label", "메뉴 열기");
-    b.setAttribute("aria-expanded", "false");
-    b.setAttribute("aria-controls", "menu");
-    b.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
-      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
-    sw.appendChild(b);
-    b.addEventListener("click", function () {
-      var open = nav.classList.toggle("menu-open");
-      b.setAttribute("aria-expanded", open ? "true" : "false");
-      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
-    });
-    function close() {
-      nav.classList.remove("menu-open");
-      b.setAttribute("aria-expanded", "false");
-      b.setAttribute("aria-label", "메뉴 열기");
-    }
-    menu.addEventListener("click", function (e) {
-      if (e.target.closest("a")) close();
-    });
-    
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && nav.classList.contains("menu-open")) { close(); b.focus(); }
-    });
-    window.matchMedia("(min-width: 769px)").addEventListener("change", function (m) { if (m.matches) close(); });
-  })();
-</script>
+</div>
 
-
-<script>
-    let menu = document.getElementById('menu');
-    if (menu) {
-        
-        const scrollPosition = localStorage.getItem("menu-scroll-position");
-        if (scrollPosition) {
-            menu.scrollLeft = parseInt(scrollPosition, 10);
-        }
-        
-        
-        let menuScrollTimeout;
-        menu.addEventListener("scroll", function () {
-            clearTimeout(menuScrollTimeout);
-            menuScrollTimeout = setTimeout(function () {
-                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
-            }, 150);
-        }, { passive: true });
-    }
-
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                target.scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                target.scrollIntoView();
-            }
-            
-            
-            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
-                target.setAttribute("tabindex", "-1");
-            }
-            target.focus({ preventScroll: true });
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-
-</script>
-<script>
-    var toplink = document.getElementById("top-link");
-    var scrollTicking = false;
-    
-    window.addEventListener("scroll", function () {
-        if (scrollTicking) {
-            return;
-        }
-        scrollTicking = true;
-        requestAnimationFrame(function () {
-            const scrollThreshold = window.innerHeight;
-            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
-            toplink.classList.toggle("hidden", !shown);
-            scrollTicking = false;
-        });
-    }, { passive: true });
-
-</script>
-<script>
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-        const html = document.querySelector("html");
-        if (html.dataset.theme === "dark") {
-            html.dataset.theme = 'light';
-            localStorage.setItem("pref-theme", 'light');
-        } else {
-            html.dataset.theme = 'dark';
-            localStorage.setItem("pref-theme", 'dark');
-        }
-    })
-
-</script>
-</body>
-
+    </body>
 </html>

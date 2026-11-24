@@ -1,7 +1,7 @@
 // 최소 서비스 워커: 설치 가능 조건 충족 + 방문한 페이지 오프라인 열람.
 // 페이지(HTML)는 네트워크 우선(최신 글 반영), 해시가 붙은 정적 자산은 캐시 우선,
 // 해시 없는 자산(아이콘·매니페스트 등)은 네트워크 우선(갱신이 막히지 않게).
-const CACHE = "evans-blog-v3";
+const CACHE = "evans-blog-v4";
 const PRECACHE = ["/", "/manifest.webmanifest", "/icon-192.png"];
 const MAX_PAGES = 60; // 방문 페이지 캐시 상한 (오래된 것부터 삭제)
 const HASHED = /\.[0-9a-f]{16,}\.(css|js)(\?|$)/;

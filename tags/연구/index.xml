@@ -1,159 +1,164 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
-  <channel>
-    <title>연구 on Evan&#39;s Blog</title>
-    <link>https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/</link>
-    <description>Recent content in 연구 on Evan&#39;s Blog</description>
-    <generator>Hugo</generator>
-    <language>ko-KR</language>
-    <lastBuildDate>Mon, 23 Nov 2026 12:42:00 +0900</lastBuildDate>
-    <atom:link href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/</link>
-      <pubDate>Mon, 23 Nov 2026 12:42:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/</guid>
-      <description>11월 19~23일: 공개 전략 3종의 엔진 대조, 거래량 진입 탐색 실패, 시장 신호 4시간 요약 영구 보관, 국면 보유 전략이 처음 후보가 되고 캐너리로 라이브 전진 검증을 시작한 과정, 알트 확장·숏·빠른 국면 보유 후속 연구를 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/</link>
-      <pubDate>Sat, 21 Nov 2026 18:30:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/</guid>
-      <description>11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/</link>
-      <pubDate>Wed, 18 Nov 2026 12:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/</guid>
-      <description>백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</link>
-      <pubDate>Wed, 18 Nov 2026 11:09:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</guid>
-      <description>11월 15~18일: 종목 거부 처리 개선, 데이터 윈도우를 마지막으로 열어 본 SEALED 판정, 첫 정식 전략 편입, 단가 하한, 그리고 일봉 롱·깊은 손절 청산·BULL 조건 탐색이 모두 닫힌 과정과 거기서 얻은 교훈을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/</link>
-      <pubDate>Sat, 14 Nov 2026 19:20:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/</guid>
-      <description>펀딩비·미결제약정·김치 프리미엄·호가 자료를 쌓으면서 그 자료로 바로 매매하는 캐너리 3종을 만들고, 코드 리뷰 10건과 이상치 처리, 백업 스크립트가 운영 틱을 지연시킨 사고, 라이브 구간 로컬 재현 진단까지 11월 11~14일의 작업을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/</link>
-      <pubDate>Fri, 13 Nov 2026 23:55:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/</guid>
-      <description>연구 66~68회차와 &amp;#39;역방향 홀드아웃&amp;#39; 규칙 도입, 이를 월간 리밸런싱 전략에 적용해 검증이 실패한 과정. 실패 원인을 추적하다가 같은 날 재매수를 막는 엔진 스위치가 월간 전략의 설계 결함 후보임을 찾아, 재선정된 보유 종목을 팔지 않고 이어가는 규칙을 구현한 일을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/</link>
-      <pubDate>Tue, 10 Nov 2026 19:30:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/</guid>
-      <description>신규 후보 38개가 전부 기준가 불일치로 거절되어 하루 종일 진입이 없었다. 원인은 새벽에 받은 직전 거래일 종가가 잠정값이라는 것이었고, 갱신 시각을 옮겨 해결했다. 같은 주에 전체 코드 리뷰로 약 90건을 정리하고, 지수 종가 공급을 코어에 추가했으며, 수급 기반 전략이 처음으로 1단계를 조건부로 통과해 모의 관측으로 이식된 과정을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/</link>
-      <pubDate>Tue, 10 Nov 2026 19:30:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/</guid>
-      <description>새벽 거래소 점검 동안 쌓인 오류 83건에서 연결 서킷과 점검 게이트를 설계했고, 라이브 표본이 작은 캐너리의 신호가 정말 정보가 있는지를 같은 청산의 무작위 진입과 비교하는 백테스트로 확인했다. 전략 활성화 CLI, 코드 리뷰 후속, 연구 보조 도구 3종과 함께 11월 첫 주를 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/</link>
-      <pubDate>Tue, 03 Nov 2026 23:50:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/</guid>
-      <description>에이전트는 실전 주문을 낼 수 없고 이 프로젝트도 실전은 조회 전용이다. 사용자가 실전 주문 점검을 요청하자 거절하고 대안을 제시해, 절차 문서를 거쳐 가짜 브로커로 시험한 점검 스크립트를 만들고 실행은 사용자가 서버에서 했다. 같은 기간의 시세 조회 실전 전환, 일정이 겹치는 작업의 시각 분배, 파서가 거부한 형식 오류 한 줄, 레이트리밋 경고의 원인 세션 식별을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (4) — 한 번에 조건 하나씩: 사전등록 프로그램과 대조군 20시드로 연구하기</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/</link>
-      <pubDate>Thu, 29 Oct 2026 23:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/</guid>
-      <description>국내 주식 전략 연구 회차 27번가량을 사흘 동안 돌린 기록. 후보를 하나씩 평가하는 대신 가장 단순한 기준선에서 조건을 하나씩 더하는 &amp;#39;프로그램&amp;#39; 방식으로 바꾸고, 같은 규칙의 무작위 대조군 20시드와 비교해 채택 여부를 정했다. 도구 버그, 구조 결함 조기 발견, 국면 사이징을 전략별 설정으로 옮긴 설계와 처음 조건부로 살아남은 후보까지 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (3) — 일봉 이력 확장, 모의투자 대시보드, 그리고 병렬 에이전트 7개로 한 전체 코드 리뷰</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/</link>
-      <pubDate>Mon, 26 Oct 2026 22:30:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/</guid>
-      <description>주말마다 일봉 이력을 늘리는 데몬 작업, 새로고침 기준으로 전략별 성과를 보는 모의투자 화면과 자동 갱신, 홈 화면 설치용 PWA를 만들었다. 저장소 전체를 읽기 전용 에이전트 7개로 병렬 리뷰해 High 15건을 TDD로 고친 과정과, 사용자 질문 한 줄로 연구 설계의 학습/검증 비율을 결과를 보기 전에 폐기하고 다시 사전등록한 일을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지</title>
-      <link>https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/</link>
-      <pubDate>Wed, 21 Oct 2026 21:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/</guid>
-      <description>데몬이 서버에서 처음 하루를 돈 뒤의 점검, 퇴직연금 계좌 조회, 모의 주문을 실제로 넣었다 취소하며 얻은 API 사실들, 실전 전환 갭 19건과 그림자 운행 리허설, 그리고 마감을 넘겨 스크리닝을 막은 사고를 정리한다. 내 가설이 틀렸던 곳과 TDD를 지키지 못한 곳도 그대로 적는다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/</link>
-      <pubDate>Tue, 06 Oct 2026 18:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/</guid>
-      <description>사람이 하던 서버 점검(헬스체크, 재시작, 경계 점검, 일일 리포트)을 cron 스크립트로 옮기고 웹에 리스크 통제와 보고서 화면을 붙였다. 배포 과정에서 실행 권한 비트, 셸의 변수 확장, 임포트 경로라는 로컬 검증으로 못 잡는 버그 세 개가 다시 나왔다. 같은 날 연구 쪽에서는 판정 단위 추정식이 두 개 있다는 불일치도 찾아냈다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (6) — 연구 45~66회차: 모든 분류가 닫혔을 때, 돈으로도 안 풀리는 것과 새 데이터를 검증하는 법</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-research-rounds-45-to-66-closed-loop/</link>
-      <pubDate>Wed, 23 Sep 2026 09:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-research-rounds-45-to-66-closed-loop/</guid>
-      <description>연구 분류 체계의 모든 클래스가 봉인되거나 소진된 9월 중순~하순의 기록. 후보가 사실은 이미 시도한 후보의 부분집합임을 산술로 증명한 사례, 유료 자료원을 돈으로 사도 안 풀리는 이유를 가격 조사로 확인한 일, 그리고 과거 구간이 존재할 수 없는 신규 데이터를 검증하는 독립 경계 원칙을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/</link>
-      <pubDate>Fri, 11 Sep 2026 12:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/</guid>
-      <description>연구 41회차를 돌렸는데 통과가 한 건도 없다. 게이트가 과한 건지, 후보가 나쁜 건지를 가리려고 회차 이력을 전수 집계해 종결 사유를 네 가지로 분류했다. 봉인 해제 카운터가 서로 다른 두 일을 하나의 숫자로 재고 있어서 생긴 데드락을 푼 과정과, 통계 문턱은 건드리지 않는다는 결론을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (4) — 연구 9~25회차: 기각의 공장에서 배운 것들</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-research-rounds-9-to-25/</link>
-      <pubDate>Thu, 27 Aug 2026 14:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-research-rounds-9-to-25/</guid>
-      <description>후보를 매번 정식 절차로 검증해 매번 기각한 열일곱 회차의 기록. 엔진을 돌리기 전에 캔들만으로 신호의 판별력을 재 보는 S0 사전 스캔, 효과크기 사전등록, 봉인을 후보 1건에 한정해 우회하는 절충, 서브에이전트의 독립 재검증이 만든 규율과 새로 등재한 실패 패턴을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/</link>
-      <pubDate>Wed, 12 Aug 2026 23:40:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/</guid>
-      <description>전략 연구를 에이전트 4종 파이프라인으로 자동화한 첫 2주. 엔진 계약의 공백을 먼저 발견해 고쳤고, 8개 후보가 모두 조기 기각되었으며, 봉인 규칙이 &amp;#39;돌파&amp;#39; 클래스까지 실질적으로 막는 구조를 확인했다. 무료 데이터 소스가 끝내 막힌 이야기와 엔진의 숨은 결함 13건 점검도 함께 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다</title>
-      <link>https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/</link>
-      <pubDate>Tue, 04 Aug 2026 23:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/</guid>
-      <description>크론 운영의 한계를 겪고 데몬 기반 V2를 새로 시작한 첫 주. 코드 한 줄 쓰기 전에 요구사항과 결정 16건을 문서로 확정하고, 공개 과거 시세 데이터를 실물로 검증해 &amp;#39;생존 편향은 해결할 수 없다&amp;#39;는 결론을 내린 뒤, 임시 서버에 첫 기동까지 마친 과정을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다</title>
-      <link>https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/</link>
-      <pubDate>Mon, 03 Aug 2026 23:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/</guid>
-      <description>실거래 성과가 백테스트 판정과 크게 어긋난다는 사실에서 시작해, 청산 개선안 하나를 검증 절차로 기각하고 매크로 국면 게이트를 채택했다. 이어서 검증 없이 설정값을 조정한 일의 대가, CI 스모크가 레거시 별칭 때문에 깨진 일, 그리고 진입이 한 건도 없는 이유를 로그와 시세로 교차 검증해 &amp;#39;파라미터가 아니라 시장 국면&amp;#39;이라고 결론 낸 과정을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 Bot 전환 및 개발 · Upbit (9) — 새 전략을 &#39;사전 등록&#39;하고 기각하는 절차를 만들다</title>
-      <link>https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/</link>
-      <pubDate>Sat, 18 Jul 2026 23:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/</guid>
-      <description>새 전략 후보를 계속 시도하고 계속 기각하면서, 좋아 보이는 값을 찾는 재최적화의 함정을 구조적으로 막는 절차(사전 등록, PBO, 복수 구간 게이트, 봉인 구간)를 갖추게 된 과정. 같은 코드로 재현하자 뒤집힌 파일럿 후보 사례와, 결과를 보고도 최적화 루프를 만들지 않기로 한 판단을 정리한다.</description>
-    </item>
-    <item>
-      <title>자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법</title>
-      <link>https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/</link>
-      <pubDate>Wed, 15 Jul 2026 23:00:00 +0900</pubDate>
-      <guid>https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/</guid>
-      <description>실거래 개시 후 며칠간 체결이 0건이었다. 사이징 설정, 주문 유형 변환, 체결 확인 타이밍이라는 서로 다른 세 겹의 버그가 차례로 드러났다. 이어서 미추적 포지션을 안전하게 복구한 방법과, 과적합을 피하려고 학습/검증 구간을 분리해 파라미터를 탐색한 절차를 정리한다.</description>
-    </item>
-  </channel>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>연구 on Evan&#39;s Blog</title>
+		<link>https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/</link>
+		<description>Recent content in 연구 on Evan&#39;s Blog</description>
+		<generator>Hugo</generator>
+		<language>ko-KR</language>
+		
+		
+		
+		
+			<lastBuildDate>Mon, 23 Nov 2026 12:42:00 +0900</lastBuildDate>
+		
+			<atom:link href="https://nova7zone.github.io/tags/%EC%97%B0%EA%B5%AC/index.xml" rel="self" type="application/rss+xml" />
+			<item>
+				<title>자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/</link>
+				<pubDate>Mon, 23 Nov 2026 12:42:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;BULL 국면 안에서 진입 규칙을 찾는 연구가 줄줄이 실패한 뒤, 사용자의 질문이 바뀌었다. &amp;ldquo;이익을 낼 전략을 만들 수 없나, 국면을 반영해 개발해 달라.&amp;rdquo; 이 글은 11월 19일부터 23일까지, 질문을 &amp;ldquo;언제 들어갈까&amp;quot;에서 &lt;strong&gt;&amp;ldquo;국면 자체를 타이밍으로 쓰면 어떤가&amp;rdquo;&lt;/strong&gt; 로 바꾼 과정이다. 수치는 정성적으로만 적는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/</link>
+				<pubDate>Sat, 21 Nov 2026 18:30:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;모의 계좌를 자료 수집 장비로 쓰기 시작하면 가장 먼저 필요한 것은 &lt;strong&gt;그 자료가 실제로 쌓이고 있는지&lt;/strong&gt;다. 20~21일에는 일지 수집 오류를 고치고, 쌓인 거래 기록을 처음 분석했다. 수치와 종목은 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/</link>
+				<pubDate>Wed, 18 Nov 2026 12:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;연구 회차가 쌓이면서 한 가지가 분명해졌다. 백테스트는 &lt;strong&gt;일봉으로 체결을 가정&lt;/strong&gt;한다. 지정가가 실제로 체결되는지, 청산 신호가 체결로 이어지는 데 얼마나 걸리는지, 시세 조회가 얼마나 지연되는지는 일봉으로 알 수 없다. 그래서 11월 14일 사용자와 브레인스토밍한 방향이 &amp;ldquo;모의 계좌를 수익을 내는 곳이 아니라 &lt;strong&gt;자료를 모으는 장비&lt;/strong&gt;로 쓴다&amp;quot;였다. 이 글은 11월 14일부터 18일까지의 기록이다. 금액과 종목은 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</link>
+				<pubDate>Wed, 18 Nov 2026 11:09:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;이 글은 11월 15일부터 18일까지의 Upbit 쪽 기록이다. 가운데에 &lt;strong&gt;첫 정식 전략 편입&lt;/strong&gt;이 있고, 그 앞뒤로 운영 버그 하나와 연구 탐색 세 건의 종결이 있다. 수치와 금액은 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/</link>
+				<pubDate>Sat, 14 Nov 2026 19:20:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;11월 중순의 Upbit 쪽 작업은 두 갈래였다. 하나는 &lt;strong&gt;백테스트로 검증할 과거 자료가 없는 신호&lt;/strong&gt;(파생상품 펀딩비, 미결제약정, 해외 거래소와의 가격 차이, 호가 불균형)를 일단 쌓기 시작하는 일이고, 다른 하나는 쌓는 동안 &lt;strong&gt;알려진 단순 규칙으로 소액 실매매&lt;/strong&gt;를 하며 패턴을 보는 일이다. 금액과 손익은 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/</link>
+				<pubDate>Fri, 13 Nov 2026 23:55:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;11월 11일부터 13일까지 국내 주식 쪽 연구는 세 단계로 흘렀다. 후보 두 개가 1단계에서 떨어졌고, 세 번째 후보가 처음으로 조건부 통과했다. 그런데 이 주의 가장 큰 발견은 새 후보가 아니라 &lt;strong&gt;이미 모의 운영 중인 전략을 과거 구간으로 거꾸로 검증한 결과&lt;/strong&gt;였다. 수치와 종목은 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/</link>
+				<pubDate>Tue, 10 Nov 2026 19:30:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;11월 6일부터 10일까지의 기록이다. 서버 점검이 문제를 찾고, 코드 리뷰가 정리하고, 연구가 처음으로 조건부 결과를 낸 주였다. 금액과 수익률, 계좌, 네트워크 구성은 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (14) — 거래소 점검 때 주문을 다시 내지 않기, 그리고 무작위 진입과 비교하는 백테스트</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/</link>
+				<pubDate>Tue, 10 Nov 2026 19:30:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-maintenance-gate-and-placebo-backtest/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;11월 9~10일의 기록이다. 서버 점검에서 시작해 거래소 점검 동안의 대응 설계, 캐너리의 신호 정보 검증, 운영 도구 정리로 이어졌다. 매매 금액과 손익은 공개하지 않으며, 인증과 접근 제어의 세부는 일반화한다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (5) — 실전 주문을 직접 낼 수 없는 에이전트가 실전 점검 스크립트를 만든 방법</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/</link>
+				<pubDate>Tue, 03 Nov 2026 23:50:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-live-order-check-and-research-tooling/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;10월 30일부터 11월 3일까지의 기록이다. 모의 계좌로 운영하면서 실전 전환을 준비하는 시기였다. 계좌 정보와 주문 번호, 금액은 공개하지 않는다.&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 id=&#34;1-실전-매매-테스트-해-줘를-거절한다&#34;&gt;1. &amp;ldquo;실전 매매 테스트 해 줘&amp;quot;를 거절한다&lt;/h2&gt;&#xA;&lt;p&gt;사용자가 &amp;ldquo;실전 매매 테스트&amp;quot;를 요청했다. 이 프로젝트에서 실전(live)은 &lt;strong&gt;조회 전용&lt;/strong&gt;이다. 에이전트는 실전 주문을 직접 낼 수 없다. 이를 알리고 거절한 뒤 대안을 제시했다. 사용자는 절차 문서를 택했다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (4) — 한 번에 조건 하나씩: 사전등록 프로그램과 대조군 20시드로 연구하기</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/</link>
+				<pubDate>Thu, 29 Oct 2026 23:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-research-programs-and-regime-sizing/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;10월 27일부터 29일 사이에 연구 회차 6번부터 37번까지를 돌렸다. 대부분은 1단계 게이트(G1)에서 끝났다. 전략의 규칙과 지표별 수치는 공개하지 않고, 이 기간에 굳어진 &lt;strong&gt;방법&lt;/strong&gt;과 도구·설계 쪽 교훈만 정리한다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (3) — 일봉 이력 확장, 모의투자 대시보드, 그리고 병렬 에이전트 7개로 한 전체 코드 리뷰</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/</link>
+				<pubDate>Mon, 26 Oct 2026 22:30:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-history-extension-dashboard-and-full-code-review/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;10월 22일부터 26일까지의 기록이다. 공통 주제는 &amp;ldquo;눈으로 확인할 수 있게 만들고, 확인한 것을 바로 고친다&amp;quot;이다. 네트워크 구성이나 계좌 정보는 다루지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · KIS (2) — 서버 첫 가동 점검에서 시작해 실전 전환 배선과 백테스터까지</title>
+				<link>https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/</link>
+				<pubDate>Wed, 21 Oct 2026 21:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/kis-v2-first-server-run-and-live-readiness/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;10월 19일부터 21일까지는 서버에서 데몬이 실제로 돌기 시작한 사흘이다. 한 일이 많아서 주제별로 묶는다. 계좌 식별자, 주문 번호, 가격은 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (10) — 운영 점검을 cron으로 자동화하고, 같은 배포 버그를 또 만나다</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/</link>
+				<pubDate>Tue, 06 Oct 2026 18:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-ops-automation-and-reports/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;10월 첫 주에는 개별 캐너리 전략이 일곱 종 가까이 늘었다. 그만큼 사람이 서버에서 확인해야 할 일이 늘었고, 사용자는 반복되는 점검을 자동화해 달라고 요청했다. 이 글은 운영 자동화, 웹의 리스크·보고서 화면, 그리고 같은 날 연구 쪽에서 발견한 통계 추정식 불일치를 다룬다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (6) — 연구 45~66회차: 모든 분류가 닫혔을 때, 돈으로도 안 풀리는 것과 새 데이터를 검증하는 법</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-research-rounds-45-to-66-closed-loop/</link>
+				<pubDate>Wed, 23 Sep 2026 09:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-research-rounds-45-to-66-closed-loop/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;9월 둘째 주에서 넷째 주 사이 연구 회차 45~66번이 지나갔다. 그 사이 분류 체계는 점점 닫혀서, 62회차에 이르러 &lt;strong&gt;모든 분류가 봉인되거나 소진&lt;/strong&gt;된 상태가 되었다. 이 글은 이 시기에 얻은 세 가지 구체적 교훈을 다룬다. 후보의 규칙과 수치는 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (5) — 통과가 0건일 때: 41회차의 메타 집계와 봉인 규칙의 데드락</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/</link>
+				<pubDate>Fri, 11 Sep 2026 12:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-research-rounds-26-to-42-meta-review/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;9월 초 연구 회차가 30번을 넘겼다. 32번째 회차를 마쳤을 때 사용자가 이렇게 물었다. &amp;ldquo;전략 개발에 통과(pass)가 안 나오는데, 매크로·미시 전략을 수정해야 하는 것 아닌가?&amp;rdquo; 41회차 직후에는 더 근본적으로 물었다. &amp;ldquo;통과가 안 나오는데 전략 개발과 기록이 의미가 있는가?&amp;rdquo; 이 글은 그 질문에 데이터로 답한 두 번의 방법론 점검과, 그 과정에서 찾은 규칙의 결함에 대한 기록이다. 후보의 구체 규칙과 수치는 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (4) — 연구 9~25회차: 기각의 공장에서 배운 것들</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-research-rounds-9-to-25/</link>
+				<pubDate>Thu, 27 Aug 2026 14:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-research-rounds-9-to-25/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;8월 중순부터 27일까지 연구 회차 9~25번을 돌렸다. 회차마다 후보 하나를 정식 절차(탐색 → 명세 → 검증 → 독립 재검증 → 보고)로 검토했고, 통과한 후보는 없었다. 이 글은 개별 후보가 아니라 &lt;strong&gt;회차를 반복하며 굳어진 규율&lt;/strong&gt;을 정리한다. 후보의 구체 규칙과 수치는 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (2) — 연구 파이프라인을 돌렸더니 8회차가 전부 기각됐다</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/</link>
+				<pubDate>Wed, 12 Aug 2026 23:40:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-research-pipeline-first-eight-rounds/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;V2의 목표는 &amp;ldquo;돈이 되는 전략을 찾는 것&amp;quot;이 아니라 &lt;strong&gt;전략을 정직하게 걸러내는 파이프라인을 만드는 것&lt;/strong&gt;이다. 8월 5일부터 12일까지 이 파이프라인을 처음 가동했고, 연구 회차 8건이 전부 기각으로 끝났다. 실패가 아니라 정상 동작이다. 이 글은 어떻게 기각되었는지와, 가동 과정에서 드러난 시스템 쪽 문제를 다룬다. 후보 전략의 구체적 파라미터는 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 V2 개발 · Upbit (1) — 코드 없이 문서부터 쓰고, 데이터를 직접 열어 보고, 임시 서버에 올리다</title>
+				<link>https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/</link>
+				<pubDate>Tue, 04 Aug 2026 23:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-v2-kickoff-data-validation-trial-deploy/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;V1(크론 기반 Bot)은 운영하면서 한계가 분명해졌다. 15분 주기 점검은 청산 반응이 느렸고, 전략 실험이 쌓일수록 운영 코드가 실험 코드와 섞였다. V2는 &lt;strong&gt;신규 구축&lt;/strong&gt;으로 결정했다. 상시 데몬, 4시간봉 신호, 1~10초 간격 감시, 추가 매수 금지, 24시간 운영, 단일 진입점, 웹은 설정만 쓰고 주문은 하지 않는다는 요구사항 10건이 출발점이다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 Bot 전환 및 개발 · Upbit (13) — 실거래와 백테스트의 괴리를 추적하다가, 진입이 0건인 이유를 찾다</title>
+				<link>https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/</link>
+				<pubDate>Mon, 03 Aug 2026 23:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-live-vs-backtest-gap-and-zero-entry-diagnosis/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;7월 28일부터 8월 3일까지는 새로 만든 것보다 &lt;strong&gt;진단과 판단&lt;/strong&gt;이 많은 한 주였다. 운영 중인 전략의 실거래 성과가 백테스트에서 확정한 판정과 크게 어긋나 있었다. 이 괴리가 출발점이다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 Bot 전환 및 개발 · Upbit (9) — 새 전략을 &#39;사전 등록&#39;하고 기각하는 절차를 만들다</title>
+				<link>https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/</link>
+				<pubDate>Sat, 18 Jul 2026 23:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-preregistered-edge-scans-and-rejections/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;7월 중순 이후 이 프로젝트의 중심은 코드 작성보다 &lt;strong&gt;새 전략 후보를 검증하고 버리는 일&lt;/strong&gt;이 되었다. 운영 중인 전략의 성과가 기준에 닿지 못하자 세 번째 전략 슬롯(v3)에 들어갈 후보를 계속 시험했고, 7월 16일부터 18일까지 후보 여럿이 차례로 기각되었다. 이 글은 개별 전략의 상세가 아니라 그 과정에서 굳어진 &lt;strong&gt;검증 절차&lt;/strong&gt;를 다룬다. 전략 파라미터는 공개하지 않는다.&lt;/p&gt;</description>
+			</item>
+			<item>
+				<title>자동매매 Bot 전환 및 개발 · Upbit (7) — 실주문이 한 건도 나가지 못한 이유, 그리고 파라미터 탐색 방법</title>
+				<link>https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/</link>
+				<pubDate>Wed, 15 Jul 2026 23:00:00 +0900</pubDate>
+				<guid>https://nova7zone.github.io/posts/upbit-order-pipeline-bugs-and-grid-search/</guid>
+				<description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;&#xA;&lt;p&gt;실거래를 시작하고 며칠이 지나도 체결이 없었다. &amp;ldquo;시장 국면이 안 맞아서&amp;quot;라는 설명이 한동안 맞았지만, 국면이 풀린 7월 15일 이후에는 그 설명이 통하지 않게 되었다. 이날 하루 동안 &lt;strong&gt;주문 파이프라인의 서로 다른 세 지점&lt;/strong&gt;에서 버그가 연달아 나왔다. 앞선 버그가 뒤의 버그를 가리고 있던 구조여서, 하나 고치자 다음이 드러났다.&lt;/p&gt;</description>
+			</item>
+	</channel>
 </rss>

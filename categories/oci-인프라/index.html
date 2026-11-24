@@ -1,447 +1,554 @@
 <!DOCTYPE html>
-<html lang="ko" dir="auto" data-theme="auto">
-
-<head><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
-<title>OCI 인프라 | Evan&#39;s Blog</title>
-<meta name="keywords" content="">
-<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-<meta name="author" content="Evan">
-<link rel="canonical" href="https://nova7zone.github.io/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
-<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/index.xml" title="rss">
-<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">
-<noscript>
-    <style>
-        #theme-toggle,
-        .top-link {
-            display: none;
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>OCI 인프라 - Evan&#39;s Blog</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Evan's Blog">
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function () {});
+        });
+      }
+    </script>
+    <style type="text/css">
+        img.wp-smiley,
+        img.emoji {
+            display: inline !important;
+            border: none !important;
+            box-shadow: none !important;
+            height: 1em !important;
+            width: 1em !important;
+            margin: 0 .07em !important;
+            vertical-align: -0.1em !important;
+            background: none !important;
+            padding: 0 !important;
         }
-
     </style>
-    <style>
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --theme: rgb(29, 30, 32);
-                --entry: rgb(46, 46, 51);
-                --primary: rgb(218, 218, 219);
-                --secondary: rgb(155, 156, 157);
-                --tertiary: rgb(65, 66, 68);
-                --content: rgb(196, 196, 197);
-                --code-block-bg: rgb(46, 46, 51);
-                --code-bg: rgb(55, 56, 62);
-                --border: rgb(51, 51, 51);
-                color-scheme: dark;
-            }
-
-            .list {
-                background: var(--theme);
-            }
-
-            .toc {
-                background: var(--entry);
-            }
-        }
-
-    </style>
-</noscript>
-<script>
-    if (localStorage.getItem("pref-theme") === "dark") {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else if (localStorage.getItem("pref-theme") === "light") {
-       document.querySelector("html").dataset.theme = 'light';
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else {
-        document.querySelector("html").dataset.theme = 'light';
-    }
-
-</script><link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Evan's Blog">
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function () {});
-    });
-  }
-</script>
-<meta name="color-scheme" content="light dark">
-<script>
-  
-  (function () {
-    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
-    function sync() {
-      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
-    }
-    sync();
-    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    document.addEventListener("DOMContentLoaded", sync);
-  })();
-</script>
-<meta property="og:url" content="https://nova7zone.github.io/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">
-  <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="OCI 인프라">
-  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-  <meta property="og:locale" content="ko_KR">
-  <meta property="og:type" content="website">
-
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="OCI 인프라">
-  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-
+    
+    <link rel='stylesheet' href='/css/style.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/custom.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/syntax.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/toc.css' type='text/css' media='all' />
+    <meta property="og:site_name" content="Evan&#39;s Blog">
 </head>
-<body class="list" id="top">
-    <header class="header">
-    <nav class="header-nav">
-        <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
-            <div class="logo-switches">
-                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
-                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <ul id="menu" class="menu">
-            <li>
-                <a href="https://nova7zone.github.io/posts/" title="글">
-                    <span>글</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/series/" title="시리즈">
-                    <span>시리즈</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/categories/" title="카테고리">
-                    <span>카테고리</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/" title="태그">
-                    <span>태그</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/about/" title="소개">
-                    <span>소개</span>
-                </a>
+
+    <body class="two-column">
+        <a href="#content">Skip to content</a>
+<div class="wrapper">
+    <header role="banner" class="banner widgets columns-1">
+        <a href="/" rel="home">
+            <h1 class="site">Evan&#39;s Blog</h1>
+            <p></p>
+        </a>
+        <nav role="navigation" aria-label="Primary Navigation">
+
+            <ul class="menu">
+                <li class="menu-item "><a class="menu__link" href="/posts/">글</a></li>
+                <li class="menu-item "><a class="menu__link" href="/series/">시리즈</a></li>
+                <li class="menu-item "><a class="menu__link" href="/categories/">카테고리</a></li>
+                <li class="menu-item "><a class="menu__link" href="/tags/">태그</a></li>
+                <li class="menu-item "><a class="menu__link" href="/about/">소개</a></li>
+            </ul>
+            <select onChange="location.href=value;">
+                <option value="/posts/" class="menu-item menu-item-type-custom menu-item-object-custom" >글</option>
+                <option value="/series/" class="menu-item menu-item-type-custom menu-item-object-custom" >시리즈</option>
+                <option value="/categories/" class="menu-item menu-item-type-custom menu-item-object-custom" >카테고리</option>
+                <option value="/tags/" class="menu-item menu-item-type-custom menu-item-object-custom" >태그</option>
+                <option value="/about/" class="menu-item menu-item-type-custom menu-item-object-custom" >소개</option>
+            </select>
+        </nav>
+    </header>
+
+    <br>
+    <div style="width: 100%; max-height: 100px; text-align: center;">
+       
+</div>
+
+    <div class="breadcrumbs">
+        
+    </div>
+        <div id="content" class="content">
+<main aria-role="main">
+  <header class="homepage-header">
+    <h1>OCI 인프라</h1>
+    
+  </header>
+  <div class="homepage-content">
+    
+    
+  </div>
+  <div>
+    
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/server-management-split-and-python-pin/" rel="bookmark">서버 관리를 앱 저장소에서 떼어 내고, Python 버전을 패치 단위로 고정하기</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-24T14:02:00">2026-11-24</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			앱 저장소 세 개에 흩어져 있던 서버 수준 작업(회수 방지 부하, 저널 정책, 디스크·메모리 점검)을 서버 관리 전용 저장소로 모은 과정, Python을 3.12.15로 패치 고정하며 만난 venv 링크 함정, 배포 스크립트에서 단계를 지울 때의 함정, 그리고 불필요해진 옛 서비스를 지운 일을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매</a>&emsp;
+				
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+				<a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/free-tier-cpu-reclaim-misdiagnosis/" rel="bookmark">무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-20T20:30:00">2026-11-20</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			무료 클라우드 서버는 유휴 상태가 길면 회수될 수 있다. 서버 두 대의 사용량 지표를 검증하는 도구와 점검 스킬을 만들던 중, 한 서버의 CPU 지표가 기준 아래로 내려간 원인을 잘못 추정했다가 다른 세션의 측정으로 바로잡고 부하 값을 올린 과정을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/oci-gateway-usage-monitor/" rel="bookmark">무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-10T22:30:00">2026-11-10</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a>&emsp;
+				
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/oracle-cloud-a1flex-setup/" rel="bookmark">Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-06-16T18:00:00">2026-06-16</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			A1.Flex 인스턴스 확보 후 PuTTY 접속 설정, 1 OCPU/6GB에서 4 OCPU/24GB로 스펙 업그레이드, 스왑·자동회수 방지·방화벽까지 기본 환경을 구성한 과정을 기록한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/oracle-cloud-a1flex-acquisition/" rel="bookmark">Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-06-16T09:00:00">2026-06-16</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/systemd-cron-dryrun-setup/" rel="bookmark">자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-06-04T10:00:00">2026-06-04</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/superpowers-and-webserver-access/" rel="bookmark">자동매매 코드 개발 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-06-02T15:30:00">2026-06-02</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			Claude Code 작업 방식을 체계화하기 위해 superpowers·Context7 플러그인을 도입하고, 클라우드 보안 목록과 서버 방화벽 설정을 거쳐 자동매매 웹서버를 외부에서 접속 가능하게 만든 과정을 기록한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+				<a href="/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/">프롬프트</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/oracle-server-initial-setup/" rel="bookmark">자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-06-02T11:00:00">2026-06-02</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/oracle-cloud-server-setup/" rel="bookmark">Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-05-29T09:43:00">2026-05-29</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			Oracle Cloud 인스턴스 생성 후 필수 초기 설정 — 고정 IP 할당, PuTTY SSH 접속, 가상메모리 4GB 추가, FileZilla SFTP 연결까지 순서대로 기록한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/oracle-cloud-setup-1/" rel="bookmark">Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-05-28T15:01:00">2026-05-28</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+  </div>
+
+
+
+<table cellspacing="15" style="width:100%; border: none;">
+    <tr>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+    </tr>
+</table>
+
+</main>
+
+
+        <div class="sidebar1 widgets columns-1">
+
+    <aside>
+    
+</aside>
+    <aside class="widget widget_categories">
+        <h2>카테고리</h2>
+        <ul class="widget__list"><li class="cat-item cat-item-2">
+                <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트 (23)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매 (60)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라 (10)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매 (31)</a>
             </li>
         </ul>
-    </nav>
-</header>
-<main class="main"> 
-<header class="page-header"><nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
-            <a href="/">홈</a>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-            <a href="/categories/">Categories</a>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
-        <polyline points="9 18 15 12 9 6"></polyline>
-    </svg>
-</nav>
-  <h1>
-    OCI 인프라
-  </h1>
-</header>
+    </aside>
 
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">서버 관리를 앱 저장소에서 떼어 내고, Python 버전을 패치 단위로 고정하기
-    </h2>
-  </header>
-  <div class="entry-content"><p>앱 저장소 세 개에 흩어져 있던 서버 수준 작업(회수 방지 부하, 저널 정책, 디스크·메모리 점검)을 서버 관리 전용 저장소로 모은 과정, Python을 3.12.15로 패치 고정하며 만난 venv 링크 함정, 배포 스크립트에서 단계를 지울 때의 함정, 그리고 불필요해진 옛 서비스를 지운 일을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
+    <aside class="widget widget_tag_cloud">
+        <h2>태그</h2>
+        <div class="tagcloud"><a class="tag-cloud-link" href="/tags/%EB%A6%AC%EB%B7%B0/" title="리뷰" style="font-size: 12pt;">리뷰</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/" title="릴리스" style="font-size: 12pt;">릴리스</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B0%B0%ED%8F%AC/" title="배포" style="font-size: 12pt;">배포</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/" title="버그수정" style="font-size: 12pt;">버그수정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EA%B3%84/" title="설계" style="font-size: 12pt;">설계</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EC%A0%95/" title="설정" style="font-size: 12pt;">설정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%97%B0%EA%B5%AC/" title="연구" style="font-size: 12pt;">연구</a>&emsp;<a class="tag-cloud-link" href="/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/" title="프롬프트" style="font-size: 12pt;">프롬프트</a>&emsp;
+        </div>
+    </aside>
 
-<span title='2026-11-24T14:02:00+09:00'>2026년 11월 24일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 서버 관리를 앱 저장소에서 떼어 내고, Python 버전을 패치 단위로 고정하기" href="https://nova7zone.github.io/posts/server-management-split-and-python-pin/"></a>
-</article>
+</div>
+        </div>
+        </div>
+<footer role="contentinfo" class="document-footer contentinfo widgets columns-1">
 
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록
-    </h2>
-  </header>
-  <div class="entry-content"><p>무료 클라우드 서버는 유휴 상태가 길면 회수될 수 있다. 서버 두 대의 사용량 지표를 검증하는 도구와 점검 스킬을 만들던 중, 한 서버의 CPU 지표가 기준 아래로 내려간 원인을 잘못 추정했다가 다른 세션의 측정으로 바로잡고 부하 값을 올린 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-20T20:30:00+09:00'>2026년 11월 20일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록" href="https://nova7zone.github.io/posts/free-tier-cpu-reclaim-misdiagnosis/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기
-    </h2>
-  </header>
-  <div class="entry-content"><p>무료 클라우드 서버는 사용량이 너무 낮으면 회수될 수 있다. 서버 두 대의 CPU, 네트워크, 저장공간을 모아 회수 기준과 비교해 보여 주는 화면과 수집기를 만든 과정. 누적 카운터를 증가분으로 계산해야 했던 버그, 배포 때 변경 감지가 빠져 옛 설정으로 돌던 사고, 코드 리뷰로 잡은 7건을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-10T22:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 무료 서버가 회수되지 않게 지키는 자원 현황 화면 만들기" href="https://nova7zone.github.io/posts/oci-gateway-usage-monitor/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅
-    </h2>
-  </header>
-  <div class="entry-content"><p>A1.Flex 인스턴스 확보 후 PuTTY 접속 설정, 1 OCPU/6GB에서 4 OCPU/24GB로 스펙 업그레이드, 스왑·자동회수 방지·방화벽까지 기본 환경을 구성한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-16T18:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to Oracle Cloud Free Tier — A1.Flex 업그레이드와 기본 환경 세팅" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-setup/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록
-    </h2>
-  </header>
-  <div class="entry-content"><p>Oracle Cloud Free Tier A1.Flex(ARM 4 OCPU / 24GB)를 확보하기 위해 OCI CLI를 구축하고 자동 재시도 스크립트를 11일간 돌린 끝에 3,310번째 시도 만에 성공한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-16T09:00:00+09:00'>2026년 6월 16일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to Oracle Cloud Free Tier — E2에서 A1.Flex까지, 11일간의 기록" href="https://nova7zone.github.io/posts/oracle-cloud-a1flex-acquisition/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입
-    </h2>
-  </header>
-  <div class="entry-content"><p>웹서버를 systemd로 상시 실행 등록하고 CLAUDE.md 작업 절차를 다시 정비한 뒤, crontab으로 실제 자동매매를 등록했다. app.yaml 경로 오류와 KIS 토큰 1일 1회 발급 제한 문제를 만나면서 dry-run 모드와 토큰 차단 처리 로직을 추가한 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-04T10:00:00+09:00'>2026년 6월 4일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (8) — systemd 상시 실행, crontab 등록, dry-run 모드 도입" href="https://nova7zone.github.io/posts/systemd-cron-dryrun-setup/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공
-    </h2>
-  </header>
-  <div class="entry-content"><p>Claude Code 작업 방식을 체계화하기 위해 superpowers·Context7 플러그인을 도입하고, 클라우드 보안 목록과 서버 방화벽 설정을 거쳐 자동매매 웹서버를 외부에서 접속 가능하게 만든 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-02T15:30:00+09:00'>2026년 6월 2일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (7) — superpowers 플러그인 도입과 웹서버 외부 접속 성공" href="https://nova7zone.github.io/posts/superpowers-and-webserver-access/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone
-    </h2>
-  </header>
-  <div class="entry-content"><p>Putty로 Oracle Cloud 서버에 접속해 Python 3.11 환경을 구축하고, 타임존 설정과 venv 오류를 해결한 뒤 Github private 저장소를 토큰으로 clone했다. 동시에 새 PC에서는 VS Code 확장으로 작업환경을 갖추고 KIS API 키를 발급받아 웹서비스 구축 계획을 세운 과정을 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-06-02T11:00:00+09:00'>2026년 6월 2일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 코드 개발 (6) — Oracle 서버 초기 설정과 Github Private 저장소 Clone" href="https://nova7zone.github.io/posts/oracle-server-initial-setup/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속
-    </h2>
-  </header>
-  <div class="entry-content"><p>Oracle Cloud 인스턴스 생성 후 필수 초기 설정 — 고정 IP 할당, PuTTY SSH 접속, 가상메모리 4GB 추가, FileZilla SFTP 연결까지 순서대로 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-05-29T09:43:00+09:00'>2026년 5월 29일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to Oracle Cloud 서버 초기 설정 — 고정 IP, 가상메모리, SFTP 접속" href="https://nova7zone.github.io/posts/oracle-cloud-server-setup/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공
-    </h2>
-  </header>
-  <div class="entry-content"><p>Oracle Cloud Free Tier로 AI 자동매매 서버를 구축하면서 ARM 용량 부족 에러를 만나고 AMD로 전환해 최종 성공한 과정을 스크린샷과 함께 기록한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-05-28T15:01:00+09:00'>2026년 5월 28일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to Oracle Cloud 서버 구축기 — ARM 실패, AMD로 성공" href="https://nova7zone.github.io/posts/oracle-cloud-setup-1/"></a>
-</article>
-    </main>
-    
-<footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
-
-    
-    
-    <span>
-        Powered by
-        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
-        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
-    </span>
+    <aside class="widget widget_text">
+        <div class="textwidget">
+            <p>© Evan&#39;s Blog / Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/tosi29/inkblotty" target="_blank">Inkblotty</a></p>
+        </div>
+    </aside>
 </footer>
-<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
-        <polyline points="17 11 12 6 7 11"></polyline>
-        <polyline points="17 18 12 13 7 18"></polyline>
-    </svg>
-</a><script>
-  
-  (function () {
-    var nav = document.querySelector(".header-nav");
-    var menu = document.getElementById("menu");
-    var sw = document.querySelector(".logo-switches");
-    if (!nav || !menu || !sw) return;
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "menu-toggle";
-    b.setAttribute("aria-label", "메뉴 열기");
-    b.setAttribute("aria-expanded", "false");
-    b.setAttribute("aria-controls", "menu");
-    b.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
-      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
-    sw.appendChild(b);
-    b.addEventListener("click", function () {
-      var open = nav.classList.toggle("menu-open");
-      b.setAttribute("aria-expanded", open ? "true" : "false");
-      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
-    });
-    function close() {
-      nav.classList.remove("menu-open");
-      b.setAttribute("aria-expanded", "false");
-      b.setAttribute("aria-label", "메뉴 열기");
-    }
-    menu.addEventListener("click", function (e) {
-      if (e.target.closest("a")) close();
-    });
-    
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && nav.classList.contains("menu-open")) { close(); b.focus(); }
-    });
-    window.matchMedia("(min-width: 769px)").addEventListener("change", function (m) { if (m.matches) close(); });
-  })();
-</script>
+</div>
 
-
-<script>
-    let menu = document.getElementById('menu');
-    if (menu) {
-        
-        const scrollPosition = localStorage.getItem("menu-scroll-position");
-        if (scrollPosition) {
-            menu.scrollLeft = parseInt(scrollPosition, 10);
-        }
-        
-        
-        let menuScrollTimeout;
-        menu.addEventListener("scroll", function () {
-            clearTimeout(menuScrollTimeout);
-            menuScrollTimeout = setTimeout(function () {
-                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
-            }, 150);
-        }, { passive: true });
-    }
-
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                target.scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                target.scrollIntoView();
-            }
-            
-            
-            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
-                target.setAttribute("tabindex", "-1");
-            }
-            target.focus({ preventScroll: true });
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-
-</script>
-<script>
-    var toplink = document.getElementById("top-link");
-    var scrollTicking = false;
-    
-    window.addEventListener("scroll", function () {
-        if (scrollTicking) {
-            return;
-        }
-        scrollTicking = true;
-        requestAnimationFrame(function () {
-            const scrollThreshold = window.innerHeight;
-            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
-            toplink.classList.toggle("hidden", !shown);
-            scrollTicking = false;
-        });
-    }, { passive: true });
-
-</script>
-<script>
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-        const html = document.querySelector("html");
-        if (html.dataset.theme === "dark") {
-            html.dataset.theme = 'light';
-            localStorage.setItem("pref-theme", 'light');
-        } else {
-            html.dataset.theme = 'dark';
-            localStorage.setItem("pref-theme", 'dark');
-        }
-    })
-
-</script>
-</body>
-
+    </body>
 </html>

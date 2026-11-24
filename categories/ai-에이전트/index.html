@@ -1,453 +1,620 @@
 <!DOCTYPE html>
-<html lang="ko" dir="auto" data-theme="auto">
-
-<head><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
-<title>AI 에이전트 | Evan&#39;s Blog</title>
-<meta name="keywords" content="">
-<meta name="description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-<meta name="author" content="Evan">
-<link rel="canonical" href="https://nova7zone.github.io/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.3f9d325cbfa4757b712f1333b50fc2d0b8027f56d23857d92391f121f8c322ac.css" integrity="sha256-P50yXL&#43;kdXtxLxMztQ/C0LgCf1bSOFfZI5HxIfjDIqw=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://nova7zone.github.io/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://nova7zone.github.io/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://nova7zone.github.io/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://nova7zone.github.io/apple-touch-icon.png">
-<link rel="mask-icon" href="https://nova7zone.github.io/safari-pinned-tab.svg">
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://nova7zone.github.io/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/index.xml" title="rss">
-<link rel="alternate" hreflang="ko" href="https://nova7zone.github.io/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">
-<noscript>
-    <style>
-        #theme-toggle,
-        .top-link {
-            display: none;
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>AI 에이전트 - Evan&#39;s Blog</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Evan's Blog">
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("/sw.js").catch(function () {});
+        });
+      }
+    </script>
+    <style type="text/css">
+        img.wp-smiley,
+        img.emoji {
+            display: inline !important;
+            border: none !important;
+            box-shadow: none !important;
+            height: 1em !important;
+            width: 1em !important;
+            margin: 0 .07em !important;
+            vertical-align: -0.1em !important;
+            background: none !important;
+            padding: 0 !important;
         }
-
     </style>
-    <style>
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --theme: rgb(29, 30, 32);
-                --entry: rgb(46, 46, 51);
-                --primary: rgb(218, 218, 219);
-                --secondary: rgb(155, 156, 157);
-                --tertiary: rgb(65, 66, 68);
-                --content: rgb(196, 196, 197);
-                --code-block-bg: rgb(46, 46, 51);
-                --code-bg: rgb(55, 56, 62);
-                --border: rgb(51, 51, 51);
-                color-scheme: dark;
-            }
-
-            .list {
-                background: var(--theme);
-            }
-
-            .toc {
-                background: var(--entry);
-            }
-        }
-
-    </style>
-</noscript>
-<script>
-    if (localStorage.getItem("pref-theme") === "dark") {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else if (localStorage.getItem("pref-theme") === "light") {
-       document.querySelector("html").dataset.theme = 'light';
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else {
-        document.querySelector("html").dataset.theme = 'light';
-    }
-
-</script><link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Evan's Blog">
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("/sw.js").catch(function () {});
-    });
-  }
-</script>
-<meta name="color-scheme" content="light dark">
-<script>
-  
-  (function () {
-    var COLORS = { light: "#f7f8f9", dark: "#15171c" };
-    function sync() {
-      var t = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
-      document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.setAttribute("content", COLORS[t]); });
-    }
-    sync();
-    new MutationObserver(sync).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    document.addEventListener("DOMContentLoaded", sync);
-  })();
-</script>
-<meta property="og:url" content="https://nova7zone.github.io/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">
-  <meta property="og:site_name" content="Evan&#39;s Blog">
-  <meta property="og:title" content="AI 에이전트">
-  <meta property="og:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-  <meta property="og:locale" content="ko_KR">
-  <meta property="og:type" content="website">
-
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="AI 에이전트">
-  <meta name="twitter:description" content="AI(Claude Code)를 이용한 프로그램 개발 과정 기록">
-
+    
+    <link rel='stylesheet' href='/css/style.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/custom.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/syntax.css' type='text/css' media='all' />
+    <link rel='stylesheet' href='/css/toc.css' type='text/css' media='all' />
+    <meta property="og:site_name" content="Evan&#39;s Blog">
 </head>
-<body class="list" id="top">
-    <header class="header">
-    <nav class="header-nav">
-        <div class="logo">
-            <a href="https://nova7zone.github.io/" accesskey="h" title="Evan&#39;s Blog (Alt + H)">Evan&#39;s Blog</a>
-            <div class="logo-switches">
-                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
-                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <ul id="menu" class="menu">
-            <li>
-                <a href="https://nova7zone.github.io/posts/" title="글">
-                    <span>글</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/series/" title="시리즈">
-                    <span>시리즈</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/categories/" title="카테고리">
-                    <span>카테고리</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/tags/" title="태그">
-                    <span>태그</span>
-                </a>
-            </li>
-            <li>
-                <a href="https://nova7zone.github.io/about/" title="소개">
-                    <span>소개</span>
-                </a>
+
+    <body class="two-column">
+        <a href="#content">Skip to content</a>
+<div class="wrapper">
+    <header role="banner" class="banner widgets columns-1">
+        <a href="/" rel="home">
+            <h1 class="site">Evan&#39;s Blog</h1>
+            <p></p>
+        </a>
+        <nav role="navigation" aria-label="Primary Navigation">
+
+            <ul class="menu">
+                <li class="menu-item "><a class="menu__link" href="/posts/">글</a></li>
+                <li class="menu-item "><a class="menu__link" href="/series/">시리즈</a></li>
+                <li class="menu-item "><a class="menu__link" href="/categories/">카테고리</a></li>
+                <li class="menu-item "><a class="menu__link" href="/tags/">태그</a></li>
+                <li class="menu-item "><a class="menu__link" href="/about/">소개</a></li>
+            </ul>
+            <select onChange="location.href=value;">
+                <option value="/posts/" class="menu-item menu-item-type-custom menu-item-object-custom" >글</option>
+                <option value="/series/" class="menu-item menu-item-type-custom menu-item-object-custom" >시리즈</option>
+                <option value="/categories/" class="menu-item menu-item-type-custom menu-item-object-custom" >카테고리</option>
+                <option value="/tags/" class="menu-item menu-item-type-custom menu-item-object-custom" >태그</option>
+                <option value="/about/" class="menu-item menu-item-type-custom menu-item-object-custom" >소개</option>
+            </select>
+        </nav>
+    </header>
+
+    <br>
+    <div style="width: 100%; max-height: 100px; text-align: center;">
+       
+</div>
+
+    <div class="breadcrumbs">
+        
+    </div>
+        <div id="content" class="content">
+<main aria-role="main">
+  <header class="homepage-header">
+    <h1>AI 에이전트</h1>
+    
+  </header>
+  <div class="homepage-content">
+    
+    
+  </div>
+  <div>
+    
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/upbit-v2-regime-hold-research/" rel="bookmark">자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-23T12:42:00">2026-11-23</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			11월 19~23일: 공개 전략 3종의 엔진 대조, 거래량 진입 탐색 실패, 시장 신호 4시간 요약 영구 보관, 국면 보유 전략이 처음 후보가 되고 캐너리로 라이브 전진 검증을 시작한 과정, 알트 확장·숏·빠른 국면 보유 후속 연구를 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%97%B0%EA%B5%AC/">연구</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/kis-v2-paper-log-and-journal-paging/" rel="bookmark">자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-21T18:30:00">2026-11-21</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%97%B0%EA%B5%AC/">연구</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/free-tier-cpu-reclaim-misdiagnosis/" rel="bookmark">무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-20T20:30:00">2026-11-20</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			무료 클라우드 서버는 유휴 상태가 길면 회수될 수 있다. 서버 두 대의 사용량 지표를 검증하는 도구와 점검 스킬을 만들던 중, 한 서버의 CPU 지표가 기준 아래로 내려간 원인을 잘못 추정했다가 다른 세션의 측정으로 바로잡고 부하 값을 올린 과정을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/kis-v2-paper-as-data-collector/" rel="bookmark">자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-18T12:00:00">2026-11-18</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a>&emsp;
+				
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%97%B0%EA%B5%AC/">연구</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/upbit-v2-first-formal-strategy-and-closures/" rel="bookmark">자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-18T11:09:00">2026-11-18</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			11월 15~18일: 종목 거부 처리 개선, 데이터 윈도우를 마지막으로 열어 본 SEALED 판정, 첫 정식 전략 편입, 단가 하한, 그리고 일봉 롱·깊은 손절 청산·BULL 조건 탐색이 모두 닫힌 과정과 거기서 얻은 교훈을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a>&emsp;
+				
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%97%B0%EA%B5%AC/">연구</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/upbit-v2-market-signals-canary/" rel="bookmark">자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-14T19:20:00">2026-11-14</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			펀딩비·미결제약정·김치 프리미엄·호가 자료를 쌓으면서 그 자료로 바로 매매하는 캐너리 3종을 만들고, 코드 리뷰 10건과 이상치 처리, 백업 스크립트가 운영 틱을 지연시킨 사고, 라이브 구간 로컬 재현 진단까지 11월 11~14일의 작업을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a>&emsp;
+				
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%97%B0%EA%B5%AC/">연구</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/kis-v2-backward-holdout-and-rebalance-hold/" rel="bookmark">자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-13T23:55:00">2026-11-13</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			연구 66~68회차와 &#39;역방향 홀드아웃&#39; 규칙 도입, 이를 월간 리밸런싱 전략에 적용해 검증이 실패한 과정. 실패 원인을 추적하다가 같은 날 재매수를 막는 엔진 스위치가 월간 전략의 설계 결함 후보임을 찾아, 재선정된 보유 종목을 팔지 않고 이어가는 규칙을 구현한 일을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%97%B0%EA%B5%AC/">연구</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/blog-publish-pipeline-and-security-scanner/" rel="bookmark">공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-11T16:00:00">2026-11-11</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			개발 과정을 공개하는 블로그는 비밀값과 식별자가 글에 섞일 위험이 늘 있다. 원본 Markdown과 빌드된 HTML을 모두 훑는 스캐너, 값을 출력하지 않는 규칙, 허용 목록, 이미지 검토, 게시 점검 순서를 정리한다. 줄바꿈 변환이 무결성 해시를 깨 모바일에서 스타일이 막혔던 사고와 검색 엔진 차단도 함께 다룬다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/blog-jekyll-to-hugo-migration/" rel="bookmark">블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-10T23:30:00">2026-11-10</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%B0%B0%ED%8F%AC/">배포</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EC%A0%95/">설정</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+        <article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="post-header">
+				<h2><a href="/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/" rel="bookmark">자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략</a></h2>
+				<div class="post-details">
+				<a rel="bookmark">
+					<time datetime="2026-11-10T19:30:00">2026-11-10</time>
+				</a>
+				</div>
+		</header>
+
+		<div class="post-excerpt"><p>
+			신규 후보 38개가 전부 기준가 불일치로 거절되어 하루 종일 진입이 없었다. 원인은 새벽에 받은 직전 거래일 종가가 잠정값이라는 것이었고, 갱신 시각을 옮겨 해결했다. 같은 주에 전체 코드 리뷰로 약 90건을 정리하고, 지수 종가 공급을 코어에 추가했으며, 수급 기반 전략이 처음으로 1단계를 조건부로 통과해 모의 관측으로 이식된 과정을 정리한다.
+		</p></div>
+	</div>
+	
+	<footer class="post-footer">
+		
+		
+		
+		<span class="post-categories">
+				<a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트</a>&emsp;
+				
+				<a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매</a>&emsp;
+				
+		</span>
+		
+
+		
+		
+		
+		<span class="post-tags">
+				<a href="/tags/%EB%A6%AC%EB%B7%B0/">리뷰</a>&emsp;
+				
+				<a href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/">버그수정</a>&emsp;
+				
+				<a href="/tags/%EC%84%A4%EA%B3%84/">설계</a>&emsp;
+				
+				<a href="/tags/%EC%97%B0%EA%B5%AC/">연구</a>&emsp;
+				
+		</span>
+		
+	</footer>
+
+</article>
+    
+  </div>
+
+
+
+<div class="nav-links">
+<ul class="pagination">
+    
+        <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/" aria-label="First"><span aria-hidden="true">&laquo;</span></a>
+    
+
+    <a href="" aria-label="Previous"><span aria-hidden="true">Previous Page</span></a>
+    
+    
+    <span href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">1</a>
+    
+    
+    
+    <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/page/2/">2</a>
+    
+    
+    
+    <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/page/3/">3</a>
+    
+    
+    <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/page/2/" aria-label="Next"><span aria-hidden="true">Next Page</span></a>
+    
+    <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/page/3/" aria-label="Last"><span aria-hidden="true">&raquo;</span></a>
+    
+</ul>
+</div>
+
+
+<table cellspacing="15" style="width:100%; border: none;">
+    <tr>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+        <td style="text-align: center; border: none; padding: 0px;">
+        </td>
+    </tr>
+</table>
+
+</main>
+
+
+        <div class="sidebar1 widgets columns-1">
+
+    <aside>
+    
+</aside>
+    <aside class="widget widget_categories">
+        <h2>카테고리</h2>
+        <ul class="widget__list"><li class="cat-item cat-item-2">
+                <a href="/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/">AI 에이전트 (23)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/kis-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">KIS 자동매매 (60)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/oci-%EC%9D%B8%ED%94%84%EB%9D%BC/">OCI 인프라 (10)</a>
+            </li><li class="cat-item cat-item-2">
+                <a href="/categories/upbit-%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4/">Upbit 자동매매 (31)</a>
             </li>
         </ul>
-    </nav>
-</header>
-<main class="main"> 
-<header class="page-header"><nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
-            <a href="/">홈</a>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-            <a href="/categories/">Categories</a>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
-        <polyline points="9 18 15 12 9 6"></polyline>
-    </svg>
-</nav>
-  <h1>
-    AI 에이전트
-  </h1>
-</header>
+    </aside>
 
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다
-    </h2>
-  </header>
-  <div class="entry-content"><p>11월 19~23일: 공개 전략 3종의 엔진 대조, 거래량 진입 탐색 실패, 시장 신호 4시간 요약 영구 보관, 국면 보유 전략이 처음 후보가 되고 캐너리로 라이브 전진 검증을 시작한 과정, 알트 확장·숏·빠른 국면 보유 후속 연구를 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
+    <aside class="widget widget_tag_cloud">
+        <h2>태그</h2>
+        <div class="tagcloud"><a class="tag-cloud-link" href="/tags/%EB%A6%AC%EB%B7%B0/" title="리뷰" style="font-size: 12pt;">리뷰</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%A6%B4%EB%A6%AC%EC%8A%A4/" title="릴리스" style="font-size: 12pt;">릴리스</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B0%B0%ED%8F%AC/" title="배포" style="font-size: 12pt;">배포</a>&emsp;<a class="tag-cloud-link" href="/tags/%EB%B2%84%EA%B7%B8%EC%88%98%EC%A0%95/" title="버그수정" style="font-size: 12pt;">버그수정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EA%B3%84/" title="설계" style="font-size: 12pt;">설계</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%84%A4%EC%A0%95/" title="설정" style="font-size: 12pt;">설정</a>&emsp;<a class="tag-cloud-link" href="/tags/%EC%97%B0%EA%B5%AC/" title="연구" style="font-size: 12pt;">연구</a>&emsp;<a class="tag-cloud-link" href="/tags/%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8/" title="프롬프트" style="font-size: 12pt;">프롬프트</a>&emsp;
+        </div>
+    </aside>
 
-<span title='2026-11-23T12:42:00+09:00'>2026년 11월 23일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (17) — 진입 규칙 찾기를 접고 &#39;국면 보유&#39;로 질문을 바꿨더니 처음으로 후보가 나왔다" href="https://nova7zone.github.io/posts/upbit-v2-regime-hold-research/"></a>
-</article>
+</div>
+        </div>
+        </div>
+<footer role="contentinfo" class="document-footer contentinfo widgets columns-1">
 
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다
-    </h2>
-  </header>
-  <div class="entry-content"><p>11월 20~21일: 모의 매매 일지가 페이지 한도 때문에 실패하던 문제를 일 단위 수집으로 고친 일, 모의 거래 기록 분석에서 손익 구조를 읽은 일, 인버스 국면 대리와 갭 거름 가설이 모두 기각된 일, 서버 검증이 느린 원인이 메모리가 아니라 CPU 점유 손실이었던 일을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-21T18:30:00+09:00'>2026년 11월 21일</span>&nbsp;·&nbsp;<span>4 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (9) — 모의 매매 기록을 읽었더니 손익분기 승률이 보였고, 일지 수집 실패는 페이지 한도가 원인이었다" href="https://nova7zone.github.io/posts/kis-v2-paper-log-and-journal-paging/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록
-    </h2>
-  </header>
-  <div class="entry-content"><p>무료 클라우드 서버는 유휴 상태가 길면 회수될 수 있다. 서버 두 대의 사용량 지표를 검증하는 도구와 점검 스킬을 만들던 중, 한 서버의 CPU 지표가 기준 아래로 내려간 원인을 잘못 추정했다가 다른 세션의 측정으로 바로잡고 부하 값을 올린 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-20T20:30:00+09:00'>2026년 11월 20일</span>&nbsp;·&nbsp;<span>3 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 무료 서버의 유휴 회수 방지 — CPU 지표가 낮은 이유를 잘못 짚었다가 바로잡은 기록" href="https://nova7zone.github.io/posts/free-tier-cpu-reclaim-misdiagnosis/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다
-    </h2>
-  </header>
-  <div class="entry-content"><p>백테스트로는 알 수 없는 체결과 집행의 현실을 모으려고, 모의 계좌를 여러 전략의 자료 수집 장비로 쓰는 계획을 세우고 서브에이전트 10개 작업으로 구현했다. 첫 장 마감 점검에서 확인한 것, 코드 리뷰가 잡은 환경변수 전역 상태, 그리고 업종 모멘텀 연구 69회차가 실패한 이유와 AI/ML 경로 검토를 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-18T12:00:00+09:00'>2026년 11월 18일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (8) — 모의 계좌를 &#39;자료 수집 장비&#39;로 쓰기로 하다" href="https://nova7zone.github.io/posts/kis-v2-paper-as-data-collector/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다
-    </h2>
-  </header>
-  <div class="entry-content"><p>11월 15~18일: 종목 거부 처리 개선, 데이터 윈도우를 마지막으로 열어 본 SEALED 판정, 첫 정식 전략 편입, 단가 하한, 그리고 일봉 롱·깊은 손절 청산·BULL 조건 탐색이 모두 닫힌 과정과 거기서 얻은 교훈을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-18T11:09:00+09:00'>2026년 11월 18일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (16) — 첫 정식 전략을 편입하고, 이어진 탐색 세 건이 모두 닫혔다" href="https://nova7zone.github.io/posts/upbit-v2-first-formal-strategy-and-closures/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다
-    </h2>
-  </header>
-  <div class="entry-content"><p>펀딩비·미결제약정·김치 프리미엄·호가 자료를 쌓으면서 그 자료로 바로 매매하는 캐너리 3종을 만들고, 코드 리뷰 10건과 이상치 처리, 백업 스크립트가 운영 틱을 지연시킨 사고, 라이브 구간 로컬 재현 진단까지 11월 11~14일의 작업을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-14T19:20:00+09:00'>2026년 11월 14일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · Upbit (15) — 시장 신호를 모으며 규칙으로 바로 매매하고, 코드 리뷰로 이상치 버그를 잡다" href="https://nova7zone.github.io/posts/upbit-v2-market-signals-canary/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다
-    </h2>
-  </header>
-  <div class="entry-content"><p>연구 66~68회차와 &#39;역방향 홀드아웃&#39; 규칙 도입, 이를 월간 리밸런싱 전략에 적용해 검증이 실패한 과정. 실패 원인을 추적하다가 같은 날 재매수를 막는 엔진 스위치가 월간 전략의 설계 결함 후보임을 찾아, 재선정된 보유 종목을 팔지 않고 이어가는 규칙을 구현한 일을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-13T23:55:00+09:00'>2026년 11월 13일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (7) — 과거 구간으로 거꾸로 검증했더니 실패했고, 그 실패가 집행 설계의 결함을 가리켰다" href="https://nova7zone.github.io/posts/kis-v2-backward-holdout-and-rebalance-hold/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유
-    </h2>
-  </header>
-  <div class="entry-content"><p>개발 과정을 공개하는 블로그는 비밀값과 식별자가 글에 섞일 위험이 늘 있다. 원본 Markdown과 빌드된 HTML을 모두 훑는 스캐너, 값을 출력하지 않는 규칙, 허용 목록, 이미지 검토, 게시 점검 순서를 정리한다. 줄바꿈 변환이 무결성 해시를 깨 모바일에서 스타일이 막혔던 사고와 검색 엔진 차단도 함께 다룬다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-11T16:00:00+09:00'>2026년 11월 11일</span>&nbsp;·&nbsp;<span>6 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 공개 전에 무엇을 검사하나: 보안 스캐너와 게시 파이프라인, 그리고 모바일에서 CSS가 막힌 이유" href="https://nova7zone.github.io/posts/blog-publish-pipeline-and-security-scanner/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트
-    </h2>
-  </header>
-  <div class="entry-content"><p>자동매매 서버에 블로그를 같이 둘까 하는 고민에서 시작해, GitHub Pages와 Hugo로 이전하기로 결정한 과정. 원본은 비공개 저장소에 두고 빌드 결과만 공개 저장소에 올리는 두 저장소 구조, Chirpy 글 51편을 일괄 변환한 스크립트, 이전 전 백업 절차를 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-10T23:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>5 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 블로그를 Jekyll에서 Hugo로 옮기며 정한 것들: 호스팅, 저장소 구조, 변환 스크립트" href="https://nova7zone.github.io/posts/blog-jekyll-to-hugo-migration/"></a>
-</article>
-
-<article class="post-entry tag-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략
-    </h2>
-  </header>
-  <div class="entry-content"><p>신규 후보 38개가 전부 기준가 불일치로 거절되어 하루 종일 진입이 없었다. 원인은 새벽에 받은 직전 거래일 종가가 잠정값이라는 것이었고, 갱신 시각을 옮겨 해결했다. 같은 주에 전체 코드 리뷰로 약 90건을 정리하고, 지수 종가 공급을 코어에 추가했으며, 수급 기반 전략이 처음으로 1단계를 조건부로 통과해 모의 관측으로 이식된 과정을 정리한다.</p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-11-10T19:30:00+09:00'>2026년 11월 10일</span>&nbsp;·&nbsp;<span>7 분</span>&nbsp;·&nbsp;<span>Evan</span></footer>
-  <a class="entry-link" aria-label="post link to 자동매매 V2 개발 · KIS (6) — 진입이 하루 종일 0건이었던 이유와, 처음 조건부로 통과한 수급 전략" href="https://nova7zone.github.io/posts/kis-v2-base-price-mismatch-and-first-conditional-pass/"></a>
-</article>
-<footer class="page-footer">
-  <nav class="pagination">
-    <a class="next" href="https://nova7zone.github.io/categories/ai-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8/page/2/">다음 페이지&nbsp;&nbsp;»
-    </a>
-  </nav>
+    <aside class="widget widget_text">
+        <div class="textwidget">
+            <p>© Evan&#39;s Blog / Powered by <a href="https://gohugo.io" target="_blank">Hugo</a> with theme <a href="https://github.com/tosi29/inkblotty" target="_blank">Inkblotty</a></p>
+        </div>
+    </aside>
 </footer>
-    </main>
-    
-<footer class="footer">
-        <span>&copy; 2026 <a href="https://nova7zone.github.io/">Evan&#39;s Blog</a></span> · 
+</div>
 
-    
-    
-    <span>
-        Powered by
-        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
-        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
-    </span>
-</footer>
-<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
-        <polyline points="17 11 12 6 7 11"></polyline>
-        <polyline points="17 18 12 13 7 18"></polyline>
-    </svg>
-</a><script>
-  
-  (function () {
-    var nav = document.querySelector(".header-nav");
-    var menu = document.getElementById("menu");
-    var sw = document.querySelector(".logo-switches");
-    if (!nav || !menu || !sw) return;
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "menu-toggle";
-    b.setAttribute("aria-label", "메뉴 열기");
-    b.setAttribute("aria-expanded", "false");
-    b.setAttribute("aria-controls", "menu");
-    b.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">' +
-      '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>';
-    sw.appendChild(b);
-    b.addEventListener("click", function () {
-      var open = nav.classList.toggle("menu-open");
-      b.setAttribute("aria-expanded", open ? "true" : "false");
-      b.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
-    });
-    function close() {
-      nav.classList.remove("menu-open");
-      b.setAttribute("aria-expanded", "false");
-      b.setAttribute("aria-label", "메뉴 열기");
-    }
-    menu.addEventListener("click", function (e) {
-      if (e.target.closest("a")) close();
-    });
-    
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && nav.classList.contains("menu-open")) { close(); b.focus(); }
-    });
-    window.matchMedia("(min-width: 769px)").addEventListener("change", function (m) { if (m.matches) close(); });
-  })();
-</script>
-
-
-<script>
-    let menu = document.getElementById('menu');
-    if (menu) {
-        
-        const scrollPosition = localStorage.getItem("menu-scroll-position");
-        if (scrollPosition) {
-            menu.scrollLeft = parseInt(scrollPosition, 10);
-        }
-        
-        
-        let menuScrollTimeout;
-        menu.addEventListener("scroll", function () {
-            clearTimeout(menuScrollTimeout);
-            menuScrollTimeout = setTimeout(function () {
-                localStorage.setItem("menu-scroll-position", menu.scrollLeft);
-            }, 150);
-        }, { passive: true });
-    }
-
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            const target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                target.scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                target.scrollIntoView();
-            }
-            
-            
-            if (target.tabIndex < 0 && !target.hasAttribute("tabindex")) {
-                target.setAttribute("tabindex", "-1");
-            }
-            target.focus({ preventScroll: true });
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-
-</script>
-<script>
-    var toplink = document.getElementById("top-link");
-    var scrollTicking = false;
-    
-    window.addEventListener("scroll", function () {
-        if (scrollTicking) {
-            return;
-        }
-        scrollTicking = true;
-        requestAnimationFrame(function () {
-            const scrollThreshold = window.innerHeight;
-            const shown = document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold;
-            toplink.classList.toggle("hidden", !shown);
-            scrollTicking = false;
-        });
-    }, { passive: true });
-
-</script>
-<script>
-    document.getElementById("theme-toggle").addEventListener("click", () => {
-        const html = document.querySelector("html");
-        if (html.dataset.theme === "dark") {
-            html.dataset.theme = 'light';
-            localStorage.setItem("pref-theme", 'light');
-        } else {
-            html.dataset.theme = 'dark';
-            localStorage.setItem("pref-theme", 'dark');
-        }
-    })
-
-</script>
-</body>
-
+    </body>
 </html>
